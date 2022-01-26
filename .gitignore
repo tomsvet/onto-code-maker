@@ -1,0 +1,4 @@
+# Project exclude paths
+/onto-code-maker-cli/target/
+/onto-code-maker-core/target/
+/out/
