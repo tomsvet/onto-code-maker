@@ -2,7 +2,6 @@ package ontology.tool.console;
 
 import ontology.tool.OntoCodeMaker;
 
-import java.io.FileNotFoundException;
 
 public class OntoCodeMakerCLI {
 
@@ -21,8 +20,11 @@ public class OntoCodeMakerCLI {
             return;
         }
 
-        OntoCodeMaker maker = new OntoCodeMaker(parser.getInputFiles());
-        maker.setFormatName(parser.getFormat());
+        OntoCodeMaker maker = new OntoCodeMaker.Builder(parser.getInputFiles())
+                                .format(parser.getFormat())
+                                .language(parser.getLanguage())
+                                .outputDir(parser.getDestination())
+                                .build();
         maker.generateCodeFromOntology();
 
 

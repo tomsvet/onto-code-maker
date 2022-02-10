@@ -5,14 +5,13 @@ import org.apache.commons.cli.*;
 import java.io.PrintWriter;
 
 /**
+ * CLIOptionsParser.java
+ *
  * @author Tomas Svetlik
- * 2022
+ *  2022
  *  Class to parse input arguments
  *
- *  Usage: OntoCodeMaker [options...] <input-file> [<input-file> ...]
  *
- * <input-file>               the input file with ontology to read from (more files are allowed)
- * -a, --all                  do not hide entries starting with .
  *
  */
 public class CLIOptionsParser {
@@ -20,6 +19,7 @@ public class CLIOptionsParser {
     private static String FORMAT_OPTION_NAME = "format";
     private static String HELP_OPTION_NAME = "help";
     private static String LANGUAGE_OPTION_NAME = "language";
+    private static String DESTINATION_OPTION_NAME = "destination";
 
 
     private String format;
@@ -44,12 +44,24 @@ public class CLIOptionsParser {
         return format;
     }
 
+    public void setFormat(String format) {
+        this.format = format;
+    }
+
     public String getLanguage(){
         return language;
     }
 
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
     public String getDestination(){
         return destination;
+    }
+
+    public void setDestination(String destination){
+        this.destination = destination;
     }
 
     public String[] getInputFiles(){
@@ -59,8 +71,6 @@ public class CLIOptionsParser {
 
 
     public void parseCLI(String[] args){
-
-
 
         CommandLineParser parser = new DefaultParser();
 
@@ -78,9 +88,17 @@ public class CLIOptionsParser {
             inputFiles = line.getArgs();
 
 
-           /* if (line.hasOption(FORMAT_OPTION_NAME)) {
+            if (line.hasOption(FORMAT_OPTION_NAME)) {
+                setFormat(line.getOptionValue(FORMAT_OPTION_NAME));
+            }
 
-            }*/
+            if(line.hasOption(LANGUAGE_OPTION_NAME)){
+                setLanguage(line.getOptionValue(LANGUAGE_OPTION_NAME));
+            }
+
+            if(line.hasOption(DESTINATION_OPTION_NAME)){
+                setDestination(line.getOptionValue(DESTINATION_OPTION_NAME));
+            }
 
         } catch (ParseException e) {
             e.printStackTrace();
@@ -107,18 +125,28 @@ public class CLIOptionsParser {
                 .required(false)
                 .build();
 
+        Option language = Option.builder("l")
+                .longOpt("language")
+                .desc("Define the language of final source code.\n" +
+                        "Default language is Java.")
+                .hasArg(true).numberOfArgs(1)
+                .argName(LANGUAGE_OPTION_NAME)
+                .required(false)
+                .build();
+
+        Option destination = Option.builder("d")
+                .longOpt("destination")
+                .desc("Define the destination of generated source code.")
+                .hasArg(true).numberOfArgs(1)
+                .argName(DESTINATION_OPTION_NAME)
+                .required(false)
+                .build();
+
 
         options.addOption(format);
-
+        options.addOption(language);
+        options.addOption(destination);
         options.addOption(help);
-
-        options.addOption("l","final-language",true,"Define the language of final source code.\n" +
-                "Default language is Java.");
-
-
-
-
-
 
         return options;
     }
