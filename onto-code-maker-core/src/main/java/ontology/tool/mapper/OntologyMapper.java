@@ -1,6 +1,7 @@
 package ontology.tool.mapper;
 
-import ontology.tool.generator.ClassRepresentation;
+import ontology.tool.generator.representations.ClassRepresentation;
+import ontology.tool.generator.representations.EntityRepresentation;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -52,10 +53,17 @@ public class OntologyMapper {
     }
 
 
-    public void getOWLOntologies(){
+    public EntityRepresentation getOWLOntologies(){
         if (model != null){
             Set<Resource> owlOntologies = model.filter(null, RDF.TYPE, OWL.ONTOLOGY).subjects();
+            Resource ontologyResource = owlOntologies.iterator().next();
+            if(ontologyResource.isIRI()){
+                IRI ontologyIRI = (IRI) ontologyResource;
+                EntityRepresentation onto = new EntityRepresentation(ontologyIRI.getNamespace(),ontologyIRI.getLocalName());
+                return onto;
+            }
         }
+        return null;
     }
 
 }

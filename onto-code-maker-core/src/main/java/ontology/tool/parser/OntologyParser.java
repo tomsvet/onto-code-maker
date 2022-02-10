@@ -16,7 +16,7 @@ import java.nio.file.Paths;
 
 public class OntologyParser {
 
-    private Logger logger = LogManager.getLogger(OntologyParser.class);
+    private static final Logger logger = LogManager.getLogger(OntologyParser.class);
 
     //maybe TODO URL files
 

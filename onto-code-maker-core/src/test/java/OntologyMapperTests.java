@@ -1,5 +1,4 @@
-import ontology.tool.OntoCodeMaker;
-import ontology.tool.generator.ClassRepresentation;
+import ontology.tool.generator.representations.ClassRepresentation;
 import ontology.tool.mapper.OntologyMapper;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -49,7 +48,7 @@ public class OntologyMapperTests {
                 "Method getClasses is not working.");
 
        // assertEquals(mappedClasses.get(0).getClassName(),"Person");
-        String name = mappedClasses.get(0).getClassName();
+        String name = mappedClasses.get(0).getName();
         assertTrue(name.equals("Men") || name.equals("Person"));
     }
 }
