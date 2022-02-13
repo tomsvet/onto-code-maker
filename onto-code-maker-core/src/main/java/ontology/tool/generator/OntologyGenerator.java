@@ -15,7 +15,7 @@ import java.util.*;
 enum TEMPLATE_TYPE {
     CLASS,
     VOCABULARY,
-    MODEL,
+    SERIALIZATION,
     FACTORY
 }
 
@@ -23,14 +23,22 @@ abstract public class OntologyGenerator {
 
     private static final Logger logger = LogManager.getLogger(OntologyGenerator.class);
 
-    //Configuration cfg = new Configuration(Configuration.VERSION_2_3_31);
-    //private String templatePath = "/com/github/ansell/rdf4j/schemagenerator/javaStaticClassRDF4J.ftl";
     public final String  DEFAULT_OUTPUT_DIR = "/out/output";
+    public final String DIR_PATH = "out/";
+
     protected static String VOCABULARY_TEMPLATE_NAME;
     protected static String CLASS_TEMPLATE_NAME;
-    protected static String MODEL_TEMPLATE_NAME;
+    protected static String SERIALIZATION_TEMPLATE_NAME;
     protected static String FACTORY_TEMPLATE_NAME;
+    protected static String FILE_EXTENSION;
 
+
+    protected static String VOCABULARY_FILE_NAME = "Vocabulary" + FILE_EXTENSION;
+    protected static String SERIALIZATION_MODEL_FILE_NAME = "SerializationModel" + FILE_EXTENSION;
+    protected static String SERIALIZATION_FILE_NAME_SUFFIX = "Serialization" + FILE_EXTENSION;
+    protected static String FACTORY_FILE_NAME_SUFFIX = "Factory" + FILE_EXTENSION;
+    protected static String DEFAULT_FACTORY_FILE_NAME = "Ontology" + FACTORY_FILE_NAME_SUFFIX;
+    protected static String CLASS_ENTITY_FILE_NAME = "OntoEntity" + FILE_EXTENSION;
 
     Configuration cfg;
     
@@ -65,8 +73,8 @@ abstract public class OntologyGenerator {
             case VOCABULARY:
                 template = cfg.getTemplate(VOCABULARY_TEMPLATE_NAME);
                 break;
-            case MODEL:
-                template = cfg.getTemplate(MODEL_TEMPLATE_NAME);
+            case SERIALIZATION:
+                template = cfg.getTemplate(SERIALIZATION_TEMPLATE_NAME);
                 break;
             case FACTORY:
                 template = cfg.getTemplate(FACTORY_TEMPLATE_NAME);
@@ -84,7 +92,7 @@ abstract public class OntologyGenerator {
         }
     }
 
-    public void generateCode(){
+    public void generateCode() {
         createOutputDir();
 
         try {
@@ -99,9 +107,17 @@ abstract public class OntologyGenerator {
             e.printStackTrace();
         }
 
-        generateSerializationClasses();
+        try {
+            generateSerializationClasses();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        generateFactory();
+        try {
+            generateFactory();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
     }
@@ -119,7 +135,7 @@ abstract public class OntologyGenerator {
             Map<String, Object> data = new HashMap<>();
             data.put("generatedClass",generatedClass);
 
-            String filepath = DEFAULT_OUTPUT_DIR + "/" + generatedClass.getName() + ".java";
+            String filepath = DIR_PATH + generatedClass.getName() + FILE_EXTENSION;
 
             try (Writer fileWriter = new FileWriter(new File(filepath))) {
                 templateFile.process(data, fileWriter);
@@ -130,7 +146,7 @@ abstract public class OntologyGenerator {
     }
 
     public void generateVocabulary() throws IOException {
-        Writer fileWriter = new FileWriter(new File("out/"+ getVocabularyFileName()));
+        Writer fileWriter = new FileWriter(new File(DIR_PATH + VOCABULARY_FILE_NAME));
 
         Template templateFile = getTemplate(TEMPLATE_TYPE.VOCABULARY);
 
@@ -149,11 +165,41 @@ abstract public class OntologyGenerator {
         }
     }
 
-    public void generateSerializationClasses(){
+    public void generateSerializationClasses() throws IOException {
+        Template templateFile = getTemplate(TEMPLATE_TYPE.SERIALIZATION);
+        if (templateFile == null) {
+            logger.error("Problem loading template.");
+            return ;
+        }
+
+
+        //create serialization interface
+        Writer fileWriter = new FileWriter(new File(DIR_PATH + SERIALIZATION_MODEL_FILE_NAME));
+
+
+        // create serialization classes
+
+        for (ClassRepresentation classRep : classes){
+            fileWriter = new FileWriter(new File(DIR_PATH +  classRep.getName() + SERIALIZATION_FILE_NAME_SUFFIX));
+
+
+        }
+
+
 
     }
 
-    public void generateFactory(){
+    public void generateFactory() throws IOException {
+        String fileName;
+        if(ontology != null){
+            fileName = ontology.getName() + FACTORY_FILE_NAME_SUFFIX;
+        }else{
+            fileName = DEFAULT_FACTORY_FILE_NAME;
+        }
+
+        Writer fileWriter = new FileWriter(new File(fileName));
+
+
 
     }
 

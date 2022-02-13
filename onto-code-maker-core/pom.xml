@@ -16,6 +16,7 @@
         <rdf4j.version>3.7.4</rdf4j.version>
         <slf4j.version>2.0.0-alpha5</slf4j.version>
         <freemarker.version>2.3.31</freemarker.version>
+        <junit-jupiter.version>5.8.2</junit-jupiter.version>
     </properties>
 
     <artifactId>onto-code-maker-core</artifactId>
@@ -105,6 +106,12 @@
             <artifactId>junit-jupiter</artifactId>
             <version>RELEASE</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>5.8.2</version>
         </dependency>
 
 

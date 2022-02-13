@@ -11,12 +11,16 @@ import java.util.List;
 import java.util.Map;
 
 public class JavaGenerator extends OntologyGenerator {
+
     public static final String GENERATOR_LANGUAGE_JAVA = "java";
     public static final String VOCABULARY_FILE_NAME = "Vocabulary.java";
 
     static{
-        VOCABULARY_TEMPLATE_NAME = "/templateJava.ftl";
-        CLASS_TEMPLATE_NAME = "/templateJava.ftl";
+        VOCABULARY_TEMPLATE_NAME = "/JavaTemplates/vocabularyTemplateJava.ftl";
+        CLASS_TEMPLATE_NAME = "/JavaTemplates/entitiesTemplateJava.ftl";
+        SERIALIZATION_TEMPLATE_NAME = "/JavaTemplates/serializationTemplateJava.ftl";
+        FACTORY_TEMPLATE_NAME = "/JavaTemplates/factoryTemplateJava.ftl";
+        FILE_EXTENSION = ".java";
     }
     public JavaGenerator() {
         super();
@@ -26,6 +30,11 @@ public class JavaGenerator extends OntologyGenerator {
     public String getVocabularyFileName() {
         return VOCABULARY_FILE_NAME;
     }
+
+    public String getSerializationFileName(String className){
+        return "ONT_" + className + ".java";
+    }
+
 
     public Map<String, Object> getVocabularyData(List<VocabularyConstant> properties){
         Map<String, Object> data = new HashMap<>();
