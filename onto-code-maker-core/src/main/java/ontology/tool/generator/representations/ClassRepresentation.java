@@ -6,5 +6,5 @@ public class ClassRepresentation extends EntityRepresentation{
         super(namespace,name);
     }
 
-    public String getConstantName(){return this.getName()  + "_CLASS_IRI";}
+    public String getConstantName(){return this.getName().toUpperCase()  + "_CLASS_IRI";}
 }

@@ -43,7 +43,7 @@ public class OntoCodeMaker {
             OntologyGenerator generator = factory.getOntologyGenerator("java");
             generator.addClasses(classes);
             generator.setOntology(ontology);
-            generator.generateVocabulary();
+            generator.generateCode();
             
         } catch (FileNotFoundException e) {
             e.printStackTrace();

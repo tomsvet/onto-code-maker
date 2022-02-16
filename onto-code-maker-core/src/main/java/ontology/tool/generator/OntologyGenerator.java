@@ -33,12 +33,13 @@ abstract public class OntologyGenerator {
     protected static String FILE_EXTENSION;
 
 
-    protected static String VOCABULARY_FILE_NAME = "Vocabulary" + FILE_EXTENSION;
-    protected static String SERIALIZATION_MODEL_FILE_NAME = "SerializationModel" + FILE_EXTENSION;
-    protected static String SERIALIZATION_FILE_NAME_SUFFIX = "Serialization" + FILE_EXTENSION;
-    protected static String FACTORY_FILE_NAME_SUFFIX = "Factory" + FILE_EXTENSION;
+    protected static String VOCABULARY_FILE_NAME = "Vocabulary";
+    protected static String SERIALIZATION_MODEL_FILE_NAME = "SerializationModel";
+    protected static String SERIALIZATION_FILE_NAME_SUFFIX = "Serialization";
+    protected static String FACTORY_FILE_NAME_SUFFIX = "Factory" ;
     protected static String DEFAULT_FACTORY_FILE_NAME = "Ontology" + FACTORY_FILE_NAME_SUFFIX;
-    protected static String CLASS_ENTITY_FILE_NAME = "OntoEntity" + FILE_EXTENSION;
+    protected static String CLASS_ENTITY_FILE_NAME = "OntoEntity";
+    //protected static String CLASS_ENTITY_FILE_NAME = CLASS_ENTITY_NAME ;
 
     Configuration cfg;
     
@@ -129,16 +130,21 @@ abstract public class OntologyGenerator {
         if(templateFile == null){
             return;
         }
-        //Writer out = new OutputStreamWriter(System.out);
+
+        String abstractClassPath = DIR_PATH + CLASS_ENTITY_FILE_NAME +  FILE_EXTENSION;
+        Map<String, Object> data = getAbstractEntityData();
+        try (Writer fileWriter = new FileWriter(new File(abstractClassPath))) {
+            templateFile.process(data, fileWriter);
+        } catch (TemplateException e) {
+            e.printStackTrace();
+        }
 
         for(ClassRepresentation generatedClass: classes){
-            Map<String, Object> data = new HashMap<>();
-            data.put("generatedClass",generatedClass);
+            Map<String, Object> classData = getEntityData(generatedClass);
 
             String filepath = DIR_PATH + generatedClass.getName() + FILE_EXTENSION;
-
             try (Writer fileWriter = new FileWriter(new File(filepath))) {
-                templateFile.process(data, fileWriter);
+                templateFile.process(classData, fileWriter);
             } catch (TemplateException e) {
                 e.printStackTrace();
             }
@@ -146,7 +152,7 @@ abstract public class OntologyGenerator {
     }
 
     public void generateVocabulary() throws IOException {
-        Writer fileWriter = new FileWriter(new File(DIR_PATH + VOCABULARY_FILE_NAME));
+        Writer fileWriter = new FileWriter(new File(DIR_PATH + VOCABULARY_FILE_NAME + FILE_EXTENSION));
 
         Template templateFile = getTemplate(TEMPLATE_TYPE.VOCABULARY);
 
@@ -174,14 +180,22 @@ abstract public class OntologyGenerator {
 
 
         //create serialization interface
-        Writer fileWriter = new FileWriter(new File(DIR_PATH + SERIALIZATION_MODEL_FILE_NAME));
-
+        Map<String, Object> data = getInterfaceSerializationData();
+        try (Writer fileWriter = new FileWriter(new File(DIR_PATH + SERIALIZATION_MODEL_FILE_NAME + FILE_EXTENSION))) {
+            templateFile.process(data, fileWriter);
+        } catch (TemplateException e) {
+            e.printStackTrace();
+        }
 
         // create serialization classes
 
         for (ClassRepresentation classRep : classes){
-            fileWriter = new FileWriter(new File(DIR_PATH +  classRep.getName() + SERIALIZATION_FILE_NAME_SUFFIX));
-
+            Map<String, Object> classData = getSerializationData(classRep);
+            try (Writer fileWriter = new FileWriter(new File(DIR_PATH +  classRep.getName() + SERIALIZATION_FILE_NAME_SUFFIX + FILE_EXTENSION))) {
+                templateFile.process(classData, fileWriter);
+            } catch (TemplateException e) {
+                e.printStackTrace();
+            }
 
         }
 
@@ -192,12 +206,12 @@ abstract public class OntologyGenerator {
     public void generateFactory() throws IOException {
         String fileName;
         if(ontology != null){
-            fileName = ontology.getName() + FACTORY_FILE_NAME_SUFFIX;
+            fileName = ontology.getName() + FACTORY_FILE_NAME_SUFFIX + FILE_EXTENSION;
         }else{
-            fileName = DEFAULT_FACTORY_FILE_NAME;
+            fileName = DEFAULT_FACTORY_FILE_NAME + FILE_EXTENSION;
         }
 
-        Writer fileWriter = new FileWriter(new File(fileName));
+        Writer fileWriter = new FileWriter(new File(DIR_PATH + fileName));
 
 
 
@@ -205,8 +219,15 @@ abstract public class OntologyGenerator {
 
     abstract public Map<String, Object> getVocabularyData(List<VocabularyConstant> properties);
 
+    abstract public Map<String, Object> getEntityData(ClassRepresentation classRep);
+
+    abstract public Map<String, Object> getAbstractEntityData();
+
+    abstract public Map<String, Object> getSerializationData(ClassRepresentation classRep);
+
+    abstract public Map<String, Object> getInterfaceSerializationData();
+
     abstract public  List<VocabularyConstant> createVocabularyConstants();
 
-    abstract public String getVocabularyFileName();
 
 }

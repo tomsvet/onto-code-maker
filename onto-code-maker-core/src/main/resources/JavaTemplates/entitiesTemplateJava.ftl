@@ -5,20 +5,19 @@ import org.eclipse.rdf4j.model.IRI;
     import ${item};
 </#list>
 
-<#if isAbstract ==true>abstract</#if> public class ${className} <#if isExtended ==true>extends </#if> {
+<#if isAbstract ==true>abstract </#if>public class ${className}<#if isExtended ==true>extends ${extendClass}</#if> {
 
 <#if isAbstract ==true>
     private IRI iri;
 <#else>
     public static IRI CLASS_IRI = Vocabulary.${vocabularyClassConstant};
 </#if>
-
 <#list properties as property>
+
     /**
     *
     **/
-    <#if property.isPrivate ==true>private<#else>public</#if> ${property.type} ${property.name} <#if property.isValue() == true> = ${property.getValue()} </#if>;
-
+   <#if property.isPrivate ==true>private<#else>public</#if> ${property.type} ${property.name} <#if property.isValue() == true> = ${property.getValue()} </#if>;
 </#list>
 
     public ${className}(IRI iri){
@@ -34,15 +33,13 @@ import org.eclipse.rdf4j.model.IRI;
             return iri;
     }
 
-     abstract public IRI getClassIRI();
+    abstract public IRI getClassIRI();
 <#else>
     @Override
     public IRI getClassIRI() {
         return CLASS_IRI;
     }
 </#if>
-
-
 
 <#list properties as property>
     public void set${property.name}?cap_first(${property.type} ${property.name}){
@@ -53,3 +50,5 @@ import org.eclipse.rdf4j.model.IRI;
             return ${property.name};
     }
 </#list>
+
+}

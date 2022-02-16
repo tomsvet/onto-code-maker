@@ -9,7 +9,7 @@ public class ${className} extends {
     /**
     *
     **/
-    <#if property.isPrivate ==true>private<#else>public</#if> ${property.type} ${property.name} <#if property.isValue() == true> = ${property.getValue()} </#if>;
+    <#if property.isPrivate ==true>private<#else>public</#if> ${property.type} ${property.name} <#if property.isValue() == true> = ${property.getValue()}</#if>;
 
 </#list>
 }

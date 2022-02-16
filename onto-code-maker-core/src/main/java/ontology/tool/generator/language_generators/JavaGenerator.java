@@ -31,11 +31,6 @@ public class JavaGenerator extends OntologyGenerator {
         return VOCABULARY_FILE_NAME;
     }
 
-    public String getSerializationFileName(String className){
-        return "ONT_" + className + ".java";
-    }
-
-
     public Map<String, Object> getVocabularyData(List<VocabularyConstant> properties){
         Map<String, Object> data = new HashMap<>();
 
@@ -62,12 +57,62 @@ public class JavaGenerator extends OntologyGenerator {
         //classes constants
         for (ClassRepresentation generatedClass : classes){
             VocabularyConstant prop = new VocabularyConstant();
-            prop.setName( generatedClass.getConstantName().toUpperCase());
+            prop.setName( generatedClass.getConstantName());
             prop.setType("IRI");
             prop.setValue("Values.iri(\" " +generatedClass.getIRI()+ " \")");
             properties.add(prop);
         }
         return properties;
     }
+
+
+    public Map<String, Object> getEntityData(ClassRepresentation classRep){
+        Map<String, Object> data = new HashMap<>();
+        data.put("className",classRep.getName());
+        data.put("isAbstract",false);
+        data.put("isExtended",true);
+        data.put("extendClass",CLASS_ENTITY_FILE_NAME);
+        data.put("vocabularyClassConstant",classRep.getConstantName());
+        data.put("properties",new ArrayList<>()); //classRep.
+        data.put("package","");
+        data.put("imports",new ArrayList<>());
+        return data;
+    }
+
+    public Map<String, Object> getAbstractEntityData(){
+        Map<String, Object> data = new HashMap<>();
+        data.put("className",CLASS_ENTITY_FILE_NAME);
+        data.put("isAbstract",true);
+        data.put("isExtended",false);
+        data.put("properties",new ArrayList<>());
+        data.put("package","");
+        data.put("imports",new ArrayList<>());
+        return data;
+    }
+
+    public Map<String, Object> getSerializationData(ClassRepresentation classRep){
+        Map<String, Object> data = new HashMap<>();
+        data.put("classFileName",classRep.getName() + SERIALIZATION_FILE_NAME_SUFFIX);
+        data.put("className",classRep.getName());
+        data.put("isInterface",false);
+        data.put("serializationModelName",SERIALIZATION_MODEL_FILE_NAME);
+        //data.put("properties",new ArrayList<>());
+        data.put("package","");
+       // data.put("imports",new ArrayList<>());
+        return data;
+    }
+
+    public Map<String, Object> getInterfaceSerializationData(){
+        Map<String, Object> data = new HashMap<>();
+        data.put("classFileName",SERIALIZATION_MODEL_FILE_NAME);
+        data.put("isInterface",true);
+        data.put("package","");
+        //data.put("imports",new ArrayList<>());
+        return data;
+    }
+
+
+
+
 
 }
