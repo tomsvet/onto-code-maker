@@ -4,6 +4,9 @@ import ontology.tool.generator.OntologyGenerator;
 import ontology.tool.generator.VocabularyConstant;
 import ontology.tool.generator.representations.ClassRepresentation;
 import ontology.tool.generator.representations.EntityRepresentation;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+import org.eclipse.rdf4j.model.vocabulary.XSD;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +16,9 @@ import java.util.Map;
 public class JavaGenerator extends OntologyGenerator {
 
     public static final String GENERATOR_LANGUAGE_JAVA = "java";
-    public static final String VOCABULARY_FILE_NAME = "Vocabulary.java";
+    //public static final String VOCABULARY_FILE_NAME = "Vocabulary.java";
+    public static HashMap<IRI, String> dataTypes = new HashMap<IRI, String>();
+
 
     static{
         VOCABULARY_TEMPLATE_NAME = "/JavaTemplates/vocabularyTemplateJava.ftl";
@@ -21,6 +26,25 @@ public class JavaGenerator extends OntologyGenerator {
         SERIALIZATION_TEMPLATE_NAME = "/JavaTemplates/serializationTemplateJava.ftl";
         FACTORY_TEMPLATE_NAME = "/JavaTemplates/factoryTemplateJava.ftl";
         FILE_EXTENSION = ".java";
+
+        dataTypes.put(XSD.ANYURI,"java.net.URL");
+        dataTypes.put(XSD.BOOLEAN,"boolean");
+        dataTypes.put(XSD.BYTE,"byte");
+        dataTypes.put(XSD.DATE,"java.util.Date");
+        dataTypes.put(XSD.DATETIME,"java.util.Date");
+        dataTypes.put(XSD.DATETIMESTAMP,"java.sql.Timestamp");
+        dataTypes.put(XSD.DAYTIMEDURATION,"java.time.Duration");
+        dataTypes.put(XSD.DECIMAL,"float");
+        dataTypes.put(XSD.DOUBLE,"double");
+        dataTypes.put(XSD.DURATION,"java.time.Duration");
+        dataTypes.put(XSD.FLOAT,"float");
+        dataTypes.put(XSD.INT,"int");
+        dataTypes.put(XSD.INTEGER,"java.lang.Integer");
+        dataTypes.put(XSD.LONG,"long");
+        dataTypes.put(XSD.SHORT,"short");
+        dataTypes.put(XSD.TIME,"java.time.LocalTime");
+        dataTypes.put(XSD.NON_NEGATIVE_INTEGER,"int");
+        //dataTypes.put(XSD.UNSIGNED_INT,"long");
     }
     public JavaGenerator() {
         super();
@@ -33,7 +57,7 @@ public class JavaGenerator extends OntologyGenerator {
 
     public Map<String, Object> getVocabularyData(List<VocabularyConstant> properties){
         Map<String, Object> data = new HashMap<>();
-
+        java.time.LocalTime a;
         data.put("className","Vocabulary");
         data.put("properties",properties);
         data.put("package","");
@@ -50,7 +74,7 @@ public class JavaGenerator extends OntologyGenerator {
             VocabularyConstant ontCon = new VocabularyConstant();
             ontCon.setName(ontology.getName() + "_ONTOLOGY_IRI");
             ontCon.setType("IRI");
-            ontCon.setValue("Values.iri(\" " + ontology.getIRI() + " \")");
+            ontCon.setValue("Values.iri(\" " + ontology.getStringIRI() + " \")");
             properties.add(ontCon);
         }
 
@@ -59,7 +83,7 @@ public class JavaGenerator extends OntologyGenerator {
             VocabularyConstant prop = new VocabularyConstant();
             prop.setName( generatedClass.getConstantName());
             prop.setType("IRI");
-            prop.setValue("Values.iri(\" " +generatedClass.getIRI()+ " \")");
+            prop.setValue("Values.iri(\" " +generatedClass.getStringIRI()+ " \")");
             properties.add(prop);
         }
         return properties;
@@ -69,22 +93,67 @@ public class JavaGenerator extends OntologyGenerator {
     public Map<String, Object> getEntityData(ClassRepresentation classRep){
         Map<String, Object> data = new HashMap<>();
         data.put("className",classRep.getName());
-        data.put("isAbstract",false);
+        data.put("classRep",classRep);
+        //data.put("isAbstract",false);
+        data.put("isInterface",false);
         data.put("isExtended",true);
-        data.put("extendClass",CLASS_ENTITY_FILE_NAME);
-        data.put("vocabularyClassConstant",classRep.getConstantName());
+        if(classRep.isHasInterface()){
+            data.put("extendClass",classRep.getName() + ENTITY_INTERFACE_SUFFIX);
+            data.put("extendedInterface", true);
+        }else {
+            if (classRep.hasOneSuperClass()) {
+                data.put("extendClass", classRep.getSuperClasses().get(0).getName());
+                data.put("extendedInterface", false);
+            } else if (!classRep.hasSuperClass()) {
+                data.put("extendClass", CLASS_ENTITY_FILE_NAME);
+                data.put("extendedInterface", true);
+            } else {
+                data.put("extendedInterface", true);
+            }
+        }
+
+        //data.put("vocabularyClassConstant",classRep.getConstantName());
+        data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
         data.put("properties",new ArrayList<>()); //classRep.
         data.put("package","");
         data.put("imports",new ArrayList<>());
         return data;
     }
 
-    public Map<String, Object> getAbstractEntityData(){
+    public Map<String, Object> getInterfaceEntityData(ClassRepresentation classRep){
+        Map<String, Object> data = new HashMap<>();
+        data.put("className",classRep.getName() + ENTITY_INTERFACE_SUFFIX);
+        //data.put("isAbstract",true);
+        data.put("isInterface",true);
+        data.put("isExtended",true);
+        /*if(classRep.isHasInterface()){
+            data.put("extendClass",classRep.getName() + ENTITY_INTERFACE_SUFFIX);
+        }else{*/
+           // data.put("extendClass",CLASS_ENTITY_FILE_NAME);
+        //}
+        if (classRep.hasSuperClass()) {
+            //data.put("extendClasses", classRep.getSuperClasses());
+           // data.put("extendedInterface", true);
+            data.put("classRep",classRep);
+        } else {
+           // data.put("extendedInterface", true);
+            data.put("extendClass",CLASS_ENTITY_FILE_NAME);
+        }
+        data.put("mainInterface",false);
+        //data.put("properties",new ArrayList<>());
+        data.put("package","");
+        data.put("imports",new ArrayList<>());
+        return data;
+    }
+
+    public Map<String, Object> getInterfaceEntityData(){
         Map<String, Object> data = new HashMap<>();
         data.put("className",CLASS_ENTITY_FILE_NAME);
-        data.put("isAbstract",true);
+       // data.put("isAbstract",true);
+        data.put("isInterface",true);
+        data.put("mainInterface",false);
         data.put("isExtended",false);
-        data.put("properties",new ArrayList<>());
+        //data.put("properties",new ArrayList<>());
         data.put("package","");
         data.put("imports",new ArrayList<>());
         return data;
@@ -111,6 +180,14 @@ public class JavaGenerator extends OntologyGenerator {
         return data;
     }
 
+    public Map<String, Object> getFactoryData(String fileName,List<ClassRepresentation> classes){
+        Map<String, Object> data = new HashMap<>();
+        data.put("classFileName",fileName);
+        data.put("serializationClasses",classes);
+        data.put("package","");
+        data.put("entityClassName",CLASS_ENTITY_FILE_NAME);
+        return data;
+    }
 
 
 

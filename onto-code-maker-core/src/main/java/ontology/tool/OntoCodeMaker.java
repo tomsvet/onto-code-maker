@@ -36,8 +36,9 @@ public class OntoCodeMaker {
             modelOfTriples = ontoParser.parseOntology(inputFiles,formatName);
 
             OntologyMapper mapper = new OntologyMapper(modelOfTriples);
-            EntityRepresentation ontology = mapper.getOWLOntologies();
-            List<ClassRepresentation> classes = mapper.mapClasses();
+            EntityRepresentation ontology = mapper.getOWLOntology();
+            mapper.mapping();
+            List<ClassRepresentation> classes = mapper.getMappedClasses();
 
             OntologyGeneratorFactory factory = new OntologyGeneratorFactory();
             OntologyGenerator generator = factory.getOntologyGenerator("java");
