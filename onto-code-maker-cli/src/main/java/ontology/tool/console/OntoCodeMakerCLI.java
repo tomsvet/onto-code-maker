@@ -10,13 +10,11 @@ public class OntoCodeMakerCLI {
         System.out.println("Welcome to  OntoCodeMaker");
 
         CLIOptionsParser parser = new CLIOptionsParser();
-        parser.parseCLI(args);
-
-        if(parser.getHelp()){
+        if(!parser.parseCLI(args)){
             return;
         }
 
-        if(parser.getInputFiles().length == 0){
+        if(parser.getHelp()){
             return;
         }
 
@@ -24,6 +22,7 @@ public class OntoCodeMakerCLI {
                                 .format(parser.getFormat())
                                 .language(parser.getLanguage())
                                 .outputDir(parser.getDestination())
+                                .packageName(parser.getPackageName())
                                 .build();
         maker.generateCodeFromOntology();
 
