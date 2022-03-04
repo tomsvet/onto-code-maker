@@ -5,9 +5,11 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import ontology.tool.generator.representations.ClassRepresentation;
 import ontology.tool.generator.representations.EntityRepresentation;
+import ontology.tool.generator.representations.PropertyRepresentation;
 import ontology.tool.parser.OntologyParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
 
 import java.io.*;
 import java.util.*;
@@ -23,7 +25,7 @@ abstract public class OntologyGenerator {
 
     private static final Logger logger = LogManager.getLogger(OntologyGenerator.class);
 
-    public final String  DEFAULT_OUTPUT_DIR = "/out/output";
+    public final String  DEFAULT_OUTPUT_DIR = System.getProperty("user.dir");
     public final String DIR_PATH = "out/";
 
     protected static String VOCABULARY_TEMPLATE_NAME;
@@ -41,11 +43,17 @@ abstract public class OntologyGenerator {
     protected static String CLASS_ENTITY_FILE_NAME = "OntoEntity";
     //protected static String CLASS_ENTITY_FILE_NAME = CLASS_ENTITY_NAME ;
     protected static String ENTITY_INTERFACE_SUFFIX = "Int";
+    public static HashMap<IRI, String> dataTypes = new HashMap<>();
 
     Configuration cfg;
     
     protected EntityRepresentation ontology = null;
     protected List<ClassRepresentation> classes = new ArrayList<>();
+
+    protected String outputDir = DEFAULT_OUTPUT_DIR;
+    protected String packageName = "";
+
+
 
     public OntologyGenerator(){
         //Properties properties = System.getProperties();
@@ -56,6 +64,22 @@ abstract public class OntologyGenerator {
         //cfg.setClassForTemplateLoading(FreeMarkerConsoleEx.class, "/");
         cfg.setClassForTemplateLoading(OntologyGenerator.class, "/");
         cfg.setDefaultEncoding("UTF-8");
+    }
+
+    public void setOutputDir(String outputDir){
+        this.outputDir = outputDir;
+    }
+
+    public void setPackageName(String packageName){
+        this.packageName = packageName;
+    }
+
+    public String getOutputDir(){
+        return outputDir;
+    }
+
+    public String getPackageName(){
+        return packageName;
     }
 
     public void addClasses( List<ClassRepresentation> classes){
@@ -97,6 +121,8 @@ abstract public class OntologyGenerator {
     public void generateCode() {
         createOutputDir();
 
+        generateStringVersionOfTypes();
+
         try {
             generateVocabulary();
         } catch (IOException e) {
@@ -120,8 +146,33 @@ abstract public class OntologyGenerator {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    public void generateStringVersionOfTypes(){
+        for(ClassRepresentation classRep:classes){
+            for(PropertyRepresentation property :classRep.getProperties()){
+                if(property.getType().equals(PropertyRepresentation.PROPERTY_TYPE.DATATYPE)){
+                    if(property.getRangeIRI() != null){
+                        String dataType = dataTypes.get(property.getRangeIRI());
+                        if(dataType != null && !dataType.isEmpty()){
+                            property.setRangeDatatype(dataType);
+                        }else{
+                            property.setRangeDatatype("String");
+                        }
+                    }
+                }else if(property.getType().equals(PropertyRepresentation.PROPERTY_TYPE.OBJECT)){
+                    if(property.getRangeClass() != null && property.getRangeIRI() != null){
+                        if(property.getRangeClass().isHasInterface()){
+                            property.setRangeDatatype(property.getRangeIRI().getLocalName() + ENTITY_INTERFACE_SUFFIX);
+                        }else{
+                            property.setRangeDatatype(property.getRangeIRI().getLocalName());
+                        }
 
+                    }
+                }
+
+            }
+        }
     }
 
 
@@ -141,9 +192,38 @@ abstract public class OntologyGenerator {
         }
 
         for(ClassRepresentation generatedClass: classes){
+
+            if(generatedClass.getEquivalentClasses().size() >0 && generatedClass.getEquivalentInterfaceName()== null){
+                String equivalentInterfaceName = generatedClass.getName();
+                for(ClassRepresentation eqClassRep: generatedClass.getEquivalentClasses()){
+                    equivalentInterfaceName = equivalentInterfaceName.concat(eqClassRep.getName());
+                    for(ClassRepresentation superClass: eqClassRep.getSuperClasses()){
+                        if(!generatedClass.getSuperClasses().contains(superClass)){
+                            generatedClass.addSuperClasses(superClass);
+                        }
+                    }
+                }
+
+                generatedClass.setEquivalentInterfaceName(equivalentInterfaceName);
+                for(ClassRepresentation eqClassRep: generatedClass.getEquivalentClasses()){
+                    eqClassRep.setEquivalentInterfaceName(equivalentInterfaceName);
+                }
+
+                String equivalentInterfaceClassPath = DIR_PATH + equivalentInterfaceName + ENTITY_INTERFACE_SUFFIX +  FILE_EXTENSION;
+
+                Map<String, Object> dataInt = getEquivalentInterfaceEntityData(equivalentInterfaceName,generatedClass);
+                try (Writer fileWriter = new FileWriter(new File(equivalentInterfaceClassPath))) {
+                    templateFile.process(dataInt, fileWriter);
+                } catch (TemplateException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+
             if(generatedClass.hasSubClass()){
                 Optional<ClassRepresentation> pom = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 1).findFirst();
-                generatedClass.setHasInterface(pom.isPresent() ? true :false);
+                generatedClass.setHasInterface(pom.isPresent());
             }
 
             if(generatedClass.isHasInterface()){
@@ -253,6 +333,8 @@ abstract public class OntologyGenerator {
     abstract public Map<String, Object> getFactoryData(String fileName,List<ClassRepresentation> classes);
 
     abstract public  List<VocabularyConstant> createVocabularyConstants();
+
+    abstract public Map<String, Object> getEquivalentInterfaceEntityData(String interfaceName,ClassRepresentation classRep);
 
 
 }

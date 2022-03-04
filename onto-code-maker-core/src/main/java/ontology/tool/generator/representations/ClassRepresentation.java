@@ -15,6 +15,9 @@ public class ClassRepresentation extends EntityRepresentation{
     private List<PropertyRepresentation> properties = new ArrayList<>();
 
     private boolean hasInterface;
+    private boolean hasEquivalentClassInterface;
+
+    private String equivalentInterfaceName;
 
     public ClassRepresentation(String namespace,String name){
         super(namespace,name);
@@ -75,5 +78,21 @@ public class ClassRepresentation extends EntityRepresentation{
 
     public List<ClassRepresentation> getEquivalentClasses(){
         return equivalentClasses;
+    }
+
+    public boolean isHasEquivalentClassInterface() {
+        return hasEquivalentClassInterface;
+    }
+
+    public void setHasEquivalentClassInterface(boolean hasEquivalentClassInterface) {
+        this.hasEquivalentClassInterface = hasEquivalentClassInterface;
+    }
+
+    public void setEquivalentInterfaceName(String equivalentInterfaceName) {
+        this.equivalentInterfaceName = equivalentInterfaceName;
+    }
+
+    public String getEquivalentInterfaceName() {
+        return equivalentInterfaceName;
     }
 }

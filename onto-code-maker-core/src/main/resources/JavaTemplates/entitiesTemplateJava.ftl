@@ -35,7 +35,7 @@ public<#if isInterface == true > interface<#else> class</#if> ${className}<#if i
     /**
     *
     **/
-   <#if property.isPrivate ==true>private<#else>public</#if> ${property.type} ${property.name} <#if property.isValue() == true> = ${property.getValue()} </#if>;
+    <#if property.isPrivate ==true>private<#else>public</#if> <#if property.isFunctional() == true>${property.rangeDatatype}<#else>List<${property.rangeDatatype}></#if> ${property.name} <#if property.isValue() == true> = ${property.getValue()} </#if>;
 </#list>
 
     public ${className}(IRI iri){
@@ -67,13 +67,21 @@ public<#if isInterface == true > interface<#else> class</#if> ${className}<#if i
 
 <#if isInterface ==false>
 <#list classRep.properties as property>
-    public void set${property.name?cap_first}(${property.type} ${property.name}){
+    <#if property.isFunctional() == true>
+     public void set${property.name?cap_first}(${property.rangeDatatype} ${property.name}){
         this.${property.name} = ${property.name};
+     }
+    <#else>
+    public void add${property.name?cap_first}(${property.rangeDatatype} ${property.name}){
+        if (this.${property.name} == null) this.${property.name} = new ArrayList<>();
+        this.${property.name}.add(${property.name});
     }
+    </#if>
 
-    public ${property.type} get${property.name?cap_first}(){
+    public <#if property.isFunctional() == true>${property.rangeDatatype}<#else>List<${property.rangeDatatype}></#if> get${property.name?cap_first}(){
         return ${property.name};
     }
+
 </#list>
 </#if>
 }

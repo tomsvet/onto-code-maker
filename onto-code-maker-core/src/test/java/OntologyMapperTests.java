@@ -22,13 +22,14 @@ public class OntologyMapperTests {
     String ex = "http://example.org/";
     Model model = new TreeModel();
     IRI classPerson = Values.iri(ex, "Person");
+    IRI classHuman = Values.iri(ex, "Human");
     IRI classMen = Values.iri(ex, "Men");
     IRI classWoman = Values.iri(ex, "Woman");
     IRI hasAgeProperty = Values.iri(ex,"hasAge");
 
     @BeforeEach
     void setUp() {
-
+        model.add(classHuman, RDF.TYPE, RDFS.CLASS);
         model.add(classPerson, RDF.TYPE, RDFS.CLASS);
         model.add(classMen, RDF.TYPE, OWL.CLASS);
         model.add(classWoman, RDF.TYPE, OWL.CLASS);
@@ -38,6 +39,7 @@ public class OntologyMapperTests {
         model.add(classMen, RDFS.COMMENT,Values.literal("This is men"));
         model.add(classMen,RDFS.SUBCLASSOF,classPerson);
         model.add(classWoman,RDFS.SUBCLASSOF,classPerson);
+        model.add(classPerson,OWL.EQUIVALENTCLASS,classHuman);
         //model.add(hasAgeProperty,RDF.TYPE,OWL.DATATYPEPROPERTY);
     }
 
@@ -168,11 +170,31 @@ public class OntologyMapperTests {
     }
 
     @Test
+    @Order(11)
+    void testExistStatementWithIRI(){
+
+    }
+
+    @Test
+    @Order(12)
+    void getFirstIRISubject(){
+
+    }
+
+
+    @Test
+    @Order(13)
+    void getFirstIRISubjectAll(){
+
+    }
+
+
+    @Test
     @Order(20)
     @DisplayName("Simple getClasses should work")
     void testGetClasses() {
         OntologyMapper mapper = new OntologyMapper(model);
-        assertEquals(3,  mapper.getClasses().size(),
+        assertEquals(4,  mapper.getClasses().size(),
                 "Method getClasses doesn't work.");
     }
 
@@ -183,12 +205,16 @@ public class OntologyMapperTests {
         OntologyMapper mapper = new OntologyMapper(model);
         mapper.mapClasses();
         List<ClassRepresentation> mappedClasses = mapper.getMappedClasses();
-        assertEquals(3, mappedClasses.size(),
+        assertEquals(4, mappedClasses.size(),
                 "Method getClasses doesn't work.");
     }
 
-    private ClassRepresentation getTestedClass(OntologyMapper mapper,IRI classIRI){
+    private ClassRepresentation mapAndGetTestedClass(OntologyMapper mapper,IRI classIRI){
         mapper.mapClasses();
+        return getTestedClass(mapper,classIRI);
+    }
+
+    private ClassRepresentation getTestedClass(OntologyMapper mapper,IRI classIRI){
         ClassRepresentation testedClass= null;
         List<ClassRepresentation> mappedClasses = mapper.getMappedClasses();
         for(ClassRepresentation cl: mappedClasses){
@@ -205,7 +231,7 @@ public class OntologyMapperTests {
     @DisplayName("Simple test for mapComments method, should work")
     void testMapComments() {
         OntologyMapper mapper = new OntologyMapper(model);
-        ClassRepresentation testedClass = getTestedClass(mapper,classMen);
+        ClassRepresentation testedClass = mapAndGetTestedClass(mapper,classMen);
         mapper.mapComments(testedClass);
         assertEquals(1,testedClass.getComments().size(),
                 "Method mapComments doesn't work.");
@@ -216,7 +242,7 @@ public class OntologyMapperTests {
     @DisplayName("Simple test for mapLabels method, should work")
     void testMapLabels() {
         OntologyMapper mapper = new OntologyMapper(model);
-        ClassRepresentation testedClass = getTestedClass(mapper,classMen);
+        ClassRepresentation testedClass = mapAndGetTestedClass(mapper,classMen);
         mapper.mapLabels(testedClass);
         assertEquals(1,testedClass.getLabels().size(),
                 "Method mapLabels doesn't work.");
@@ -227,7 +253,7 @@ public class OntologyMapperTests {
     @DisplayName("Simple test for mapCreator method, should work")
     void testMapCreator() {
         OntologyMapper mapper = new OntologyMapper(model);
-        ClassRepresentation testedClass = getTestedClass(mapper,classMen);
+        ClassRepresentation testedClass = mapAndGetTestedClass(mapper,classMen);
         mapper.mapCreator(testedClass);
         assertFalse( testedClass.getCreator().isEmpty(),
                 "Method mapCreator doesn't work.");
@@ -240,7 +266,7 @@ public class OntologyMapperTests {
     @DisplayName("Simple test for mapClassHierarchy method, should work")
     void testMapClassHierarchy(){
         OntologyMapper mapper = new OntologyMapper(model);
-        ClassRepresentation testedClass = getTestedClass(mapper,classMen);
+        ClassRepresentation testedClass = mapAndGetTestedClass(mapper,classMen);
         mapper.mapClassHierarchy(testedClass);
         assertEquals(1,testedClass.getSuperClasses().size(),
                 "Number of super classes doesn't equal.");
@@ -250,14 +276,49 @@ public class OntologyMapperTests {
 
     @Test
     @Order(26)
-    @Disabled
     @DisplayName("Simple test for mapEquivalentClasses method, should work")
     void testMapEquivalentClasses(){
+        OntologyMapper mapper = new OntologyMapper(model);
+        ClassRepresentation testedClass = mapAndGetTestedClass(mapper,classPerson);
+        mapper.mapEquivalentClasses(testedClass);
+        assertEquals(1,testedClass.getEquivalentClasses().size(),
+                "Number of equivalent classes doesn't equal.");
+        assertEquals(testedClass.getEquivalentClasses().get(0).getValueIRI(),classHuman,"Equivalent class is not correct.");
 
+        //test connection from the other side
+        ClassRepresentation testedClass2 = getTestedClass(mapper,classHuman);
+        assertEquals(1,testedClass2.getEquivalentClasses().size(),
+                "2.Number of equivalent classes doesn't equal.");
+        assertEquals(testedClass2.getEquivalentClasses().get(0).getValueIRI(),classPerson,"2. Equivalent class is not correct.");
     }
 
     @Test
     @Order(27)
+    @DisplayName("Test for mapEquivalentClasses method with 3 equivalent classes, should work")
+    void testMapEquivalentClasses2(){
+        IRI classHuman2 = Values.iri(ex, "Human2");
+        model.add(classHuman2,RDF.TYPE,OWL.CLASS);
+        model.add(classHuman2,OWL.EQUIVALENTCLASS,classHuman);
+
+        OntologyMapper mapper = new OntologyMapper(model);
+        mapper.mapClasses();
+        List<ClassRepresentation> mappedClasses = mapper.getMappedClasses();
+        for(ClassRepresentation mappedClass:mappedClasses){
+            mapper.mapEquivalentClasses(mappedClass);
+        }
+        ClassRepresentation testedClass = getTestedClass(mapper,classPerson);
+        assertEquals(2,testedClass.getEquivalentClasses().size(),
+                "ClasPerson: number of equivalent classes doesn't equal.");
+        ClassRepresentation testedClass2 = getTestedClass(mapper,classHuman);
+        assertEquals(2,testedClass2.getEquivalentClasses().size(),
+                "ClassHuman: number of equivalent classes doesn't equal.");
+        ClassRepresentation testedClass3 = getTestedClass(mapper,classHuman2);
+        assertEquals(2,testedClass3.getEquivalentClasses().size(),
+                "ClassHuman2: number of equivalent classes doesn't equal.");
+    }
+
+    @Test
+    @Order(28)
     @Disabled
     @DisplayName("Simple test for mapProperties method, should work")
     void testMapProperties(){

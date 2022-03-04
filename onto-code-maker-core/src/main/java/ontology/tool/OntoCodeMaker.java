@@ -4,6 +4,7 @@ import ontology.tool.generator.OntologyGeneratorFactory;
 import ontology.tool.generator.representations.ClassRepresentation;
 import ontology.tool.generator.OntologyGenerator;
 import ontology.tool.generator.representations.EntityRepresentation;
+import ontology.tool.generator.representations.OntologyRepresentation;
 import ontology.tool.mapper.OntologyMapper;
 import ontology.tool.parser.OntologyParser;
 import org.eclipse.rdf4j.model.Model;
@@ -21,13 +22,19 @@ public class OntoCodeMaker {
     private String formatName;
     private String language;
     private String outputDir;
+    private String packageName;
 
     public  OntoCodeMaker(Builder builder){
         this.inputFiles = builder.inputFiles;
         this.formatName = builder.formatName;
         this.language = builder.language;
         this.outputDir = builder.outputDir;
+        this.packageName = builder.packageName;
 
+    }
+
+    public  OntoCodeMaker(String[] inputFiles) {
+        this.inputFiles = inputFiles;
     }
 
     public void generateCodeFromOntology(){
@@ -36,14 +43,29 @@ public class OntoCodeMaker {
             modelOfTriples = ontoParser.parseOntology(inputFiles,formatName);
 
             OntologyMapper mapper = new OntologyMapper(modelOfTriples);
-            EntityRepresentation ontology = mapper.getOWLOntology();
+            OntologyRepresentation ontology = mapper.getOWLOntology();
+            mapper.mapOntologyInformations(ontology);
             mapper.mapping();
             List<ClassRepresentation> classes = mapper.getMappedClasses();
 
             OntologyGeneratorFactory factory = new OntologyGeneratorFactory();
-            OntologyGenerator generator = factory.getOntologyGenerator("java");
+            if(packageName == null || packageName.isEmpty()){
+                language = "java";
+            }
+            OntologyGenerator generator = factory.getOntologyGenerator(language);
+            if(generator == null){
+                System.err.println("The language " + language + " is not supported. Supported languages are defined in the help message.");
+                return;
+            }
             generator.addClasses(classes);
             generator.setOntology(ontology);
+            if(outputDir!= null && !outputDir.isEmpty()){
+                generator.setOutputDir(outputDir);
+            }
+            if(packageName!= null && !packageName.isEmpty()){
+                generator.setPackageName(packageName);
+            }
+
             generator.generateCode();
             
         } catch (FileNotFoundException e) {
@@ -58,6 +80,7 @@ public class OntoCodeMaker {
         private String formatName;
         private String language;
         private String outputDir;
+        private String packageName;
 
         public Builder(String[] inputFiles) {
             this.inputFiles = inputFiles;
@@ -75,6 +98,11 @@ public class OntoCodeMaker {
 
         public Builder outputDir(String outputDir){
             this.outputDir = outputDir;
+            return this;
+        }
+
+        public Builder packageName(String packageName){
+            this.packageName = packageName;
             return this;
         }
 

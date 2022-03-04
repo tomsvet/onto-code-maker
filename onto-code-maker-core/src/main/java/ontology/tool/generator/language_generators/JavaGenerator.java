@@ -3,9 +3,8 @@ package ontology.tool.generator.language_generators;
 import ontology.tool.generator.OntologyGenerator;
 import ontology.tool.generator.VocabularyConstant;
 import ontology.tool.generator.representations.ClassRepresentation;
-import ontology.tool.generator.representations.EntityRepresentation;
+import ontology.tool.generator.representations.PropertyRepresentation;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 
 import java.util.ArrayList;
@@ -17,7 +16,6 @@ public class JavaGenerator extends OntologyGenerator {
 
     public static final String GENERATOR_LANGUAGE_JAVA = "java";
     //public static final String VOCABULARY_FILE_NAME = "Vocabulary.java";
-    public static HashMap<IRI, String> dataTypes = new HashMap<IRI, String>();
 
 
     static{
@@ -50,14 +48,8 @@ public class JavaGenerator extends OntologyGenerator {
         super();
     }
 
-
-    public String getVocabularyFileName() {
-        return VOCABULARY_FILE_NAME;
-    }
-
     public Map<String, Object> getVocabularyData(List<VocabularyConstant> properties){
         Map<String, Object> data = new HashMap<>();
-        java.time.LocalTime a;
         data.put("className","Vocabulary");
         data.put("properties",properties);
         data.put("package","");
@@ -67,24 +59,30 @@ public class JavaGenerator extends OntologyGenerator {
 
     public  List<VocabularyConstant> createVocabularyConstants(){
 
-        List<VocabularyConstant> properties = new ArrayList<VocabularyConstant>();
+        List<VocabularyConstant> properties = new ArrayList<>();
 
         // ontology constants
         if(ontology != null) {
             VocabularyConstant ontCon = new VocabularyConstant();
-            ontCon.setName(ontology.getName() + "_ONTOLOGY_IRI");
-            ontCon.setType("IRI");
-            ontCon.setValue("Values.iri(\" " + ontology.getStringIRI() + " \")");
+            ontCon.setName(ontology.getName().toUpperCase() + "_ONTOLOGY_IRI");
+            ontCon.setValue( ontology.getStringIRI());
             properties.add(ontCon);
         }
 
         //classes constants
         for (ClassRepresentation generatedClass : classes){
-            VocabularyConstant prop = new VocabularyConstant();
-            prop.setName( generatedClass.getConstantName());
-            prop.setType("IRI");
-            prop.setValue("Values.iri(\" " +generatedClass.getStringIRI()+ " \")");
-            properties.add(prop);
+            VocabularyConstant propC = new VocabularyConstant();
+            propC.setName( generatedClass.getConstantName());
+            propC.setValue(generatedClass.getStringIRI());
+            properties.add(propC);
+
+            for(PropertyRepresentation property: generatedClass.getProperties()){
+                VocabularyConstant propP = new VocabularyConstant();
+                propP.setName( property.getConstantName());
+                propP.setValue(property.getStringIRI());
+                properties.add(propP);
+            }
+
         }
         return properties;
     }
@@ -97,18 +95,24 @@ public class JavaGenerator extends OntologyGenerator {
         //data.put("isAbstract",false);
         data.put("isInterface",false);
         data.put("isExtended",true);
-        if(classRep.isHasInterface()){
-            data.put("extendClass",classRep.getName() + ENTITY_INTERFACE_SUFFIX);
+        if( classRep.getEquivalentInterfaceName() != null){
+            data.put("extendClass", classRep.getEquivalentInterfaceName() + ENTITY_INTERFACE_SUFFIX);
             data.put("extendedInterface", true);
         }else {
-            if (classRep.hasOneSuperClass()) {
-                data.put("extendClass", classRep.getSuperClasses().get(0).getName());
-                data.put("extendedInterface", false);
-            } else if (!classRep.hasSuperClass()) {
-                data.put("extendClass", CLASS_ENTITY_FILE_NAME);
+
+            if (classRep.isHasInterface()) {
+                data.put("extendClass", classRep.getName() + ENTITY_INTERFACE_SUFFIX);
                 data.put("extendedInterface", true);
             } else {
-                data.put("extendedInterface", true);
+                if (classRep.hasOneSuperClass()) {
+                    data.put("extendClass", classRep.getSuperClasses().get(0).getName());
+                    data.put("extendedInterface", false);
+                } else if (!classRep.hasSuperClass()) {
+                    data.put("extendClass", CLASS_ENTITY_FILE_NAME);
+                    data.put("extendedInterface", true);
+                } else {
+                    data.put("extendedInterface", true);
+                }
             }
         }
 
@@ -146,6 +150,26 @@ public class JavaGenerator extends OntologyGenerator {
         return data;
     }
 
+    public Map<String, Object> getEquivalentInterfaceEntityData(String className,ClassRepresentation classRep){
+        Map<String, Object> data = new HashMap<>();
+        data.put("className",className + ENTITY_INTERFACE_SUFFIX);
+        data.put("isInterface",true);
+        data.put("mainInterface",false);
+        data.put("isExtended",true);
+        if (classRep.hasSuperClass()) {
+            //data.put("extendClasses", classRep.getSuperClasses());
+            // data.put("extendedInterface", true);
+            data.put("classRep",classRep);
+        } else {
+            // data.put("extendedInterface", true);
+            data.put("extendClass",CLASS_ENTITY_FILE_NAME);
+        }
+        //data.put("extendClass",CLASS_ENTITY_FILE_NAME);
+        data.put("package","");
+        data.put("imports",new ArrayList<>());
+        return data;
+    }
+
     public Map<String, Object> getInterfaceEntityData(){
         Map<String, Object> data = new HashMap<>();
         data.put("className",CLASS_ENTITY_FILE_NAME);
@@ -162,7 +186,7 @@ public class JavaGenerator extends OntologyGenerator {
     public Map<String, Object> getSerializationData(ClassRepresentation classRep){
         Map<String, Object> data = new HashMap<>();
         data.put("classFileName",classRep.getName() + SERIALIZATION_FILE_NAME_SUFFIX);
-        data.put("className",classRep.getName());
+        data.put("classRep",classRep);
         data.put("isInterface",false);
         data.put("serializationModelName",SERIALIZATION_MODEL_FILE_NAME);
         //data.put("properties",new ArrayList<>());
