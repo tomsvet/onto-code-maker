@@ -52,7 +52,7 @@ public class JavaGenerator extends OntologyGenerator {
         Map<String, Object> data = new HashMap<>();
         data.put("className","Vocabulary");
         data.put("properties",properties);
-        data.put("package","");
+        data.put("package",this.packageName);
         data.put("imports",new ArrayList<>());
         return data;
     }
@@ -119,7 +119,7 @@ public class JavaGenerator extends OntologyGenerator {
         //data.put("vocabularyClassConstant",classRep.getConstantName());
         data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
         data.put("properties",new ArrayList<>()); //classRep.
-        data.put("package","");
+        data.put("package",this.packageName + "." + DIR_NAME_ENTITIES);
         data.put("imports",new ArrayList<>());
         return data;
     }
@@ -145,7 +145,7 @@ public class JavaGenerator extends OntologyGenerator {
         }
         data.put("mainInterface",false);
         //data.put("properties",new ArrayList<>());
-        data.put("package","");
+        data.put("package",this.packageName + "." + DIR_NAME_ENTITIES);
         data.put("imports",new ArrayList<>());
         return data;
     }
@@ -165,7 +165,7 @@ public class JavaGenerator extends OntologyGenerator {
             data.put("extendClass",CLASS_ENTITY_FILE_NAME);
         }
         //data.put("extendClass",CLASS_ENTITY_FILE_NAME);
-        data.put("package","");
+        data.put("package", this.packageName + "." + DIR_NAME_ENTITIES);
         data.put("imports",new ArrayList<>());
         return data;
     }
@@ -178,7 +178,7 @@ public class JavaGenerator extends OntologyGenerator {
         data.put("mainInterface",false);
         data.put("isExtended",false);
         //data.put("properties",new ArrayList<>());
-        data.put("package","");
+        data.put("package",this.getPackageName() + "." + DIR_NAME_ENTITIES);
         data.put("imports",new ArrayList<>());
         return data;
     }
@@ -190,7 +190,7 @@ public class JavaGenerator extends OntologyGenerator {
         data.put("isInterface",false);
         data.put("serializationModelName",SERIALIZATION_MODEL_FILE_NAME);
         //data.put("properties",new ArrayList<>());
-        data.put("package","");
+        data.put("package",this.packageName + "." + DIR_NAME_SERIALIZATION);
        // data.put("imports",new ArrayList<>());
         return data;
     }
@@ -199,8 +199,7 @@ public class JavaGenerator extends OntologyGenerator {
         Map<String, Object> data = new HashMap<>();
         data.put("classFileName",SERIALIZATION_MODEL_FILE_NAME);
         data.put("isInterface",true);
-        data.put("package","");
-        //data.put("imports",new ArrayList<>());
+        data.put("package",this.packageName + "." + DIR_NAME_SERIALIZATION);
         return data;
     }
 
@@ -208,7 +207,7 @@ public class JavaGenerator extends OntologyGenerator {
         Map<String, Object> data = new HashMap<>();
         data.put("classFileName",fileName);
         data.put("serializationClasses",classes);
-        data.put("package","");
+        data.put("package",this.packageName);
         data.put("entityClassName",CLASS_ENTITY_FILE_NAME);
         return data;
     }

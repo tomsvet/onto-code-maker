@@ -18,8 +18,6 @@ public class OntologyParser {
 
     private static final Logger logger = LogManager.getLogger(OntologyParser.class);
 
-    //maybe TODO URL files
-
     public Model parseOntology(String[] inputFiles,String formatName) throws FileNotFoundException {
         
         logger.info("Starting parser");
@@ -27,6 +25,7 @@ public class OntologyParser {
         Model model = null;
 
         for(String filename: inputFiles){
+
             Path file = Paths.get(filename);
             if (!Files.exists(file)){
                 throw new FileNotFoundException(filename);
@@ -52,19 +51,14 @@ public class OntologyParser {
                 }else{
                     model.addAll(newModel);
                 }
+                logger.info("File " + filename + " is loaded in the model.");
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            logger.info("File " + filename + " is loaded in the model.");
-
         }
 
-        if(model == null){
-            return null;
-        }
-
+        //todo this is for remove
         for (Statement statement: model) {
             System.out.println(statement);
         }

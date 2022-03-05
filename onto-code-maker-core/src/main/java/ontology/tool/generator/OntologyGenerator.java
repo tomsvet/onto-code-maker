@@ -26,7 +26,8 @@ abstract public class OntologyGenerator {
     private static final Logger logger = LogManager.getLogger(OntologyGenerator.class);
 
     public final String  DEFAULT_OUTPUT_DIR = System.getProperty("user.dir");
-    public final String DIR_PATH = "out/";
+    public final String DIR_NAME_ENTITIES = "entities";
+    public final String DIR_NAME_SERIALIZATION = "serialization";
 
     protected static String VOCABULARY_TEMPLATE_NAME;
     protected static String CLASS_TEMPLATE_NAME;
@@ -50,24 +51,28 @@ abstract public class OntologyGenerator {
     protected EntityRepresentation ontology = null;
     protected List<ClassRepresentation> classes = new ArrayList<>();
 
-    protected String outputDir = DEFAULT_OUTPUT_DIR;
+    protected String outputDir = DEFAULT_OUTPUT_DIR + "/";
     protected String packageName = "";
 
 
 
     public OntologyGenerator(){
-        //Properties properties = System.getProperties();
-        // Java 8
-        //properties.forEach((k, v) -> System.out.println(k + ":" + v));
-        //String a = System.getProperty("freemarker.version");
         cfg = new Configuration(Configuration.VERSION_2_3_31);
-        //cfg.setClassForTemplateLoading(FreeMarkerConsoleEx.class, "/");
         cfg.setClassForTemplateLoading(OntologyGenerator.class, "/");
         cfg.setDefaultEncoding("UTF-8");
     }
 
-    public void setOutputDir(String outputDir){
-        this.outputDir = outputDir;
+    public void setOutputDir(String pathName){
+        File outputDir = new File(pathName);
+        if (!outputDir.exists()) {
+            this.outputDir += pathName;
+        }else{
+            this.outputDir = pathName;
+        }
+
+        if (!this.outputDir.endsWith("/")) {
+            this.outputDir += "/";
+        }
     }
 
     public void setPackageName(String packageName){
@@ -109,17 +114,17 @@ abstract public class OntologyGenerator {
         return template;
     }
 
-    private void createOutputDir(){
-        File outputDir = new File(DEFAULT_OUTPUT_DIR);
+    private void createDir(String pathName){
+        File outputDir = new File(pathName);
         if (!outputDir.exists()){
             if( ! outputDir.mkdirs()){
-                logger.error("Cannot create destination directory.");
+                logger.error("Cannot create destination directory. " + pathName);
             }
         }
     }
 
     public void generateCode() {
-        createOutputDir();
+        createDir(this.outputDir);
 
         generateStringVersionOfTypes();
 
@@ -183,7 +188,11 @@ abstract public class OntologyGenerator {
             return;
         }
 
-        String interfaceClassPath = DIR_PATH + CLASS_ENTITY_FILE_NAME +  FILE_EXTENSION;
+        //create serializationFile if is not exist
+        String entitiesOutputFile = this.outputDir + DIR_NAME_ENTITIES +"/";
+        createDir(entitiesOutputFile);
+
+        String interfaceClassPath = entitiesOutputFile + CLASS_ENTITY_FILE_NAME +  FILE_EXTENSION;
         Map<String, Object> data = getInterfaceEntityData();
         try (Writer fileWriter = new FileWriter(new File(interfaceClassPath))) {
             templateFile.process(data, fileWriter);
@@ -209,7 +218,7 @@ abstract public class OntologyGenerator {
                     eqClassRep.setEquivalentInterfaceName(equivalentInterfaceName);
                 }
 
-                String equivalentInterfaceClassPath = DIR_PATH + equivalentInterfaceName + ENTITY_INTERFACE_SUFFIX +  FILE_EXTENSION;
+                String equivalentInterfaceClassPath = entitiesOutputFile + equivalentInterfaceName + ENTITY_INTERFACE_SUFFIX +  FILE_EXTENSION;
 
                 Map<String, Object> dataInt = getEquivalentInterfaceEntityData(equivalentInterfaceName,generatedClass);
                 try (Writer fileWriter = new FileWriter(new File(equivalentInterfaceClassPath))) {
@@ -227,7 +236,7 @@ abstract public class OntologyGenerator {
             }
 
             if(generatedClass.isHasInterface()){
-               String entitiesInterfaceClassPath = DIR_PATH + generatedClass.getName() + ENTITY_INTERFACE_SUFFIX +  FILE_EXTENSION;
+               String entitiesInterfaceClassPath = entitiesOutputFile + generatedClass.getName() + ENTITY_INTERFACE_SUFFIX +  FILE_EXTENSION;
                 Map<String, Object> dataInt = getInterfaceEntityData(generatedClass);
                 try (Writer fileWriter = new FileWriter(new File(entitiesInterfaceClassPath))) {
                     templateFile.process(dataInt, fileWriter);
@@ -238,7 +247,7 @@ abstract public class OntologyGenerator {
 
             Map<String, Object> classData = getEntityData(generatedClass);
 
-            String filepath = DIR_PATH + generatedClass.getName() + FILE_EXTENSION;
+            String filepath = entitiesOutputFile + generatedClass.getName() + FILE_EXTENSION;
             try (Writer fileWriter = new FileWriter(new File(filepath))) {
                 templateFile.process(classData, fileWriter);
             } catch (TemplateException e) {
@@ -248,7 +257,7 @@ abstract public class OntologyGenerator {
     }
 
     public void generateVocabulary() throws IOException {
-        Writer fileWriter = new FileWriter(new File(DIR_PATH + VOCABULARY_FILE_NAME + FILE_EXTENSION));
+        Writer fileWriter = new FileWriter(new File(this.outputDir + VOCABULARY_FILE_NAME + FILE_EXTENSION));
 
         Template templateFile = getTemplate(TEMPLATE_TYPE.VOCABULARY);
 
@@ -274,10 +283,13 @@ abstract public class OntologyGenerator {
             return ;
         }
 
+        //create serializationFile if is not exist
+        String serializationOutputFile = this.outputDir + DIR_NAME_SERIALIZATION + "/";
+        createDir(serializationOutputFile);
 
         //create serialization interface
         Map<String, Object> data = getInterfaceSerializationData();
-        try (Writer fileWriter = new FileWriter(new File(DIR_PATH + SERIALIZATION_MODEL_FILE_NAME + FILE_EXTENSION))) {
+        try (Writer fileWriter = new FileWriter(new File(serializationOutputFile + SERIALIZATION_MODEL_FILE_NAME + FILE_EXTENSION))) {
             templateFile.process(data, fileWriter);
         } catch (TemplateException e) {
             e.printStackTrace();
@@ -287,7 +299,7 @@ abstract public class OntologyGenerator {
 
         for (ClassRepresentation classRep : classes){
             Map<String, Object> classData = getSerializationData(classRep);
-            try (Writer fileWriter = new FileWriter(new File(DIR_PATH +  classRep.getName() + SERIALIZATION_FILE_NAME_SUFFIX + FILE_EXTENSION))) {
+            try (Writer fileWriter = new FileWriter(new File(serializationOutputFile +  classRep.getName() + SERIALIZATION_FILE_NAME_SUFFIX + FILE_EXTENSION))) {
                 templateFile.process(classData, fileWriter);
             } catch (TemplateException e) {
                 e.printStackTrace();
@@ -310,7 +322,7 @@ abstract public class OntologyGenerator {
         }
 
         Map<String, Object> data = getFactoryData(fileName,classes);
-        try (Writer fileWriter = new FileWriter(new File(DIR_PATH + fileName + FILE_EXTENSION))) {
+        try (Writer fileWriter = new FileWriter(new File(this.outputDir + fileName + FILE_EXTENSION))) {
             templateFile.process(data, fileWriter);
         } catch (TemplateException e) {
             e.printStackTrace();

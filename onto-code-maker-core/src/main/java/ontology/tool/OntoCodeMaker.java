@@ -41,6 +41,10 @@ public class OntoCodeMaker {
         Model modelOfTriples;
         try {
             modelOfTriples = ontoParser.parseOntology(inputFiles,formatName);
+            if(modelOfTriples == null){
+                System.err.println("Error: Model is empty.");
+                return;
+            }
 
             OntologyMapper mapper = new OntologyMapper(modelOfTriples);
             OntologyRepresentation ontology = mapper.getOWLOntology();
@@ -49,7 +53,7 @@ public class OntoCodeMaker {
             List<ClassRepresentation> classes = mapper.getMappedClasses();
 
             OntologyGeneratorFactory factory = new OntologyGeneratorFactory();
-            if(packageName == null || packageName.isEmpty()){
+            if(language == null || language.isEmpty()){
                 language = "java";
             }
             OntologyGenerator generator = factory.getOntologyGenerator(language);

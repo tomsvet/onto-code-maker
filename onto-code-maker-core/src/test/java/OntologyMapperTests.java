@@ -18,179 +18,18 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class OntologyMapperTests {
-    String ex = "http://example.org/";
-    Model model = new TreeModel();
-    IRI classPerson = Values.iri(ex, "Person");
-    IRI classHuman = Values.iri(ex, "Human");
-    IRI classMen = Values.iri(ex, "Men");
-    IRI classWoman = Values.iri(ex, "Woman");
-    IRI hasAgeProperty = Values.iri(ex,"hasAge");
+public class OntologyMapperTests extends ModelSetUp{
 
+    @Override
     @BeforeEach
     void setUp() {
-        model.add(classHuman, RDF.TYPE, RDFS.CLASS);
-        model.add(classPerson, RDF.TYPE, RDFS.CLASS);
-        model.add(classMen, RDF.TYPE, OWL.CLASS);
-        model.add(classWoman, RDF.TYPE, OWL.CLASS);
-
-        model.add(classMen, DC.CREATOR,Values.literal("Tomas"));
-        model.add(classMen, RDFS.LABEL,Values.literal("Men"));
-        model.add(classMen, RDFS.COMMENT,Values.literal("This is men"));
-        model.add(classMen,RDFS.SUBCLASSOF,classPerson);
-        model.add(classWoman,RDFS.SUBCLASSOF,classPerson);
-        model.add(classPerson,OWL.EQUIVALENTCLASS,classHuman);
-        //model.add(hasAgeProperty,RDF.TYPE,OWL.DATATYPEPROPERTY);
+        super.setUp();
     }
+
+
 
     @Test
     @Order(1)
-    @DisplayName("Simple test get all subjects from model")
-    void testGetAllSubjects(){
-        OntologyMapper mapper = new OntologyMapper(model);
-        Set<Resource> subjects = mapper.getAllSubjects(RDF.TYPE, OWL.CLASS);
-        assertEquals(2, subjects.size(),
-                "Different size of expected subjects and result.");
-        for(Resource subject:subjects){
-            assertTrue(subject.isIRI());
-            IRI subjectIRI = (IRI)subject;
-            assertTrue(subjectIRI.getLocalName().equals("Men")||subjectIRI.getLocalName().equals("Woman"));
-        }
-    }
-
-    @Test
-    @Order(2)
-    @DisplayName("Simple test get all IRI subjects from model")
-    void testGetAllIRISubjects(){
-        OntologyMapper mapper = new OntologyMapper(model);
-        Set<IRI> subjects = mapper.getAllIRISubjects(RDF.TYPE, OWL.CLASS);
-        assertEquals(2, subjects.size(),
-                "Different size of expected subjects and result.");
-        for(IRI subject:subjects){
-            assertTrue(subject.getLocalName().equals("Men")||subject.getLocalName().equals("Woman"));
-        }
-    }
-
-    @Test
-    @Order(3)
-    @DisplayName("Simple test get all IRI subjects from model (predicate list)")
-    void testGetAllIRISubjectsPredicateList(){
-        OntologyMapper mapper = new OntologyMapper(model);
-        Set<IRI> subjects = mapper.getAllIRISubjects(Arrays.asList(RDF.TYPE),OWL.CLASS);
-        assertEquals(2, subjects.size(),
-                "Different size of expected subjects and result.");
-        for(IRI subject:subjects){
-            assertTrue(subject.getLocalName().equals("Men")||subject.getLocalName().equals("Woman"));
-        }
-    }
-
-    @Test
-    @Order(4)
-    @DisplayName("Simple test get all objects")
-    void testGetAllObjects(){
-        OntologyMapper mapper = new OntologyMapper(model);
-        Set<Value> objects = mapper.getAllObjects(RDFS.LABEL, classMen);
-        assertEquals(1, objects.size(),
-                "Different size of expected subjects and result.");
-        Value object = objects.iterator().next();
-        assertTrue(object.isLiteral());
-        Literal subjectLiteral = (Literal)object;
-        assertEquals(subjectLiteral.stringValue(),"Men","Literals are not equal.");
-    }
-
-    @Test
-    @Order(5)
-    @DisplayName("Simple test get all IRI objects from model")
-    void testGetAllIRIObjects(){
-        OntologyMapper mapper = new OntologyMapper(model);
-        Set<IRI> objects = mapper.getAllIRIObjects(RDFS.SUBCLASSOF, classMen);
-        assertEquals(1, objects.size(),
-                "Different size of expected objects and result.");
-        IRI object = objects.iterator().next();
-        assertEquals(object,classPerson,"Objects are not equals. Object is: " + object.getLocalName());
-    }
-
-    @Test
-    @Order(6)
-    @DisplayName("Simple test get all Literal objects from model")
-    void testGetAllLiteralObjects(){
-        OntologyMapper mapper = new OntologyMapper(model);
-        Set<Literal> objects = mapper.getAllLiteralObjects(RDFS.SUBCLASSOF, classMen);
-        assertEquals(0, objects.size(),
-                "Different size of expected objects and result.");
-        objects = mapper.getAllLiteralObjects( RDFS.COMMENT, classMen);
-        assertEquals(1, objects.size(),
-                "Different size of expected objects and result.");
-        Literal object = objects.iterator().next();
-        assertEquals(object.stringValue(),"This is men","Literals are not equal.");
-    }
-
-    @Test
-    @Order(7)
-    @DisplayName("Simple test get all Literal objects from model with list of predicates")
-    void testGetAllLiteralObjectsPredicateList(){
-        OntologyMapper mapper = new OntologyMapper(model);
-        Set<Literal> objects = mapper.getAllLiteralObjects(Arrays.asList(RDFS.COMMENT,RDFS.LABEL),classMen);
-        assertEquals(2, objects.size(),
-                "Different size of expected objects and result.");
-    }
-
-    @Test
-    @Order(8)
-    @DisplayName("Simple test get all IRI objects from model with list of predicates")
-    void testGetAllIRIObjectsPredicateList(){
-        OntologyMapper mapper = new OntologyMapper(model);
-        Set<IRI> objects = mapper.getAllIRIObjects(Arrays.asList(RDFS.SUBCLASSOF,RDF.TYPE),classMen);
-        assertEquals(2, objects.size(),
-                "Different size of expected objects and result.");
-        for(IRI object:objects){
-            assertTrue(object.getLocalName().equals("Person")||object.getLocalName().equals("Class"));
-        }
-    }
-
-    @Test
-    @Order(9)
-    @DisplayName("Simple test get first IRI object from model with list of predicates")
-    void testGetFirstIRIObject(){
-        OntologyMapper mapper = new OntologyMapper(model);
-        IRI object = mapper.getFirstIRIObject(RDFS.SUBCLASSOF, classMen);
-        assertNotNull(object);
-        assertTrue(object.equals(classPerson),"Objects are not equals. Object is: " + object.getLocalName());
-
-    }
-
-    @Test
-    @Order(10)
-    @DisplayName("Simple test get first Literal object from model with list of predicates")
-    void testGetFirstLiteralObject(){
-        OntologyMapper mapper = new OntologyMapper(model);
-        Literal object = mapper.getFirstLiteralObject(RDFS.LABEL, classMen);
-        assertNotNull(object);
-        assertEquals(object.stringValue(),"Men","Literals are not equal.");
-    }
-
-    @Test
-    @Order(11)
-    void testExistStatementWithIRI(){
-
-    }
-
-    @Test
-    @Order(12)
-    void getFirstIRISubject(){
-
-    }
-
-
-    @Test
-    @Order(13)
-    void getFirstIRISubjectAll(){
-
-    }
-
-
-    @Test
-    @Order(20)
     @DisplayName("Simple getClasses should work")
     void testGetClasses() {
         OntologyMapper mapper = new OntologyMapper(model);
@@ -199,7 +38,7 @@ public class OntologyMapperTests {
     }
 
     @Test
-    @Order(21)
+    @Order(2)
     @DisplayName("Simple getClasses should work")
     void testMapClasses() {
         OntologyMapper mapper = new OntologyMapper(model);
@@ -227,7 +66,7 @@ public class OntologyMapperTests {
     }
 
     @Test
-    @Order(22)
+    @Order(3)
     @DisplayName("Simple test for mapComments method, should work")
     void testMapComments() {
         OntologyMapper mapper = new OntologyMapper(model);
@@ -238,7 +77,7 @@ public class OntologyMapperTests {
     }
 
     @Test
-    @Order(23)
+    @Order(4)
     @DisplayName("Simple test for mapLabels method, should work")
     void testMapLabels() {
         OntologyMapper mapper = new OntologyMapper(model);
@@ -249,7 +88,7 @@ public class OntologyMapperTests {
     }
 
     @Test
-    @Order(24)
+    @Order(5)
     @DisplayName("Simple test for mapCreator method, should work")
     void testMapCreator() {
         OntologyMapper mapper = new OntologyMapper(model);
@@ -262,7 +101,7 @@ public class OntologyMapperTests {
     }
 
     @Test
-    @Order(25)
+    @Order(6)
     @DisplayName("Simple test for mapClassHierarchy method, should work")
     void testMapClassHierarchy(){
         OntologyMapper mapper = new OntologyMapper(model);
@@ -275,7 +114,7 @@ public class OntologyMapperTests {
     }
 
     @Test
-    @Order(26)
+    @Order(7)
     @DisplayName("Simple test for mapEquivalentClasses method, should work")
     void testMapEquivalentClasses(){
         OntologyMapper mapper = new OntologyMapper(model);
@@ -293,7 +132,7 @@ public class OntologyMapperTests {
     }
 
     @Test
-    @Order(27)
+    @Order(8)
     @DisplayName("Test for mapEquivalentClasses method with 3 equivalent classes, should work")
     void testMapEquivalentClasses2(){
         IRI classHuman2 = Values.iri(ex, "Human2");
@@ -318,7 +157,7 @@ public class OntologyMapperTests {
     }
 
     @Test
-    @Order(28)
+    @Order(9)
     @Disabled
     @DisplayName("Simple test for mapProperties method, should work")
     void testMapProperties(){

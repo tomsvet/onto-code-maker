@@ -1,9 +1,6 @@
 package ontology.tool.mapper;
 
-import ontology.tool.generator.OntologyGenerator;
-import ontology.tool.generator.language_generators.JavaGenerator;
 import ontology.tool.generator.representations.ClassRepresentation;
-import ontology.tool.generator.representations.EntityRepresentation;
 import ontology.tool.generator.representations.OntologyRepresentation;
 import ontology.tool.generator.representations.PropertyRepresentation;
 import org.eclipse.rdf4j.model.*;
@@ -14,20 +11,21 @@ import java.util.*;
 
 
 public class OntologyMapper {
-    private Model model;
+    private ModelManager modelManager;
+
     List<ClassRepresentation> mappedClasses;
-    List<IRI> PRIORVERSION_IRIS = new ArrayList<>(Arrays.asList(OWL.PRIORVERSION));
-    List<IRI> IMPORTS_IRIS = new ArrayList<>(Arrays.asList(OWL.IMPORTS));
+    List<IRI> PRIORVERSION_IRIS = new ArrayList<>(Collections.singletonList(OWL.PRIORVERSION));
+    List<IRI> IMPORTS_IRIS = new ArrayList<>(Collections.singletonList(OWL.IMPORTS));
     List<IRI> CLASS_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(RDFS.CLASS,OWL.CLASS));
     List<IRI> COMMENT_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(RDFS.COMMENT, DCTERMS.DESCRIPTION,
             SKOS.DEFINITION, DC.DESCRIPTION));
     List<IRI> LABEL_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(RDFS.LABEL, DCTERMS.TITLE, DC.TITLE, SKOS.PREF_LABEL, SKOS.ALT_LABEL,SKOS.HIDDEN_LABEL));
     List<IRI> CREATOR_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(DC.CREATOR,DCTERMS.CREATOR));
-    List<IRI> SUBCLASS_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(RDFS.SUBCLASSOF));
-    List<IRI> EQUIVALENT_CLASS_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(OWL.EQUIVALENTCLASS));
+    List<IRI> SUBCLASS_PREDICATE_IRIS = new ArrayList<>(Collections.singletonList(RDFS.SUBCLASSOF));
+    List<IRI> EQUIVALENT_CLASS_PREDICATE_IRIS = new ArrayList<>(Collections.singletonList(OWL.EQUIVALENTCLASS));
 
-    public OntologyMapper(Model newModel){
-        model = newModel;
+    public OntologyMapper(Model model){
+        this.modelManager = new ModelManager(model);
     }
 
     public List<ClassRepresentation> getMappedClasses(){
@@ -65,14 +63,14 @@ public class OntologyMapper {
         Set<Resource> allClasses = new HashSet<>();
 
         for(IRI classPredIRI:CLASS_PREDICATE_IRIS){
-            Set<Resource> classes = model.filter(null, RDF.TYPE, classPredIRI).subjects();
+            Set<Resource> classes = modelManager.getAllSubjects(RDF.TYPE,classPredIRI);
             allClasses.addAll(classes);
         }
         return allClasses;
     }
 
     public void mapClassHierarchy(ClassRepresentation classRep){
-        Set<IRI> superClasses = getAllIRIObjects(SUBCLASS_PREDICATE_IRIS,classRep.getValueIRI());
+        Set<IRI> superClasses = modelManager.getAllIRIObjects(SUBCLASS_PREDICATE_IRIS,classRep.getValueIRI());
 
         for(IRI superClass: superClasses){
             ClassRepresentation superClassRep = getMappedClass(superClass);
@@ -86,7 +84,7 @@ public class OntologyMapper {
     }
 
     public void mapEquivalentClasses(ClassRepresentation classRep){
-        Set<IRI> equivalentClasses = getAllIRIObjects(EQUIVALENT_CLASS_PREDICATE_IRIS,classRep.getValueIRI());
+        Set<IRI> equivalentClasses = modelManager.getAllIRIObjects(EQUIVALENT_CLASS_PREDICATE_IRIS,classRep.getValueIRI());
         for(IRI eqClassIRI: equivalentClasses){
             ClassRepresentation eqClassRep = getMappedClass(eqClassIRI);
             if(eqClassRep != null){
@@ -119,30 +117,30 @@ public class OntologyMapper {
 
     public ClassRepresentation getMappedClass(IRI classIRI){
         Optional<ClassRepresentation> res = mappedClasses.stream().filter(classRep -> classRep.getValueIRI().equals(classIRI)).findFirst();
-        return res.isPresent()? res.get(): null;
+        return res.orElse(null);
     }
 
     public boolean isMappedClass(Value classValue){
         Optional<ClassRepresentation> res = mappedClasses.stream().filter(classRep -> classRep.getValueIRI().equals(classValue)).findFirst();
-        return res.isEmpty() ? false:true;
+        return res.isPresent();
     }
 
     public void mapComments(ClassRepresentation classRep){
-        Set<Literal> allComments = getAllLiteralObjects(COMMENT_PREDICATE_IRIS,classRep.getValueIRI());
+        Set<Literal> allComments = modelManager.getAllLiteralObjects(COMMENT_PREDICATE_IRIS,classRep.getValueIRI());
         for(Literal comment : allComments){
                 classRep.addCommentProperty(comment.stringValue());
         }
     }
 
     public void mapLabels(ClassRepresentation classRep){
-        Set<Literal> allLabels = getAllLiteralObjects(LABEL_PREDICATE_IRIS,classRep.getValueIRI());
+        Set<Literal> allLabels = modelManager.getAllLiteralObjects(LABEL_PREDICATE_IRIS,classRep.getValueIRI());
         for(Literal comment : allLabels){
             classRep.addLabelProperty(comment.stringValue());
         }
     }
 
     public void mapCreator(ClassRepresentation classRep){
-        Literal creator = getFirstLiteralObject(CREATOR_PREDICATE_IRIS,classRep.getValueIRI());
+        Literal creator = modelManager.getFirstLiteralObject(CREATOR_PREDICATE_IRIS,classRep.getValueIRI());
         if ( creator!= null ){
                 classRep.setCreator(creator.stringValue());
         }
@@ -150,14 +148,14 @@ public class OntologyMapper {
 
 
     public void mapProperties(ClassRepresentation classRep){
-        Set<IRI> properties = getAllIRISubjects(RDFS.DOMAIN,classRep.getValueIRI());
+        Set<IRI> properties = modelManager.getAllIRISubjects(RDFS.DOMAIN,classRep.getValueIRI());
         for(IRI propertyIRI : properties){
-            IRI typeIRI = getFirstIRIObject(RDF.TYPE, propertyIRI);
+            IRI typeIRI = modelManager.getFirstIRIObject(RDF.TYPE, propertyIRI);
             if(typeIRI.equals(OWL.DATATYPEPROPERTY)){
                 PropertyRepresentation property = new PropertyRepresentation(propertyIRI.getNamespace(), propertyIRI.getLocalName());
                 property.setClassName(classRep.getName());
                 property.setType(PropertyRepresentation.PROPERTY_TYPE.DATATYPE);
-                IRI range = getFirstIRIObject(RDFS.RANGE, propertyIRI);
+                IRI range = modelManager.getFirstIRIObject(RDFS.RANGE, propertyIRI);
                 property.setRangeIRI(range);
                 property.setIsFunctional(true);
                 classRep.addProperties(property);
@@ -168,7 +166,7 @@ public class OntologyMapper {
                 PropertyRepresentation property = new PropertyRepresentation(propertyIRI.getNamespace(), propertyIRI.getLocalName());
                 property.setClassName(classRep.getName());
                 property.setType(PropertyRepresentation.PROPERTY_TYPE.OBJECT);
-                IRI range = getFirstIRIObject(RDFS.RANGE, propertyIRI);
+                IRI range = modelManager.getFirstIRIObject(RDFS.RANGE, propertyIRI);
                 if (range == null) {
 
                 }
@@ -192,14 +190,14 @@ public class OntologyMapper {
     }
 
     public void mapFunctionalProperties(PropertyRepresentation property){
-        boolean isFunctionalProperty = existStatementWithIRI(property.getValueIRI(),RDF.TYPE,OWL.FUNCTIONALPROPERTY);
+        boolean isFunctionalProperty = modelManager.existStatementWithIRI(property.getValueIRI(),RDF.TYPE,OWL.FUNCTIONALPROPERTY);
         if(isFunctionalProperty) {
             property.setIsFunctional(true);
         }
     }
 
     public void mapInverseFunctionalProperties(ClassRepresentation classRep,PropertyRepresentation property){
-        boolean isInverseFunctionalProperty = existStatementWithIRI(property.getValueIRI(),RDF.TYPE,OWL.INVERSEFUNCTIONALPROPERTY);
+        boolean isInverseFunctionalProperty = modelManager.existStatementWithIRI(property.getValueIRI(),RDF.TYPE,OWL.INVERSEFUNCTIONALPROPERTY);
         if(isInverseFunctionalProperty) {
             PropertyRepresentation inverseProperty = createInverseProperty(classRep, property, Values.iri(classRep.getNamespace() + property.getRangeClass().getName().toLowerCase()));
             inverseProperty.setIsFunctional(true);
@@ -209,7 +207,7 @@ public class OntologyMapper {
 
     public void mapInverseProperties(ClassRepresentation classRep, PropertyRepresentation property){
         ClassRepresentation rangeClass = property.getRangeClass();
-        Set<IRI> inverseIRIProperties = getAllIRISubjects(OWL.INVERSEOF, property.getValueIRI());
+        Set<IRI> inverseIRIProperties = modelManager.getAllIRISubjects(OWL.INVERSEOF, property.getValueIRI());
         for(IRI inversePropertyIRI :inverseIRIProperties){
             PropertyRepresentation inverseProperty = createInverseProperty(classRep, property, inversePropertyIRI);
             /*PropertyRepresentation inverseProperty = new PropertyRepresentation(inversePropertyIRI.getNamespace(), inversePropertyIRI.getLocalName());
@@ -242,7 +240,7 @@ public class OntologyMapper {
 
 
     public void mapEquivalentProperties(ClassRepresentation classRep, PropertyRepresentation property){
-        Set<IRI> equivalentProperties = getAllIRISubjects(OWL.EQUIVALENTPROPERTY, property.getValueIRI());
+        Set<IRI> equivalentProperties = modelManager.getAllIRISubjects(OWL.EQUIVALENTPROPERTY, property.getValueIRI());
         for(IRI equivalentProperty:equivalentProperties){
             PropertyRepresentation equivalentPropertyRep = new PropertyRepresentation(equivalentProperty.getNamespace(), equivalentProperty.getLocalName());
             equivalentPropertyRep.setRangeIRI(property.getRangeIRI());
@@ -258,155 +256,15 @@ public class OntologyMapper {
         }
     }
 
-
-    public Literal getFirstLiteralObject(List<IRI> predicates, IRI subject){
-        for(IRI predicate:predicates){
-            Literal literal = getFirstLiteralObject(predicate,subject);
-            if(literal != null){
-                return literal;
-            }
-        }
-        return null;
-    }
-
-    public Literal getFirstLiteralObject(IRI predicate, IRI subject){
-        Set<Value> objects = getAllObjects(predicate,subject);
-        for(Value object : objects){
-            if(object.isLiteral()){
-                return (Literal) object;
-            }
-        }
-        return null;
-    }
-
-    public IRI getFirstIRIObject(List<IRI> predicates, IRI subject){
-        for(IRI predicate:predicates){
-            IRI iri = getFirstIRIObject(predicate,subject);
-            if(iri != null){
-                return iri;
-            }
-        }
-        return null;
-    }
-
-    public IRI getFirstIRIObject(IRI predicate, IRI subject){
-        Set<Value> objects = getAllObjects(predicate,subject);
-        for(Value object : objects){
-            if(object.isIRI()){
-                return (IRI) object;
-            }
-        }
-        return null;
-    }
-
-    public IRI getFirstIRISubject(List<IRI> predicates, IRI object){
-        for(IRI predicate:predicates){
-            IRI iri = getFirstIRIObject(predicate,object);
-            if(iri != null){
-                return iri;
-            }
-        }
-        return null;
-    }
-
-
-    public IRI getFirstIRISubject(IRI predicate, IRI object){
-        Set<Resource> subjects = getAllSubjects(predicate,object);
-        for(Resource subject : subjects){
-            if(subject.isIRI()){
-                return (IRI) subject;
-            }
-        }
-        return null;
-    }
-
-    public Set<Literal> getAllLiteralObjects(List<IRI> predicates, IRI subject){
-        Set<Literal> allObjectLiterals = new HashSet<>();
-        for(IRI predicate:predicates){
-            Set<Literal> objects = getAllLiteralObjects(predicate,subject);
-            allObjectLiterals.addAll(objects);
-        }
-        return allObjectLiterals;
-    }
-
-    public Set<IRI> getAllIRIObjects(List<IRI> predicates, IRI subject){
-        Set<IRI> allObjectLiterals = new HashSet<>();
-
-        for(IRI predicate:predicates){
-            Set<IRI> objects = getAllIRIObjects(predicate,subject);
-            allObjectLiterals.addAll(objects);
-
-        }
-        return allObjectLiterals;
-    }
-
-    public Set<Literal> getAllLiteralObjects(IRI predicate, IRI subject){
-        Set<Literal> allObjectsLiterals = new HashSet<>();
-        Set<Value> objects = getAllObjects(predicate,subject);
-        for(Value object:objects){
-            if(object.isLiteral()){
-                allObjectsLiterals.add((Literal) object);
-            }
-        }
-        return allObjectsLiterals;
-    }
-
-    public Set<IRI> getAllIRIObjects(IRI predicate, IRI subject){
-        Set<IRI> allObjectsIRIs = new HashSet<>();
-        Set<Value> objects = getAllObjects(predicate,subject);
-        for(Value object:objects){
-            if(object.isIRI()){
-                allObjectsIRIs.add((IRI) object);
-            }
-        }
-        return allObjectsIRIs;
-    }
-
-    public Set<Value> getAllObjects(IRI predicate, IRI subject){
-        return model.filter(subject, predicate, null).objects();
-    }
-
-
-    public Set<IRI> getAllIRISubjects(List<IRI> predicate, IRI object){
-        Set<IRI> allSubjectsIRI = new HashSet<>();
-
-        for(IRI predIRI:predicate){
-            Set<IRI> subjects = getAllIRISubjects(predIRI,object);
-            allSubjectsIRI.addAll(subjects);
-        }
-        return allSubjectsIRI;
-    }
-
-    public Set<IRI> getAllIRISubjects(IRI predicate, IRI object){
-        Set<IRI> allSubjectsIRIs = new HashSet<>();
-        Set<Resource> subjects = getAllSubjects(predicate,object);
-        for(Resource subject:subjects){
-            if(subject.isIRI()){
-                allSubjectsIRIs.add((IRI) subject);
-            }
-        }
-        return allSubjectsIRIs;
-    }
-
-
-    public Set<Resource> getAllSubjects(IRI predicate, IRI object){
-        return model.filter(null, predicate, object).subjects();
-    }
-
-    public boolean existStatementWithIRI(IRI subject,IRI predicate,IRI object){
-        Model resultModel =  model.filter(subject, predicate, object);
-        return resultModel.size() >0 ? true:false;
-    }
-
     public void mapImports(OntologyRepresentation ontology){
-        Set<IRI> imports = getAllIRIObjects(IMPORTS_IRIS,ontology.getValueIRI());
+        Set<IRI> imports = modelManager.getAllIRIObjects(IMPORTS_IRIS,ontology.getValueIRI());
         for(IRI importVal : imports){
             ontology.addImports(importVal.stringValue());
         }
     }
 
     public void mapPriorVersion(OntologyRepresentation ontology){
-        IRI priorVersion = getFirstIRIObject(PRIORVERSION_IRIS,ontology.getValueIRI());
+        IRI priorVersion = modelManager.getFirstIRIObject(PRIORVERSION_IRIS,ontology.getValueIRI());
         if ( priorVersion!= null ){
             ontology.setPriorVersion(priorVersion.stringValue());
         }
@@ -418,16 +276,10 @@ public class OntologyMapper {
     }
 
     public OntologyRepresentation getOWLOntology(){
-        if (model != null){
-            Set<Resource> owlOntologies = model.filter(null, RDF.TYPE, OWL.ONTOLOGY).subjects();
-            Resource ontologyResource = owlOntologies.iterator().next();
-            if(ontologyResource.isIRI()){
-                IRI ontologyIRI = (IRI) ontologyResource;
-                OntologyRepresentation onto = new OntologyRepresentation(ontologyIRI.getNamespace(),ontologyIRI.getLocalName());
-                return onto;
-            }
-        }
-        return null;
+        IRI owlOntologyIRI = modelManager.getFirstIRISubject(RDF.TYPE,OWL.ONTOLOGY);
+        OntologyRepresentation onto = new OntologyRepresentation(owlOntologyIRI.getNamespace(),owlOntologyIRI.getLocalName());
+        return onto;
+
     }
 
 }
