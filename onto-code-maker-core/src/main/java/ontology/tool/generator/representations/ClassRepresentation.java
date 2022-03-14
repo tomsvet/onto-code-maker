@@ -71,9 +71,12 @@ public class ClassRepresentation extends EntityRepresentation{
         this.hasInterface = value;
     }
 
+    public void addEquivalentClass(ClassRepresentation equivalentClass){
+        this.equivalentClasses.add(equivalentClass);
+    }
 
-    public void addEquivalentClasses(ClassRepresentation equivalentClasses){
-        this.equivalentClasses.add(equivalentClasses);
+    public void addEquivalentClasses(List<ClassRepresentation> equivalentClasses){
+        this.equivalentClasses.addAll(equivalentClasses);
     }
 
     public List<ClassRepresentation> getEquivalentClasses(){

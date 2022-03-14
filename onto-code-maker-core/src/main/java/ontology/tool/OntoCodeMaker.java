@@ -3,13 +3,11 @@ package ontology.tool;
 import ontology.tool.generator.OntologyGeneratorFactory;
 import ontology.tool.generator.representations.ClassRepresentation;
 import ontology.tool.generator.OntologyGenerator;
-import ontology.tool.generator.representations.EntityRepresentation;
 import ontology.tool.generator.representations.OntologyRepresentation;
 import ontology.tool.mapper.OntologyMapper;
 import ontology.tool.parser.OntologyParser;
 import org.eclipse.rdf4j.model.Model;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -72,8 +70,6 @@ public class OntoCodeMaker {
 
             generator.generateCode();
             
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }

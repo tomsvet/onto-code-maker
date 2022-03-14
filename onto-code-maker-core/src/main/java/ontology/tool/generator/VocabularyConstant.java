@@ -6,6 +6,8 @@ public class VocabularyConstant {
     private String type;
     private String name;
     private String value;
+    private String constantOf;
+    private String objectName;
 
     public void setName(String name) {
         this.name = name;
@@ -45,4 +47,21 @@ public class VocabularyConstant {
         }
         return false;
     }
+
+    public String getConstantOf(){
+        return constantOf;
+    }
+
+    public void setConstantOf(String constantOf){
+        this.constantOf = constantOf;
+    }
+
+    public void setObjectName(String objectName) {
+        this.objectName = objectName;
+    }
+
+    public String getObjectName() {
+        return objectName;
+    }
+
 }

@@ -6,10 +6,10 @@ import org.eclipse.rdf4j.model.util.Values;
     import ${item};
 </#list>
 
-public class ${className} extends {
+public class ${className} {
 <#list properties as property>
     /**
-    *
+    *   A constant representing the ${property.constantOf} ${property.objectName}
     **/
     <#if property.isPrivate ==true>private<#else>public</#if> IRI ${property.name} <#if property.isValue() == true> = Values.iri("${property.getValue()}")</#if>;
 

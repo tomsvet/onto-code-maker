@@ -66,6 +66,8 @@ public class JavaGenerator extends OntologyGenerator {
             VocabularyConstant ontCon = new VocabularyConstant();
             ontCon.setName(ontology.getName().toUpperCase() + "_ONTOLOGY_IRI");
             ontCon.setValue( ontology.getStringIRI());
+            ontCon.setConstantOf("ontology");
+            ontCon.setObjectName(ontology.getName());
             properties.add(ontCon);
         }
 
@@ -74,12 +76,16 @@ public class JavaGenerator extends OntologyGenerator {
             VocabularyConstant propC = new VocabularyConstant();
             propC.setName( generatedClass.getConstantName());
             propC.setValue(generatedClass.getStringIRI());
+            propC.setConstantOf("class");
+            propC.setObjectName(generatedClass.getName());
             properties.add(propC);
 
             for(PropertyRepresentation property: generatedClass.getProperties()){
                 VocabularyConstant propP = new VocabularyConstant();
                 propP.setName( property.getConstantName());
                 propP.setValue(property.getStringIRI());
+                propP.setConstantOf("property");
+                propP.setObjectName(property.getName());
                 properties.add(propP);
             }
 
@@ -119,7 +125,7 @@ public class JavaGenerator extends OntologyGenerator {
         //data.put("vocabularyClassConstant",classRep.getConstantName());
         data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
         data.put("properties",new ArrayList<>()); //classRep.
-        data.put("package",this.packageName + "." + DIR_NAME_ENTITIES);
+        data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
         data.put("imports",new ArrayList<>());
         return data;
     }
@@ -145,7 +151,7 @@ public class JavaGenerator extends OntologyGenerator {
         }
         data.put("mainInterface",false);
         //data.put("properties",new ArrayList<>());
-        data.put("package",this.packageName + "." + DIR_NAME_ENTITIES);
+        data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
         data.put("imports",new ArrayList<>());
         return data;
     }
@@ -165,12 +171,12 @@ public class JavaGenerator extends OntologyGenerator {
             data.put("extendClass",CLASS_ENTITY_FILE_NAME);
         }
         //data.put("extendClass",CLASS_ENTITY_FILE_NAME);
-        data.put("package", this.packageName + "." + DIR_NAME_ENTITIES);
+        data.put("package", this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
         data.put("imports",new ArrayList<>());
         return data;
     }
 
-    public Map<String, Object> getInterfaceEntityData(){
+    public Map<String, Object> getMainEntityData(){
         Map<String, Object> data = new HashMap<>();
         data.put("className",CLASS_ENTITY_FILE_NAME);
        // data.put("isAbstract",true);
@@ -178,7 +184,7 @@ public class JavaGenerator extends OntologyGenerator {
         data.put("mainInterface",false);
         data.put("isExtended",false);
         //data.put("properties",new ArrayList<>());
-        data.put("package",this.getPackageName() + "." + DIR_NAME_ENTITIES);
+        data.put("package",this.getPackageName() + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
         data.put("imports",new ArrayList<>());
         return data;
     }
@@ -190,16 +196,16 @@ public class JavaGenerator extends OntologyGenerator {
         data.put("isInterface",false);
         data.put("serializationModelName",SERIALIZATION_MODEL_FILE_NAME);
         //data.put("properties",new ArrayList<>());
-        data.put("package",this.packageName + "." + DIR_NAME_SERIALIZATION);
+        data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_SERIALIZATION);
        // data.put("imports",new ArrayList<>());
         return data;
     }
 
-    public Map<String, Object> getInterfaceSerializationData(){
+    public Map<String, Object> getMainSerializationData(){
         Map<String, Object> data = new HashMap<>();
         data.put("classFileName",SERIALIZATION_MODEL_FILE_NAME);
         data.put("isInterface",true);
-        data.put("package",this.packageName + "." + DIR_NAME_SERIALIZATION);
+        data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_SERIALIZATION);
         return data;
     }
 

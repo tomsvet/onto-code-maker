@@ -193,7 +193,8 @@ abstract public class OntologyGenerator {
         createDir(entitiesOutputFile);
 
         String interfaceClassPath = entitiesOutputFile + CLASS_ENTITY_FILE_NAME +  FILE_EXTENSION;
-        Map<String, Object> data = getInterfaceEntityData();
+        //generate main OntoEntity class/interface
+        Map<String, Object> data = getMainEntityData();
         try (Writer fileWriter = new FileWriter(new File(interfaceClassPath))) {
             templateFile.process(data, fileWriter);
         } catch (TemplateException e) {
@@ -288,7 +289,7 @@ abstract public class OntologyGenerator {
         createDir(serializationOutputFile);
 
         //create serialization interface
-        Map<String, Object> data = getInterfaceSerializationData();
+        Map<String, Object> data = getMainSerializationData();
         try (Writer fileWriter = new FileWriter(new File(serializationOutputFile + SERIALIZATION_MODEL_FILE_NAME + FILE_EXTENSION))) {
             templateFile.process(data, fileWriter);
         } catch (TemplateException e) {
@@ -336,11 +337,11 @@ abstract public class OntologyGenerator {
 
     abstract public Map<String, Object> getInterfaceEntityData(ClassRepresentation classRep);
 
-    abstract public Map<String, Object> getInterfaceEntityData();
+    abstract public Map<String, Object> getMainEntityData();
 
     abstract public Map<String, Object> getSerializationData(ClassRepresentation classRep);
 
-    abstract public Map<String, Object> getInterfaceSerializationData();
+    abstract public Map<String, Object> getMainSerializationData();
 
     abstract public Map<String, Object> getFactoryData(String fileName,List<ClassRepresentation> classes);
 

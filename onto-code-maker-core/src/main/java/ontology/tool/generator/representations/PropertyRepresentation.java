@@ -3,6 +3,8 @@ package ontology.tool.generator.representations;
 import org.eclipse.rdf4j.model.IRI;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PropertyRepresentation extends EntityRepresentation {
 
@@ -14,6 +16,11 @@ public class PropertyRepresentation extends EntityRepresentation {
     private String value;
     private ClassRepresentation rangeClass;
     private boolean isFunctional = false;
+    private List<PropertyRepresentation> subProperties = new ArrayList<>();
+    private List<PropertyRepresentation> superProperties = new ArrayList<>();
+
+    private PropertyRepresentation isEquivalentTo;
+    private List<PropertyRepresentation> equivalentProperties = new ArrayList<>();
 
     public enum PROPERTY_TYPE {
         OBJECT,
@@ -97,11 +104,39 @@ public class PropertyRepresentation extends EntityRepresentation {
         return isFunctional;
     }
 
-    /*public void setIsInverseFunctional(boolean isInverseFunctional){
-        this.isInverseFunctional = isInverseFunctional;
+    public void setIsEquivalentTo(PropertyRepresentation property){
+        this.isEquivalentTo = property;
     }
 
-    public boolean isInverseFunctional() {
-        return isInverseFunctional;
-    }*/
+    public PropertyRepresentation getIsEquivalentTo(){
+        return this.isEquivalentTo;
+    }
+
+    public void addSubProperty(PropertyRepresentation subProperty) {
+        this.subProperties.add(subProperty);
+    }
+
+    public List<PropertyRepresentation> getSubProperties(){
+        return subProperties;
+    }
+
+    public boolean isSubProperty(){
+        return !superProperties.isEmpty();
+    }
+
+    public void addSuperProperty(PropertyRepresentation superProperty) {
+        this.superProperties.add(superProperty);
+    }
+
+    public List<PropertyRepresentation> getSuperProperties(){
+        return superProperties;
+    }
+
+    public void addEquivalentProperty(PropertyRepresentation equivalentProperty){
+        this.equivalentProperties.add(equivalentProperty);
+    }
+
+    public List<PropertyRepresentation> getEquivalentProperties(){
+        return equivalentProperties;
+    }
 }

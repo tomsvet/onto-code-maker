@@ -156,9 +156,8 @@ import java.time.LocalTime;
                 ${classRep.name?cap_first} ${classRep.name?uncap_first} = getInstanceFromModel(model,iri);
                 allInstances.add(${classRep.name?uncap_first});
             }
-
         }
-        return humans;
+        return allInstances;
     }
 
     @Override

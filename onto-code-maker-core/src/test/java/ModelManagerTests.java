@@ -1,7 +1,5 @@
 import ontology.tool.mapper.ModelManager;
 import org.eclipse.rdf4j.model.*;
-import org.eclipse.rdf4j.model.impl.TreeModel;
-import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -49,7 +47,7 @@ public class ModelManagerTests extends ModelSetUp{
     @DisplayName("Simple test get all IRI subjects from model (predicate list)")
     void testGetAllIRISubjectsPredicateList(){
         ModelManager modelManager = new ModelManager(model);
-        Set<IRI> subjects = modelManager.getAllIRISubjects(Arrays.asList(RDF.TYPE),OWL.CLASS);
+        Set<IRI> subjects = modelManager.getAllIRISubjects(Arrays.asList(RDFS.SUBCLASSOF,RDF.TYPE),OWL.CLASS);
         assertEquals(2, subjects.size(),
                 "Different size of expected subjects and result.");
         for(IRI subject:subjects){
@@ -123,18 +121,18 @@ public class ModelManagerTests extends ModelSetUp{
 
     @Test
     @Order(9)
-    @DisplayName("Simple test get first IRI object from model with list of predicates")
+    @DisplayName("Simple test get first IRI object from model")
     void testGetFirstIRIObject(){
         ModelManager modelManager = new ModelManager(model);
         IRI object = modelManager.getFirstIRIObject(RDFS.SUBCLASSOF, classMen);
         assertNotNull(object);
-        assertTrue(object.equals(classPerson),"Objects are not equals. Object is: " + object.getLocalName());
+        assertEquals(object,classPerson,"Objects are not equals. Object is: " + object.getLocalName());
 
     }
 
     @Test
     @Order(10)
-    @DisplayName("Simple test get first Literal object from model with list of predicates")
+    @DisplayName("Simple test get first Literal object from model")
     void testGetFirstLiteralObject(){
         ModelManager modelManager = new ModelManager(model);
         Literal object = modelManager.getFirstLiteralObject(RDFS.LABEL, classMen);
@@ -145,19 +143,70 @@ public class ModelManagerTests extends ModelSetUp{
     @Test
     @Order(11)
     void testExistStatementWithIRI(){
-
+        ModelManager modelManager = new ModelManager(model);
+        assertTrue( modelManager.existStatementWithIRI(classHuman,RDF.TYPE,RDFS.CLASS),"Human RDFS class is not found.");
+        assertFalse( modelManager.existStatementWithIRI(classHuman,RDF.TYPE,OWL.CLASS),"Human OWL class is found.");
     }
 
     @Test
     @Order(12)
     void getFirstIRISubject(){
+        ModelManager modelManager = new ModelManager(model);
+        IRI subject = modelManager.getFirstIRISubject(OWL.EQUIVALENTCLASS, classHuman);
+        assertNotNull(subject);
+        assertEquals(subject,classPerson,"The correct subject is not found. The subject is: " + subject.getLocalName());
 
+        IRI subject2 = modelManager.getFirstIRISubject(OWL.EQUIVALENTCLASS, classMen);
+        assertNull(subject2,"The subject is not null.");
     }
 
 
     @Test
     @Order(13)
-    void getFirstIRISubjectAll(){
+    void getFirstIRISubjectPredicateList(){
+        ModelManager modelManager = new ModelManager(model);
+        IRI subject = modelManager.getFirstIRISubject(Arrays.asList(OWL.EQUIVALENTCLASS,RDFS.SUBCLASSOF), classPerson);
+        assertNotNull(subject);
+        assertEquals(subject,classMen,"The correct subject is not found. The subject is: " + subject.getLocalName());
 
+        IRI subject2 = modelManager.getFirstIRISubject(Arrays.asList(RDF.TYPE,RDFS.SUBCLASSOF), classHuman);
+        assertNull(subject2,"The subject is not null.");
     }
+
+    @Test
+    @Order(14)
+    @DisplayName("Simple test get first IRI object from model with list of predicates")
+    void testGetFirstIRIObjectPredicateList(){
+        ModelManager modelManager = new ModelManager(model);
+        IRI object = modelManager.getFirstIRIObject(Arrays.asList(OWL.EQUIVALENTCLASS,RDFS.SUBCLASSOF), classMen);
+        assertNotNull(object);
+        assertEquals(object,classPerson,"Objects are not equals. Object is: " + object.getLocalName());
+
+        IRI object2 = modelManager.getFirstIRIObject(Arrays.asList(DC.CREATOR,RDFS.COMMENT), classMen);
+        assertNull(object2,"The subject is not null.");
+    }
+
+    @Test
+    @Order(15)
+    @DisplayName("Simple test get first Literal object from model with list of predicates")
+    void testGetFirstLiteralObjectPredicateList(){
+        ModelManager modelManager = new ModelManager(model);
+        Literal object = modelManager.getFirstLiteralObject(Arrays.asList(RDFS.SUBCLASSOF,RDFS.LABEL), classMen);
+        assertNotNull(object);
+        assertEquals(object.stringValue(),"Men","Literals are not equal.");
+
+        Literal object2 = modelManager.getFirstLiteralObject(Arrays.asList(RDFS.SUBCLASSOF,RDFS.LABEL), classPerson);
+        assertNull(object2,"The subject is not null.");
+    }
+
+    @Test
+    @Order(16)
+    @DisplayName("Simple test get all subjects with list of objects")
+    void testGetAllIRISubjectsWithObjectsList(){
+        ModelManager modelManager = new ModelManager(model);
+        Set<IRI> subjects = modelManager.getAllIRISubjects(RDF.TYPE, Arrays.asList(OWL.CLASS,RDFS.CLASS));
+        assertEquals(4, subjects.size(),
+                "Different size of expected subjects and result.");
+    }
+
 }

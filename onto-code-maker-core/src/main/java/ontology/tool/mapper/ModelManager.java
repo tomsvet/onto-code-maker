@@ -6,6 +6,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/***
+ *  OntoCodeMaker
+ *
+ *  ModelManager.java
+ *  A class for retrieving data from the model.
+ *
+ *  @autor: tsvetlik (xsvetl05)
+ *  @since: 1.0
+ **/
 public class ModelManager {
     private Model model;
 
@@ -55,7 +64,7 @@ public class ModelManager {
 
     public IRI getFirstIRISubject(List<IRI> predicates, IRI object){
         for(IRI predicate:predicates){
-            IRI iri = getFirstIRIObject(predicate,object);
+            IRI iri = getFirstIRISubject(predicate,object);
             if(iri != null){
                 return iri;
             }
@@ -142,6 +151,21 @@ public class ModelManager {
         return allSubjectsIRIs;
     }
 
+    public Set<IRI> getAllIRISubjects(IRI predicate, List<IRI> objects){
+        Set<IRI> allSubjectsIRIs = new HashSet<>();
+        Set<Resource> subjects = new HashSet<>();
+        for(IRI object:objects){
+            subjects.addAll(getAllSubjects(predicate,object));
+        }
+
+        for(Resource subject:subjects){
+            if(subject.isIRI()){
+                allSubjectsIRIs.add((IRI) subject);
+            }
+        }
+        return allSubjectsIRIs;
+    }
+
 
     public Set<Resource> getAllSubjects(IRI predicate, IRI object){
         return model.filter(null, predicate, object).subjects();
@@ -149,6 +173,6 @@ public class ModelManager {
 
     public boolean existStatementWithIRI(IRI subject,IRI predicate,IRI object){
         Model resultModel =  model.filter(subject, predicate, object);
-        return resultModel.size() >0 ? true:false;
+        return resultModel.size() > 0;
     }
 }
