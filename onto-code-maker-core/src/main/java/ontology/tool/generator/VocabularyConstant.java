@@ -1,8 +1,7 @@
 package ontology.tool.generator;
 
 public class VocabularyConstant {
-    //default value true
-    private Boolean isPrivate = true;
+    private Boolean isPrivate = false;
     private String type;
     private String name;
     private String value;
@@ -42,10 +41,7 @@ public class VocabularyConstant {
     }
 
     public boolean isValue(){
-        if (this.value != null){
-            return true;
-        }
-        return false;
+        return this.value != null;
     }
 
     public String getConstantOf(){

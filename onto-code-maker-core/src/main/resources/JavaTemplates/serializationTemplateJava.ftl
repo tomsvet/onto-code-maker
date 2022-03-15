@@ -16,11 +16,11 @@ ${litName}.${property.rangeDatatype}Value()
 </#if>
 </#macro>
 
-<#macro propertyType property classRep>
+<#macro propertyType property classRep propValue>
 <#if property.type == "DATATYPE">
 Values.literal(${classRep.name?uncap_first}.get${property.name?cap_first}())
 <#else>
-${classRep.name?uncap_first}.get${property.name?cap_first}().getIri()
+${propValue}.getIri()
 </#if>
 </#macro>
 
@@ -31,18 +31,18 @@ ${ captured?replace("\\n|\\r", "", "rm") }
 
 package ${package};
 
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.Values;
+import org.eclipse.rdf4j.model.*;
 import java.util.Collection;
+import java.util.Set;
+import java.util.HashSet;
 
 <#if isInterface ==false>
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.util.Values;
 import java.util.ArrayList;
 import java.time.LocalTime;
+import ${entityPackage}.*;
+import ${rawPackage}.${vocabularyFileName};
 </#if>
 
 <#if isInterface ==true>abstract class ${classFileName}<T> <#else>public class ${classFileName?cap_first} extends ${serializationModelName}<${classRep.name?cap_first}></#if>{
@@ -97,44 +97,53 @@ import java.time.LocalTime;
 
         <#list classRep.properties as property>
         <#if property.isFunctional() == true>
+        <#if property.type == "DATATYPE">
         <@compress_single_line>
-        model.add(${classRep.name?uncap_first}.getIri(),Vocabulary.${property.getConstantName()},<@propertyType property=property classRep=classRep/>);
+        model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},<@propertyType property=property classRep=classRep propValue= classRep.name?uncap_first + ".get" + property.name?cap_first+ "()"/>);
         </@compress_single_line>
         <#else>
-         for(${property.rangeDatatype} propValue:${classRep.name?uncap_first}.get${property.name?cap_first}){
-         <@compress_single_line>
-         model.add(${classRep.name?uncap_first}.getIri(),Vocabulary.${property.getConstantName()}, <@propertyType property=property classRep=classRep/>);
-         </@compress_single_line>
-         }
+        if(${classRep.name?uncap_first}.get${property.name?cap_first}() != null){
+            <@compress_single_line>
+            model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},<@propertyType property=property classRep=classRep propValue= classRep.name?uncap_first + ".get" + property.name?cap_first+ "()"/>);
+            </@compress_single_line>
+        }
         </#if>
+        <#else>
+        for(${property.rangeDatatype} propValue:${classRep.name?uncap_first}.get${property.name?cap_first}()){
+        <@compress_single_line>
+            model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()}, <@propertyType property=property classRep=classRep propValue="propValue"/>);
+        </@compress_single_line>
+        }
+        </#if>
+
         </#list>
     }
 
     @Override
-    public ${classRep.name?cap_first} getInstanceFromModel(Model model,IRI instanceIri) throws Exception{
+    public ${classRep.name?cap_first} getInstanceFromModel(Model model,IRI instanceIri){
         Model statements = model.filter(instanceIri,RDF.TYPE,${classRep.name?cap_first}.CLASS_IRI);
         if(statements.size() != 0){
             ${classRep.name?cap_first} ${classRep.name?uncap_first} = new ${classRep.name?cap_first}(instanceIri);
             <#list classRep.properties as property>
 
             <#if property.type == "DATATYPE">
-            Literal ${property.name?uncap_first} = super.getFirstLiteralObject(model,Vocabulary.${property.getConstantName()},instanceIri);
+            Literal ${property.name?uncap_first} = super.getFirstLiteralObject(model,${vocabularyFileName}.${property.getConstantName()},instanceIri);
             if ( ${property.name?uncap_first} != null ){
                 <@compress single_line=true> ${classRep.name?uncap_first}.set${property.name?cap_first}(<@value property=property litName=property.name?uncap_first/>);
                 </@compress>
 
             }
             <#else>
-             <#if property.isFunctional() ==true>IRI<#else>Set<IRI></#if> ${property.name?uncap_first} = super.<#if property.isFunctional() ==true>getFirstIriObject<#else>getAllIRIObjects</#if>(model,Vocabulary.${property.getConstantName()},instanceIri);
+             <#if property.isFunctional() ==true>IRI<#else>Set<IRI></#if> ${property.name?uncap_first} = super.<#if property.isFunctional() ==true>getFirstIriObject<#else>getAllIRIObjects</#if>(model,${vocabularyFileName}.${property.getConstantName()},instanceIri);
              <#if property.isFunctional() ==true>
              if ( ${property.name?uncap_first} != null ){
-                ${property.name?uncap_first}Instance = ${property.className}Serialization.getInstanceFromModel(model, ${property.name?uncap_first});
+                ${property.rangeClass.name?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, ${property.name?uncap_first});
                 ${classRep.name?uncap_first}.set${property.name?cap_first}(${property.name?uncap_first}Instance);
              }
              <#else>
              for(IRI propValue:${property.name?uncap_first}){
-                ${property.name?uncap_first}Instance = ${property.className}Serialization.getInstanceFromModel(model, propValue);
-                ${classRep.name?uncap_first}.set${property.name?cap_first}(${property.name?uncap_first}Instance);
+                ${property.rangeClass.name?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, propValue);
+                ${classRep.name?uncap_first}.add${property.name?cap_first}(${property.name?uncap_first}Instance);
              }
             </#if>
             </#if>
@@ -146,7 +155,7 @@ import java.time.LocalTime;
     }
 
     @Override
-    public Collection<${classRep.name?cap_first}> getAllInstancesFromModel(Model model) {
+    public Collection<${classRep.name?cap_first}> getAllInstancesFromModel(Model model){
         Model statements = model.filter(null,RDF.TYPE,${classRep.name?cap_first}.CLASS_IRI);
         Collection<${classRep.name?cap_first}> allInstances = new ArrayList<>();
         for(Statement statement:statements){
@@ -157,6 +166,11 @@ import java.time.LocalTime;
                 allInstances.add(${classRep.name?uncap_first});
             }
         }
+
+        <#list classRep.getSubClasses() as subClass>
+        allInstances.addAll( new ${subClass.getSerializationClassName()}().getAllInstancesFromModel(model));
+        </#list>
+
         return allInstances;
     }
 

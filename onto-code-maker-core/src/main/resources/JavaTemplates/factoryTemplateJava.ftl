@@ -3,6 +3,8 @@ package ${package};
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Values;
 import java.util.Collection;
+import ${serializationPackage}.*;
+import ${entityPackage}.*;
 
 
 public class ${classFileName?cap_first}{
@@ -25,15 +27,17 @@ public class ${classFileName?cap_first}{
         return ontology;
     }
 
-<#list serializationClasses as serialization>
-    public ${serialization.name?cap_first} create${serialization.name?cap_first}(String name){
-        return new ${serialization.name?cap_first}(Values.iri(name));
-    }
-
     public void addToModel(${entityClassName} entity){
+        <#list serializationClasses as serialization>
         if (entity instanceof ${serialization.name?cap_first}){
             ${serialization.getSerializationClassName()?uncap_first}.addToModel(ontology, (${serialization.name?cap_first}) entity);
         }
+        </#list>
+    }
+
+<#list serializationClasses as serialization>
+    public ${serialization.name?cap_first} create${serialization.name?cap_first}(String name){
+        return new ${serialization.name?cap_first}(Values.iri(name));
     }
 
     public ${serialization.name?cap_first} get${serialization.name?cap_first}FromModel(String name){

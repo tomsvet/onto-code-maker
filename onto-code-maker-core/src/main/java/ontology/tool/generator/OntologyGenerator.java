@@ -316,7 +316,7 @@ abstract public class OntologyGenerator {
         }
 
         String fileName;
-        if(ontology != null){
+        if(ontology != null && !ontology.getName().isEmpty()){
             fileName = ontology.getName() + FACTORY_FILE_NAME_SUFFIX;
         }else{
             fileName = DEFAULT_FACTORY_FILE_NAME ;

@@ -50,7 +50,7 @@ public class JavaGenerator extends OntologyGenerator {
 
     public Map<String, Object> getVocabularyData(List<VocabularyConstant> properties){
         Map<String, Object> data = new HashMap<>();
-        data.put("className","Vocabulary");
+        data.put("className",VOCABULARY_FILE_NAME);
         data.put("properties",properties);
         data.put("package",this.packageName);
         data.put("imports",new ArrayList<>());
@@ -126,6 +126,7 @@ public class JavaGenerator extends OntologyGenerator {
         data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
         data.put("properties",new ArrayList<>()); //classRep.
         data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
+        data.put("rawPackage",this.packageName);
         data.put("imports",new ArrayList<>());
         return data;
     }
@@ -133,17 +134,9 @@ public class JavaGenerator extends OntologyGenerator {
     public Map<String, Object> getInterfaceEntityData(ClassRepresentation classRep){
         Map<String, Object> data = new HashMap<>();
         data.put("className",classRep.getName() + ENTITY_INTERFACE_SUFFIX);
-        //data.put("isAbstract",true);
         data.put("isInterface",true);
         data.put("isExtended",true);
-        /*if(classRep.isHasInterface()){
-            data.put("extendClass",classRep.getName() + ENTITY_INTERFACE_SUFFIX);
-        }else{*/
-           // data.put("extendClass",CLASS_ENTITY_FILE_NAME);
-        //}
         if (classRep.hasSuperClass()) {
-            //data.put("extendClasses", classRep.getSuperClasses());
-           // data.put("extendedInterface", true);
             data.put("classRep",classRep);
         } else {
            // data.put("extendedInterface", true);
@@ -195,9 +188,11 @@ public class JavaGenerator extends OntologyGenerator {
         data.put("classRep",classRep);
         data.put("isInterface",false);
         data.put("serializationModelName",SERIALIZATION_MODEL_FILE_NAME);
-        //data.put("properties",new ArrayList<>());
+        data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
         data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_SERIALIZATION);
-       // data.put("imports",new ArrayList<>());
+        data.put("entityPackage",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
+        data.put("rawPackage",this.packageName);
+
         return data;
     }
 
@@ -215,6 +210,8 @@ public class JavaGenerator extends OntologyGenerator {
         data.put("serializationClasses",classes);
         data.put("package",this.packageName);
         data.put("entityClassName",CLASS_ENTITY_FILE_NAME);
+        data.put("serializationPackage", this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_SERIALIZATION);
+        data.put("entityPackage", this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
         return data;
     }
 
