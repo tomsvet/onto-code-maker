@@ -2,7 +2,6 @@ package ontology.tool.generator.representations;
 
 import org.eclipse.rdf4j.model.IRI;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,10 +63,7 @@ public class PropertyRepresentation extends EntityRepresentation {
     }
 
     public boolean isValue(){
-        if (this.value != null){
-            return true;
-        }
-        return false;
+        return this.value != null;
     }
 
     public void setType(PROPERTY_TYPE type){

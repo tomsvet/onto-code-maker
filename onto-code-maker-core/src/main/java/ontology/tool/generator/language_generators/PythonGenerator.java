@@ -134,8 +134,6 @@ public class PythonGenerator extends OntologyGenerator {
         } else {
             data.put("extendClass",CLASS_ENTITY_FILE_NAME);
         }
-        //data.put("mainInterface",false);
-        //data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
         data.put("imports",new ArrayList<>());
         return data;
     }
@@ -148,15 +146,10 @@ public class PythonGenerator extends OntologyGenerator {
         data.put("isMainClass",false);
         data.put("isExtended",true);
         if (classRep.hasSuperClass()) {
-            //data.put("extendClasses", classRep.getSuperClasses());
-            // data.put("extendedInterface", true);
             data.put("classRep",classRep);
         } else {
-            // data.put("extendedInterface", true);
             data.put("extendClass",CLASS_ENTITY_FILE_NAME);
         }
-        //data.put("extendClass",CLASS_ENTITY_FILE_NAME);
-        //data.put("package", this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
         data.put("imports",new ArrayList<>());
         return data;
     }

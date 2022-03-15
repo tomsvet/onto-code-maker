@@ -1,6 +1,5 @@
 package ontology.tool.generator.representations;
 
-import com.github.jsonldjava.core.RDFDataset;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.util.Values;
 

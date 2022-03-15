@@ -181,6 +181,39 @@ abstract public class OntologyGenerator {
     }
 
 
+    public void generateMainEntityClass(Template templateFile,String entitiesOutputFile){
+        String interfaceClassPath = entitiesOutputFile + CLASS_ENTITY_FILE_NAME +  FILE_EXTENSION;
+        //generate main OntoEntity class/interface
+        Map<String, Object> data = getMainEntityData();
+        try (Writer fileWriter = new FileWriter(new File(interfaceClassPath))) {
+            templateFile.process(data, fileWriter);
+        } catch (TemplateException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void generateEquivalentClass(Template templateFile,String entitiesOutputFile,String equivalentInterfaceName,ClassRepresentation generatedClass){
+        String equivalentInterfaceClassPath = entitiesOutputFile + equivalentInterfaceName + ENTITY_INTERFACE_SUFFIX +  FILE_EXTENSION;
+
+        Map<String, Object> dataInt = getEquivalentInterfaceEntityData(equivalentInterfaceName,generatedClass);
+        try (Writer fileWriter = new FileWriter(new File(equivalentInterfaceClassPath))) {
+            templateFile.process(dataInt, fileWriter);
+        } catch (TemplateException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void generateInterfaceClass(Template templateFile,String entitiesOutputFile,ClassRepresentation generatedClass){
+        String entitiesInterfaceClassPath = entitiesOutputFile + generatedClass.getName() + ENTITY_INTERFACE_SUFFIX +  FILE_EXTENSION;
+        Map<String, Object> dataInt = getInterfaceEntityData(generatedClass);
+        try (Writer fileWriter = new FileWriter(new File(entitiesInterfaceClassPath))) {
+            templateFile.process(dataInt, fileWriter);
+        } catch (TemplateException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     public void generateClasses() throws IOException {
 
         Template templateFile = getTemplate(TEMPLATE_TYPE.CLASS);
@@ -192,14 +225,7 @@ abstract public class OntologyGenerator {
         String entitiesOutputFile = this.outputDir + DIR_NAME_ENTITIES +"/";
         createDir(entitiesOutputFile);
 
-        String interfaceClassPath = entitiesOutputFile + CLASS_ENTITY_FILE_NAME +  FILE_EXTENSION;
-        //generate main OntoEntity class/interface
-        Map<String, Object> data = getMainEntityData();
-        try (Writer fileWriter = new FileWriter(new File(interfaceClassPath))) {
-            templateFile.process(data, fileWriter);
-        } catch (TemplateException e) {
-            e.printStackTrace();
-        }
+        generateMainEntityClass(templateFile,entitiesOutputFile);
 
         for(ClassRepresentation generatedClass: classes){
 
@@ -219,15 +245,7 @@ abstract public class OntologyGenerator {
                     eqClassRep.setEquivalentInterfaceName(equivalentInterfaceName);
                 }
 
-                String equivalentInterfaceClassPath = entitiesOutputFile + equivalentInterfaceName + ENTITY_INTERFACE_SUFFIX +  FILE_EXTENSION;
-
-                Map<String, Object> dataInt = getEquivalentInterfaceEntityData(equivalentInterfaceName,generatedClass);
-                try (Writer fileWriter = new FileWriter(new File(equivalentInterfaceClassPath))) {
-                    templateFile.process(dataInt, fileWriter);
-                } catch (TemplateException e) {
-                    e.printStackTrace();
-                }
-
+                generateEquivalentClass(templateFile,entitiesOutputFile,equivalentInterfaceName,generatedClass);
             }
 
 
@@ -237,18 +255,12 @@ abstract public class OntologyGenerator {
             }
 
             if(generatedClass.isHasInterface()){
-               String entitiesInterfaceClassPath = entitiesOutputFile + generatedClass.getName() + ENTITY_INTERFACE_SUFFIX +  FILE_EXTENSION;
-                Map<String, Object> dataInt = getInterfaceEntityData(generatedClass);
-                try (Writer fileWriter = new FileWriter(new File(entitiesInterfaceClassPath))) {
-                    templateFile.process(dataInt, fileWriter);
-                } catch (TemplateException e) {
-                    e.printStackTrace();
-                }
+                generateInterfaceClass(templateFile,entitiesOutputFile,generatedClass);
             }
 
-            Map<String, Object> classData = getEntityData(generatedClass);
-
             String filepath = entitiesOutputFile + generatedClass.getName() + FILE_EXTENSION;
+
+            Map<String, Object> classData = getEntityData(generatedClass);
             try (Writer fileWriter = new FileWriter(new File(filepath))) {
                 templateFile.process(classData, fileWriter);
             } catch (TemplateException e) {
