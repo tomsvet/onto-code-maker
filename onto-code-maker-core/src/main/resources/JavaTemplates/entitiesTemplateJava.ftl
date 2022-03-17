@@ -16,7 +16,7 @@
 <#if property.isSubProperty() ==true>
 <#list property.getSuperProperties() as subProp>
 <#if subProp.isFunctional() == true>
-        if(!this.${subProp.name?uncap_first}.equals(${property.name})){
+        if(this.${subProp.name?uncap_first} == null || !this.${subProp.name?uncap_first}.equals(${property.name})){
             set${subProp.name?cap_first}(${property.name});
         }
 <#else>
@@ -28,7 +28,7 @@
 </#if>
 <#if property.isEquivalentTo??>
 <#if property.isEquivalentTo.isFunctional() == true>
-        if(!this.${property.isEquivalentTo.name?uncap_first}.equals(${property.name})){
+        if(this.${property.isEquivalentTo.name?uncap_first} == null || !this.${property.isEquivalentTo.name?uncap_first}.equals(${property.name})){
             set${property.isEquivalentTo.name?cap_first}(${property.name});
         }
 <#else>
@@ -39,7 +39,7 @@
 </#if>
 <#list property.equivalentProperties as eqProp>
 <#if eqProp.isFunctional() == true>
-        if(!this.${eqProp.name?uncap_first}.equals(${property.name})){
+        if(this.${eqProp.name?uncap_first} == null || !this.${eqProp.name?uncap_first}.equals(${property.name})){
             set${eqProp.name?cap_first}(${property.name});
         }
 <#else>

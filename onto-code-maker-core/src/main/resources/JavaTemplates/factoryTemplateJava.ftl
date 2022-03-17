@@ -35,16 +35,24 @@ public class ${classFileName?cap_first}{
         </#list>
     }
 
+    public void updateInstanceInModel(${entityClassName} entity){
+        <#list serializationClasses as serialization>
+        if (entity instanceof ${serialization.name?cap_first}){
+            ${serialization.getSerializationClassName()?uncap_first}.updateInstanceInModel(ontology, (${serialization.name?cap_first}) entity);
+        }
+        </#list>
+    }
+
 <#list serializationClasses as serialization>
     public ${serialization.name?cap_first} create${serialization.name?cap_first}(String name){
         return new ${serialization.name?cap_first}(Values.iri(name));
     }
 
-    public ${serialization.name?cap_first} get${serialization.name?cap_first}FromModel(String name){
+    public ${serialization.name?cap_first} get${serialization.name?cap_first}FromModel(String name) throws Exception{
         return ${serialization.getSerializationClassName()?uncap_first}.getInstanceFromModel(ontology,Values.iri(name));
     }
 
-    public Collection<${serialization.name?cap_first}> getAll${serialization.name?cap_first}InstancesFromModel(){
+    public Collection<${serialization.name?cap_first}> getAll${serialization.name?cap_first}InstancesFromModel() throws Exception{
         return ${serialization.getSerializationClassName()?uncap_first}.getAllInstancesFromModel(ontology);
     }
 

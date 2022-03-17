@@ -50,11 +50,13 @@ import ${rawPackage}.${vocabularyFileName};
 <#if isInterface ==true>
     abstract public void addToModel(Model model, T entity);
 
-    abstract public T getInstanceFromModel(Model model, IRI name);
+    abstract public T getInstanceFromModel(Model model, IRI name)throws Exception;
 
-    abstract public Collection<T> getAllInstancesFromModel(Model model);
+    abstract public Collection<T> getAllInstancesFromModel(Model model) throws Exception;
 
     abstract public void removeInstanceFromModel(Model model, IRI name);
+
+    abstract public void updateInstanceInModel(Model model, T entity);
 
     public Literal getFirstLiteralObject(Model model, IRI predicate, IRI instanceIri){
             Set<Value> objects = model.filter(instanceIri,predicate,null).objects();
@@ -94,7 +96,16 @@ import ${rawPackage}.${vocabularyFileName};
     @Override
     public void addToModel(Model model, ${classRep.name?cap_first} ${classRep.name?uncap_first}) {
         model.add(${classRep.name?uncap_first}.getIri(),RDF.TYPE, ${classRep.name?uncap_first}.getClassIRI());
+        <#assign propSize =  classRep.properties?size>
+        <#assign superClassesNum =  classRep.superClasses?size>
+        <#if  propSize gt 0 || superClassesNum gt 0 >
+        addPropertiesToModel(model,${classRep.name?uncap_first});
+        </#if>
 
+    }
+
+   <#if  propSize gt 0 || superClassesNum gt 0 >
+    protected void addPropertiesToModel(Model model,  ${classRep.name?cap_first} ${classRep.name?uncap_first}) {
         <#list classRep.properties as property>
         <#if property.isFunctional() == true>
         <#if property.type == "DATATYPE">
@@ -117,37 +128,56 @@ import ${rawPackage}.${vocabularyFileName};
         </#if>
 
         </#list>
+        <#list classRep.getSuperClasses() as superClass>
+        <#if superClass.properties?size gt 0 || superClass.superClasses?size gt 0>
+        new ${superClass.getSerializationClassName()?cap_first}().addPropertiesToModel(model, ${classRep.name?uncap_first});
+        </#if>
+        </#list>
+    }
+    </#if>
+
+    protected void setProperties(Model model,${classRep.name?cap_first} ${classRep.name?uncap_first}) throws Exception{
+        <#list classRep.properties as property>
+
+        <#if property.type == "DATATYPE">
+        Literal ${property.name?uncap_first} = super.getFirstLiteralObject(model,${vocabularyFileName}.${property.getConstantName()},${classRep.name?uncap_first}.getIri());
+        if ( ${property.name?uncap_first} != null ){
+            <@compress single_line=true> ${classRep.name?uncap_first}.set${property.name?cap_first}(<@value property=property litName=property.name?uncap_first/>);
+            </@compress>
+
+        }
+        <#else>
+        <#if property.isFunctional() ==true>IRI<#else>Set<IRI></#if> ${property.name?uncap_first} = super.<#if property.isFunctional() ==true>getFirstIriObject<#else>getAllIRIObjects</#if>(model,${vocabularyFileName}.${property.getConstantName()},${classRep.name?uncap_first}.getIri());
+        <#if property.isFunctional() ==true>
+        if ( ${property.name?uncap_first} != null ){
+            ${property.rangeClass.name?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, ${property.name?uncap_first});
+            ${classRep.name?uncap_first}.set${property.name?cap_first}(${property.name?uncap_first}Instance);
+        }
+        <#else>
+        for(IRI propValue:${property.name?uncap_first}){
+            ${property.rangeClass.name?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, propValue);
+            if(${property.name?uncap_first}Instance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
+            ${classRep.name?uncap_first}.add${property.name?cap_first}(${property.name?uncap_first}Instance);
+        }
+        </#if>
+        </#if>
+        </#list>
+
+         <#list classRep.getSuperClasses() as superClass>
+         <#if superClass.properties?size gt 0 || superClass.superClasses?size gt 0>
+        new ${superClass.getSerializationClassName()?cap_first}().setProperties(model, ${classRep.name?uncap_first});
+         </#if>
+         </#list>
     }
 
     @Override
-    public ${classRep.name?cap_first} getInstanceFromModel(Model model,IRI instanceIri){
+    public ${classRep.name?cap_first} getInstanceFromModel(Model model,IRI instanceIri) throws Exception{
         Model statements = model.filter(instanceIri,RDF.TYPE,${classRep.name?cap_first}.CLASS_IRI);
         if(statements.size() != 0){
             ${classRep.name?cap_first} ${classRep.name?uncap_first} = new ${classRep.name?cap_first}(instanceIri);
-            <#list classRep.properties as property>
 
-            <#if property.type == "DATATYPE">
-            Literal ${property.name?uncap_first} = super.getFirstLiteralObject(model,${vocabularyFileName}.${property.getConstantName()},instanceIri);
-            if ( ${property.name?uncap_first} != null ){
-                <@compress single_line=true> ${classRep.name?uncap_first}.set${property.name?cap_first}(<@value property=property litName=property.name?uncap_first/>);
-                </@compress>
+            setProperties(model, ${classRep.name?uncap_first});
 
-            }
-            <#else>
-             <#if property.isFunctional() ==true>IRI<#else>Set<IRI></#if> ${property.name?uncap_first} = super.<#if property.isFunctional() ==true>getFirstIriObject<#else>getAllIRIObjects</#if>(model,${vocabularyFileName}.${property.getConstantName()},instanceIri);
-             <#if property.isFunctional() ==true>
-             if ( ${property.name?uncap_first} != null ){
-                ${property.rangeClass.name?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, ${property.name?uncap_first});
-                ${classRep.name?uncap_first}.set${property.name?cap_first}(${property.name?uncap_first}Instance);
-             }
-             <#else>
-             for(IRI propValue:${property.name?uncap_first}){
-                ${property.rangeClass.name?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, propValue);
-                ${classRep.name?uncap_first}.add${property.name?cap_first}(${property.name?uncap_first}Instance);
-             }
-            </#if>
-            </#if>
-            </#list>
             return ${classRep.name?uncap_first};
         }
 
@@ -155,7 +185,7 @@ import ${rawPackage}.${vocabularyFileName};
     }
 
     @Override
-    public Collection<${classRep.name?cap_first}> getAllInstancesFromModel(Model model){
+    public Collection<${classRep.name?cap_first}> getAllInstancesFromModel(Model model)throws Exception{
         Model statements = model.filter(null,RDF.TYPE,${classRep.name?cap_first}.CLASS_IRI);
         Collection<${classRep.name?cap_first}> allInstances = new ArrayList<>();
         for(Statement statement:statements){
@@ -183,6 +213,45 @@ import ${rawPackage}.${vocabularyFileName};
             model.remove(statement);
         }
     }
+
+    @Override
+    public void updateInstanceInModel(Model model,${classRep.name?cap_first} ${classRep.name?uncap_first}){
+        <#list classRep.properties as property>
+
+        <#if property.type == "DATATYPE">
+        Literal ${property.name?uncap_first} = super.getFirstLiteralObject(model,${vocabularyFileName}.${property.getConstantName()},${classRep.name?uncap_first}.getIri());
+        if ( ${property.name?uncap_first} == null || !${property.name?uncap_first}.equals(<@propertyType property=property classRep=classRep propValue= classRep.name?uncap_first + ".get" + property.name?cap_first+ "()"/>)){
+            model.remove(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},${property.name?uncap_first});
+            <@compress_single_line>
+            model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},<@propertyType property=property classRep=classRep propValue= classRep.name?uncap_first + ".get" + property.name?cap_first+ "()"/>);
+            </@compress_single_line>
+        }
+        <#else>
+        <#if property.isFunctional() ==true>IRI<#else>Set<IRI></#if> ${property.name?uncap_first} = super.<#if property.isFunctional() ==true>getFirstIriObject<#else>getAllIRIObjects</#if>(model,${vocabularyFileName}.${property.getConstantName()},${classRep.name?uncap_first}.getIri());
+        <#if property.isFunctional() ==true>
+        if (( ${property.name?uncap_first} == null && ${classRep.name?uncap_first}.get${property.name?cap_first}() != null ) ||( ${property.name?uncap_first} != null && !${property.name?uncap_first}.equals(${classRep.name?uncap_first}.get${property.name?cap_first}().getIri()))){
+            model.remove(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},${property.name?uncap_first});
+            model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},${classRep.name?uncap_first}.get${property.name?cap_first}().getIri());
+
+        }
+        <#else>
+        for(IRI propValue:${property.name?uncap_first}){
+            model.remove(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},propValue);
+        }
+        for(${property.rangeClass.name?cap_first} propValue:${classRep.name?uncap_first}.get${property.name?cap_first}()){
+            model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},propValue.getIri());
+        }
+        </#if>
+        </#if>
+        </#list>
+
+         <#list classRep.getSuperClasses() as superClass>
+         <#if superClass.properties?size gt 0 || superClass.superClasses?size gt 0>
+        new ${superClass.getSerializationClassName()?cap_first}().updateInstanceInModel(model, ${classRep.name?uncap_first});
+         </#if>
+         </#list>
+    }
+
 
 </#if>
 
