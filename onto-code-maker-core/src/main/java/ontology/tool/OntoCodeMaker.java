@@ -1,14 +1,15 @@
 package ontology.tool;
 
 import ontology.tool.generator.OntologyGeneratorFactory;
+import ontology.tool.generator.representations.AbstractClassRepresentation;
 import ontology.tool.generator.representations.ClassRepresentation;
+import ontology.tool.generator.representations.NormalClassRepresentation;
 import ontology.tool.generator.OntologyGenerator;
 import ontology.tool.generator.representations.OntologyRepresentation;
 import ontology.tool.mapper.OntologyMapper;
 import ontology.tool.parser.OntologyParser;
 import org.eclipse.rdf4j.model.Model;
 
-import java.io.IOException;
 import java.util.List;
 
 public class OntoCodeMaker {
@@ -60,6 +61,7 @@ public class OntoCodeMaker {
                 return;
             }
             generator.addClasses(classes);
+
             generator.setOntology(ontology);
             if(outputDir!= null && !outputDir.isEmpty()){
                 generator.setOutputDir(outputDir);
@@ -70,7 +72,7 @@ public class OntoCodeMaker {
 
             generator.generateCode();
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

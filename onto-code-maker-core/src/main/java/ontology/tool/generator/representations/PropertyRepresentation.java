@@ -1,17 +1,22 @@
 package ontology.tool.generator.representations;
 
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.util.Values;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PropertyRepresentation extends EntityRepresentation {
 
+    public static String  PROPERTY_CONSTANT_SUFFIX= "_PROPERTY_IRI";
+
+
     private String className;
     private Boolean isPrivate = true;
     private PROPERTY_TYPE type;
     private String rangeDatatype;
-    private IRI rangeIRI;
+    private Resource rangeResource;
     private String value;
     private ClassRepresentation rangeClass;
     private boolean isFunctional = false;
@@ -30,6 +35,14 @@ public class PropertyRepresentation extends EntityRepresentation {
         super(namespace, name);
     }
 
+    public IRI getValueIRI(){
+        return Values.iri(super.getNamespace() + super.getName());
+    }
+
+    public String getStringIRI(){
+        return super.getNamespace() + super.getName();
+    }
+
     public void setIsPrivate(Boolean aPrivate) {
         isPrivate = aPrivate;
     }
@@ -38,12 +51,12 @@ public class PropertyRepresentation extends EntityRepresentation {
         return isPrivate;
     }
 
-    public void setRangeIRI(IRI rangeIRI) {
-        this.rangeIRI = rangeIRI;
+    public void setRangeResource(Resource rangeResource) {
+        this.rangeResource = rangeResource;
     }
 
-    public IRI getRangeIRI() {
-        return rangeIRI;
+    public Resource getRangeResource() {
+        return rangeResource;
     }
 
     public void setRangeDatatype(String rangeDatatype) {
@@ -82,7 +95,7 @@ public class PropertyRepresentation extends EntityRepresentation {
         return rangeClass;
     }
 
-    public String getConstantName(){return getClassName().toUpperCase() + "_" + this.getName().toUpperCase()  + "_PROPERTY_IRI";}
+    public String getConstantName(){return getClassName().toUpperCase() + "_" + this.getName().toUpperCase()  + PROPERTY_CONSTANT_SUFFIX;}
 
     public String getClassName(){
         return className;

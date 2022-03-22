@@ -2,14 +2,11 @@ package ontology.tool.generator.language_generators;
 
 import ontology.tool.generator.OntologyGenerator;
 import ontology.tool.generator.VocabularyConstant;
-import ontology.tool.generator.representations.ClassRepresentation;
-import ontology.tool.generator.representations.PropertyRepresentation;
+import ontology.tool.generator.representations.*;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 
 public class JavaGenerator extends OntologyGenerator {
 
@@ -69,12 +66,15 @@ public class JavaGenerator extends OntologyGenerator {
 
         //classes constants
         for (ClassRepresentation generatedClass : classes){
-            VocabularyConstant propC = new VocabularyConstant();
-            propC.setName( generatedClass.getConstantName());
-            propC.setValue(generatedClass.getStringIRI());
-            propC.setConstantOf("class");
-            propC.setObjectName(generatedClass.getName());
-            properties.add(propC);
+            if(generatedClass.getClassType().equals(ClassRepresentation.CLASS_TYPE.NORMAL)) {
+                NormalClassRepresentation genClass = (NormalClassRepresentation) generatedClass;
+                VocabularyConstant propC = new VocabularyConstant();
+                propC.setName(genClass.getConstantName());
+                propC.setValue(genClass.getStringIRI());
+                propC.setConstantOf("class");
+                propC.setObjectName(genClass.getName());
+                properties.add(propC);
+            }
 
             for(PropertyRepresentation property: generatedClass.getProperties()){
                 VocabularyConstant propP = new VocabularyConstant();
@@ -89,30 +89,108 @@ public class JavaGenerator extends OntologyGenerator {
         return properties;
     }
 
+    public Map<String, Object> getMainEntityData(){
+        Map<String, Object> data = new HashMap<>();
+        data.put("className",CLASS_ENTITY_FILE_NAME);
+        data.put("isInterface",true);
+        data.put("isAbstract",false);
+        data.put("mainInterface",true);
+        data.put("package",this.getPackageName() + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
+        data.put("imports",new ArrayList<>());
+        return data;
+    }
 
-    public Map<String, Object> getEntityData(ClassRepresentation classRep){
+    public List<String> getAllSuperClassInterfaceNames(DefaultClassRepresentation classRep){
+        ArrayList<String> retVals = new ArrayList<>();
+        for(ClassRepresentation superClass:classRep.getSuperClasses()){
+            if(superClass.getClassType().equals(ClassRepresentation.CLASS_TYPE.ABSTRACT)){
+                retVals.add(superClass.getName() + ENTITY_ABSTRACTCLASS_SUFFIX);
+            }else{
+                retVals.add(superClass.getName() + ENTITY_INTERFACE_SUFFIX);
+            }
+        }
+        return retVals;
+    }
+
+    public Map<String, Object> getEquivalentClassEntityData(String className, ClassRepresentation classRep){
+        Map<String, Object> data = new HashMap<>();
+        data.put("className",className + ENTITY_INTERFACE_SUFFIX);
+        data.put("isInterface",true);
+        data.put("mainInterface",false);
+        data.put("isExtends",true);
+        data.put("isAbstract",false);
+        data.put("isImplements",false);
+        if (classRep.getEquivalentClass().hasSuperClass()) {
+            data.put("extendClasses",getAllSuperClassInterfaceNames(classRep.getEquivalentClass()));
+        } else {
+            data.put("extendClasses",new ArrayList<>(Collections.singletonList(CLASS_ENTITY_FILE_NAME)));
+        }
+        data.put("package", this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
+        return data;
+    }
+
+    public Map<String, Object> getInterfaceEntityData(ClassRepresentation classRep){
+        Map<String, Object> data = new HashMap<>();
+        data.put("className",classRep.getName() + ENTITY_INTERFACE_SUFFIX);
+        data.put("isInterface",true);
+        data.put("mainInterface",false);
+        data.put("isExtends",true);
+        data.put("isAbstract",false);
+        data.put("isImplements",false);
+        if (classRep.hasSuperClass()) {
+            data.put("extendClasses",getAllSuperClassInterfaceNames(classRep));
+        } else {
+            data.put("extendClasses",new ArrayList<>(Collections.singletonList(CLASS_ENTITY_FILE_NAME)));
+        }
+        data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
+        return data;
+    }
+
+    public Map<String, Object> getAbstractClassEntityData(AbstractClassRepresentation classRep){
+        Map<String, Object> data = new HashMap<>();
+        data.put("className",classRep.getName() + ENTITY_ABSTRACTCLASS_SUFFIX);
+        data.put("classRep",classRep);
+        data.put("isInterface",false);
+        data.put("isAbstract",true);
+        data.put("mainInterface",false);
+        data.put("isExtends",false);
+        data.put("isImplements",false);
+        data.put("extendedInterface", true);
+
+        data.put("rawPackage",this.packageName);
+        data.put("package", this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
+        return data;
+    }
+
+    public Map<String, Object> getEntityData(NormalClassRepresentation classRep){
         Map<String, Object> data = new HashMap<>();
         data.put("className",classRep.getName());
         data.put("classRep",classRep);
         data.put("isInterface",false);
-        data.put("isExtended",true);
-        if( classRep.getEquivalentInterfaceName() != null){
-            data.put("extendClass", classRep.getEquivalentInterfaceName() + ENTITY_INTERFACE_SUFFIX);
-            data.put("extendedInterface", true);
+        data.put("isAbstract",false);
+        data.put("mainInterface",false);
+        data.put("isExtends",false);
+        data.put("isImplements",false);
+        data.put("extendedInterface", true);
+        if( classRep.getEquivalentClass() != null){
+            data.put("isImplements",true);
+            data.put("implementClass", classRep.getEquivalentClass().getName() + ENTITY_INTERFACE_SUFFIX);
         }else {
-
             if (classRep.isHasInterface()) {
-                data.put("extendClass", classRep.getName() + ENTITY_INTERFACE_SUFFIX);
-                data.put("extendedInterface", true);
+                data.put("isImplements",true);
+                data.put("implementClass", classRep.getName() + ENTITY_INTERFACE_SUFFIX);
             } else {
                 if (classRep.hasOneSuperClass()) {
-                    data.put("extendClass", classRep.getSuperClasses().get(0).getName());
+                    ClassRepresentation superClass = classRep.getSuperClasses().get(0);
+                    data.put("implementClass", superClass.getClassType().equals(ClassRepresentation.CLASS_TYPE.ABSTRACT)? ((AbstractClassRepresentation)superClass).getName() + ENTITY_ABSTRACTCLASS_SUFFIX:superClass.getName());
+                    data.put("isImplements",true);
                     data.put("extendedInterface", false);
                 } else if (!classRep.hasSuperClass()) {
-                    data.put("extendClass", CLASS_ENTITY_FILE_NAME);
-                    data.put("extendedInterface", true);
+                    data.put("isImplements",true);
+                    data.put("implementClass", CLASS_ENTITY_FILE_NAME);
                 } else {
-                    data.put("extendedInterface", true);
+                    data.put("isExtends",true);
+                    data.put("extendClasses", getAllSuperClassInterfaceNames(classRep));
                 }
             }
         }
@@ -125,50 +203,7 @@ public class JavaGenerator extends OntologyGenerator {
         return data;
     }
 
-    public Map<String, Object> getInterfaceEntityData(ClassRepresentation classRep){
-        Map<String, Object> data = new HashMap<>();
-        data.put("className",classRep.getName() + ENTITY_INTERFACE_SUFFIX);
-        data.put("isInterface",true);
-        data.put("isExtended",true);
-        if (classRep.hasSuperClass()) {
-            data.put("classRep",classRep);
-        } else {
-            data.put("extendClass",CLASS_ENTITY_FILE_NAME);
-        }
-        data.put("mainInterface",false);
-        data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
-        data.put("imports",new ArrayList<>());
-        return data;
-    }
-
-    public Map<String, Object> getEquivalentInterfaceEntityData(String className,ClassRepresentation classRep){
-        Map<String, Object> data = new HashMap<>();
-        data.put("className",className + ENTITY_INTERFACE_SUFFIX);
-        data.put("isInterface",true);
-        data.put("mainInterface",false);
-        data.put("isExtended",true);
-        if (classRep.hasSuperClass()) {
-            data.put("classRep",classRep);
-        } else {
-            data.put("extendClass",CLASS_ENTITY_FILE_NAME);
-        }
-        data.put("package", this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
-        data.put("imports",new ArrayList<>());
-        return data;
-    }
-
-    public Map<String, Object> getMainEntityData(){
-        Map<String, Object> data = new HashMap<>();
-        data.put("className",CLASS_ENTITY_FILE_NAME);
-        data.put("isInterface",true);
-        data.put("mainInterface",false);
-        data.put("isExtended",false);
-        data.put("package",this.getPackageName() + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
-        data.put("imports",new ArrayList<>());
-        return data;
-    }
-
-    public Map<String, Object> getSerializationData(ClassRepresentation classRep){
+    public Map<String, Object> getSerializationData(NormalClassRepresentation classRep){
         Map<String, Object> data = new HashMap<>();
         data.put("classFileName",classRep.getName() + SERIALIZATION_FILE_NAME_SUFFIX);
         data.put("classRep",classRep);
@@ -190,7 +225,7 @@ public class JavaGenerator extends OntologyGenerator {
         return data;
     }
 
-    public Map<String, Object> getFactoryData(String fileName,List<ClassRepresentation> classes){
+    public Map<String, Object> getFactoryData(String fileName,List<NormalClassRepresentation> classes){
         Map<String, Object> data = new HashMap<>();
         data.put("classFileName",fileName);
         data.put("serializationClasses",classes);

@@ -1,7 +1,10 @@
 package ontology.tool.mapper;
 
 import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.util.RDFCollections;
+import org.eclipse.rdf4j.model.vocabulary.OWL;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,7 +25,7 @@ public class ModelManager {
         this.model = model;
     }
 
-    public Literal getFirstLiteralObject(List<IRI> predicates, IRI subject){
+    public Literal getFirstLiteralObject(List<IRI> predicates, Resource subject){
         for(IRI predicate:predicates){
             Literal literal = getFirstLiteralObject(predicate,subject);
             if(literal != null){
@@ -32,7 +35,7 @@ public class ModelManager {
         return null;
     }
 
-    public Literal getFirstLiteralObject(IRI predicate, IRI subject){
+    public Literal getFirstLiteralObject(IRI predicate, Resource subject){
         Set<Value> objects = getAllObjects(predicate,subject);
         for(Value object : objects){
             if(object.isLiteral()){
@@ -42,7 +45,7 @@ public class ModelManager {
         return null;
     }
 
-    public IRI getFirstIRIObject(List<IRI> predicates, IRI subject){
+    public IRI getFirstIRIObject(List<IRI> predicates, Resource subject){
         for(IRI predicate:predicates){
             IRI iri = getFirstIRIObject(predicate,subject);
             if(iri != null){
@@ -52,7 +55,7 @@ public class ModelManager {
         return null;
     }
 
-    public IRI getFirstIRIObject(IRI predicate, IRI subject){
+    public IRI getFirstIRIObject(IRI predicate, Resource subject){
         Set<Value> objects = getAllObjects(predicate,subject);
         for(Value object : objects){
             if(object.isIRI()){
@@ -62,7 +65,7 @@ public class ModelManager {
         return null;
     }
 
-    public IRI getFirstIRISubject(List<IRI> predicates, IRI object){
+    public IRI getFirstIRISubject(List<IRI> predicates, Resource object){
         for(IRI predicate:predicates){
             IRI iri = getFirstIRISubject(predicate,object);
             if(iri != null){
@@ -73,7 +76,7 @@ public class ModelManager {
     }
 
 
-    public IRI getFirstIRISubject(IRI predicate, IRI object){
+    public IRI getFirstIRISubject(IRI predicate, Resource object){
         Set<Resource> subjects = getAllSubjects(predicate,object);
         for(Resource subject : subjects){
             if(subject.isIRI()){
@@ -83,7 +86,7 @@ public class ModelManager {
         return null;
     }
 
-    public Set<Literal> getAllLiteralObjects(List<IRI> predicates, IRI subject){
+    public Set<Literal> getAllLiteralObjects(List<IRI> predicates, Resource subject){
         Set<Literal> allObjectLiterals = new HashSet<>();
         for(IRI predicate:predicates){
             Set<Literal> objects = getAllLiteralObjects(predicate,subject);
@@ -92,7 +95,7 @@ public class ModelManager {
         return allObjectLiterals;
     }
 
-    public Set<IRI> getAllIRIObjects(List<IRI> predicates, IRI subject){
+    public Set<IRI> getAllIRIObjects(List<IRI> predicates, Resource subject){
         Set<IRI> allObjectLiterals = new HashSet<>();
 
         for(IRI predicate:predicates){
@@ -103,7 +106,7 @@ public class ModelManager {
         return allObjectLiterals;
     }
 
-    public Set<Literal> getAllLiteralObjects(IRI predicate, IRI subject){
+    public Set<Literal> getAllLiteralObjects(IRI predicate, Resource subject){
         Set<Literal> allObjectsLiterals = new HashSet<>();
         Set<Value> objects = getAllObjects(predicate,subject);
         for(Value object:objects){
@@ -114,7 +117,7 @@ public class ModelManager {
         return allObjectsLiterals;
     }
 
-    public Set<IRI> getAllIRIObjects(IRI predicate, IRI subject){
+    public Set<IRI> getAllIRIObjects(IRI predicate, Resource subject){
         Set<IRI> allObjectsIRIs = new HashSet<>();
         Set<Value> objects = getAllObjects(predicate,subject);
         for(Value object:objects){
@@ -125,12 +128,20 @@ public class ModelManager {
         return allObjectsIRIs;
     }
 
-    public Set<Value> getAllObjects(IRI predicate, IRI subject){
+    public Set<Value> getAllObjects(IRI predicate, Resource subject){
         return model.filter(subject, predicate, null).objects();
     }
 
+    public Set<Value> getAllObjects(List<IRI> predicates, Resource subject){
+        Set<Value> allObjects = new HashSet<>();
+        for(IRI predicate:predicates){
+            Set<Value> objects=  model.filter(subject, predicate, null).objects();
+            allObjects.addAll(objects);
+        }
+        return allObjects;
+    }
 
-    public Set<IRI> getAllIRISubjects(List<IRI> predicate, IRI object){
+    public Set<IRI> getAllIRISubjects(List<IRI> predicate, Resource object){
         Set<IRI> allSubjectsIRI = new HashSet<>();
 
         for(IRI predIRI:predicate){
@@ -140,7 +151,7 @@ public class ModelManager {
         return allSubjectsIRI;
     }
 
-    public Set<IRI> getAllIRISubjects(IRI predicate, IRI object){
+    public Set<IRI> getAllIRISubjects(IRI predicate, Resource object){
         Set<IRI> allSubjectsIRIs = new HashSet<>();
         Set<Resource> subjects = getAllSubjects(predicate,object);
         for(Resource subject:subjects){
@@ -151,10 +162,10 @@ public class ModelManager {
         return allSubjectsIRIs;
     }
 
-    public Set<IRI> getAllIRISubjects(IRI predicate, List<IRI> objects){
+    public Set<IRI> getAllIRISubjects(IRI predicate, List<Resource> objects){
         Set<IRI> allSubjectsIRIs = new HashSet<>();
         Set<Resource> subjects = new HashSet<>();
-        for(IRI object:objects){
+        for(Resource object:objects){
             subjects.addAll(getAllSubjects(predicate,object));
         }
 
@@ -167,12 +178,44 @@ public class ModelManager {
     }
 
 
-    public Set<Resource> getAllSubjects(IRI predicate, IRI object){
+    public Set<Resource> getAllSubjects(IRI predicate, Resource object){
         return model.filter(null, predicate, object).subjects();
     }
 
-    public boolean existStatementWithIRI(IRI subject,IRI predicate,IRI object){
+    public Set<Resource> getAllSubjects(List<IRI> predicates, Resource object){
+        Set<Resource> allSubjects = new HashSet<>();
+        for(IRI predicate:predicates){
+            Set<Resource> objects=  getAllSubjects(predicate,object);
+            allSubjects.addAll(objects);
+        }
+        return allSubjects;
+    }
+
+    public Resource getFirstSubject(IRI predicate, Resource object){
+        Set<Resource>subjects= model.filter(null, predicate, object).subjects();
+        return subjects.size() > 0 ? subjects.iterator().next() : null;
+    }
+
+    public Resource getFirstResource(IRI predicate, Resource subject){
+        Set<Value>objects= model.filter(subject, predicate, null).objects();
+        for(Value object:objects){
+            if(object.isResource()){
+                return (Resource) object;
+            }
+        }
+        return null;
+    }
+
+
+    public boolean existStatementWithIRI(Resource subject,IRI predicate,Value object){
         Model resultModel =  model.filter(subject, predicate, object);
         return resultModel.size() > 0;
     }
+
+    public List<Value> getRDFCollection(Resource node){
+        List<Value> retValues = new ArrayList<>();
+        RDFCollections.asValues(model, node, retValues);
+        return retValues;
+    }
+
 }

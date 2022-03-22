@@ -1,31 +1,47 @@
 package ontology.tool.generator.representations;
 
+import org.eclipse.rdf4j.model.Resource;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import static ontology.tool.generator.OntologyGenerator.SERIALIZATION_FILE_NAME_SUFFIX;
+public abstract class ClassRepresentation extends DefaultClassRepresentation{
 
-public class ClassRepresentation extends EntityRepresentation{
+    public enum CLASS_TYPE {
+        ABSTRACT,
+        NORMAL
+    }
 
-    private List<ClassRepresentation> subClasses = new ArrayList<>();
-    private List<ClassRepresentation> superClasses = new ArrayList<>();
+    private CLASS_TYPE type;
 
-    private List<ClassRepresentation> equivalentClasses = new ArrayList<>();
+    private EquivalentClassRepresentation equivalentClass;
 
     private List<PropertyRepresentation> properties = new ArrayList<>();
 
     private boolean hasInterface;
-    private boolean hasEquivalentClassInterface;
 
-    private String equivalentInterfaceName;
+    private boolean hasSuperAbstractClass;
 
-    public ClassRepresentation(String namespace,String name){
+    private List<ClassRepresentation> unionOf = new ArrayList<>();
+
+    public ClassRepresentation(String namespace, String name,CLASS_TYPE type){
         super(namespace,name);
+        this.type = type;
     }
 
-    public String getConstantName(){return this.getName().toUpperCase()  + "_CLASS_IRI";}
+    public ClassRepresentation(String name,CLASS_TYPE type){
+        super(name);
+        this.type = type;
+    }
 
-    public String getSerializationClassName(){return this.getName() + SERIALIZATION_FILE_NAME_SUFFIX;}
+    public ClassRepresentation(CLASS_TYPE type){
+        super();
+        this.type = type;
+    }
+
+    public CLASS_TYPE getClassType(){
+        return type;
+    }
 
     public void addProperties(PropertyRepresentation property){
         this.properties.add(property);
@@ -33,34 +49,6 @@ public class ClassRepresentation extends EntityRepresentation{
 
     public List<PropertyRepresentation> getProperties() {
         return properties;
-    }
-
-    public void addSubClasses(ClassRepresentation subClasses) {
-        this.subClasses.add(subClasses);
-    }
-
-    public List<ClassRepresentation> getSubClasses(){
-        return subClasses;
-    }
-
-    public boolean hasSubClass(){
-        return !subClasses.isEmpty();
-    }
-
-    public void addSuperClasses(ClassRepresentation superClasses) {
-        this.superClasses.add(superClasses);
-    }
-
-    public List<ClassRepresentation> getSuperClasses(){
-        return superClasses;
-    }
-
-    public boolean hasSuperClass(){
-        return !superClasses.isEmpty();
-    }
-
-    public boolean hasOneSuperClass(){
-        return superClasses.size() ==1;
     }
 
     public boolean isHasInterface(){
@@ -71,31 +59,40 @@ public class ClassRepresentation extends EntityRepresentation{
         this.hasInterface = value;
     }
 
-    public void addEquivalentClass(ClassRepresentation equivalentClass){
-        this.equivalentClasses.add(equivalentClass);
+    public boolean isHasSuperAbstractClass(){
+        return hasSuperAbstractClass;
     }
 
-    public void addEquivalentClasses(List<ClassRepresentation> equivalentClasses){
-        this.equivalentClasses.addAll(equivalentClasses);
+    public void setHasSuperAbstractClass(boolean value){
+        this.hasSuperAbstractClass = value;
     }
 
-    public List<ClassRepresentation> getEquivalentClasses(){
-        return equivalentClasses;
+
+    public boolean hasEquivalentClassInterface() {
+        return equivalentClass != null;
     }
 
-    public boolean isHasEquivalentClassInterface() {
-        return hasEquivalentClassInterface;
+    public void setEquivalentClass(EquivalentClassRepresentation equivalentClass){
+        this.equivalentClass = equivalentClass;
     }
 
-    public void setHasEquivalentClassInterface(boolean hasEquivalentClassInterface) {
-        this.hasEquivalentClassInterface = hasEquivalentClassInterface;
+
+    public EquivalentClassRepresentation getEquivalentClass() {
+        return equivalentClass;
     }
 
-    public void setEquivalentInterfaceName(String equivalentInterfaceName) {
-        this.equivalentInterfaceName = equivalentInterfaceName;
+    public void addUnionOf(ClassRepresentation unionOf){
+        this.unionOf.add(unionOf);
     }
 
-    public String getEquivalentInterfaceName() {
-        return equivalentInterfaceName;
+    public List<ClassRepresentation> getUnionOf(){
+        return unionOf;
     }
+
+    public boolean isUnionOf(){
+        return !unionOf.isEmpty();
+    }
+
+    abstract public Resource getResourceValue();
+
 }

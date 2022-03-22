@@ -2,7 +2,9 @@ package ontology.tool.generator.language_generators;
 
 import ontology.tool.generator.OntologyGenerator;
 import ontology.tool.generator.VocabularyConstant;
+import ontology.tool.generator.representations.AbstractClassRepresentation;
 import ontology.tool.generator.representations.ClassRepresentation;
+import ontology.tool.generator.representations.NormalClassRepresentation;
 import ontology.tool.generator.representations.PropertyRepresentation;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 
@@ -71,12 +73,15 @@ public class PythonGenerator extends OntologyGenerator {
 
         //classes constants
         for (ClassRepresentation generatedClass : classes){
-            VocabularyConstant propC = new VocabularyConstant();
-            propC.setName( generatedClass.getConstantName());
-            propC.setValue(generatedClass.getStringIRI());
-            propC.setConstantOf("class");
-            propC.setObjectName(generatedClass.getName());
-            properties.add(propC);
+            if(generatedClass.getClassType().equals(ClassRepresentation.CLASS_TYPE.NORMAL)) {
+                NormalClassRepresentation genClass = (NormalClassRepresentation) generatedClass;
+                VocabularyConstant propC = new VocabularyConstant();
+                propC.setName(genClass.getConstantName());
+                propC.setValue(genClass.getStringIRI());
+                propC.setConstantOf("class");
+                propC.setObjectName(genClass.getName());
+                properties.add(propC);
+            }
 
             //properties constants
             for(PropertyRepresentation property: generatedClass.getProperties()){
@@ -93,15 +98,15 @@ public class PythonGenerator extends OntologyGenerator {
     }
 
     @Override
-    public Map<String, Object> getEntityData(ClassRepresentation classRep) {
+    public Map<String, Object> getEntityData(NormalClassRepresentation classRep) {
         Map<String, Object> data = new HashMap<>();
         data.put("className",classRep.getName());
         data.put("classRep",classRep);
         data.put("isClass",true);
         data.put("isMainClass",false);
         data.put("isExtended",true);
-        if( classRep.getEquivalentInterfaceName() != null){
-            data.put("extendClass", classRep.getEquivalentInterfaceName() + ENTITY_INTERFACE_SUFFIX);
+        if( classRep.getEquivalentClass() != null){
+            data.put("extendClass", classRep.getEquivalentClass().getName() + ENTITY_INTERFACE_SUFFIX);
         }else {
 
             if (classRep.isHasInterface()) {
@@ -139,7 +144,7 @@ public class PythonGenerator extends OntologyGenerator {
     }
 
     @Override
-    public Map<String, Object> getEquivalentInterfaceEntityData(String interfaceName, ClassRepresentation classRep) {
+    public Map<String, Object> getEquivalentClassEntityData(String interfaceName, ClassRepresentation classRep) {
         Map<String, Object> data = new HashMap<>();
         data.put("className",interfaceName + ENTITY_INTERFACE_SUFFIX);
         data.put("isClass",false);
@@ -155,6 +160,11 @@ public class PythonGenerator extends OntologyGenerator {
     }
 
     @Override
+    public Map<String, Object> getAbstractClassEntityData(AbstractClassRepresentation classRep) {
+        return null;
+    }
+
+    @Override
     public Map<String, Object> getMainEntityData() {
         Map<String, Object> data = new HashMap<>();
         data.put("className",CLASS_ENTITY_FILE_NAME);
@@ -167,7 +177,7 @@ public class PythonGenerator extends OntologyGenerator {
     }
 
     @Override
-    public Map<String, Object> getSerializationData(ClassRepresentation classRep) {
+    public Map<String, Object> getSerializationData(NormalClassRepresentation classRep) {
         Map<String, Object> data = new HashMap<>();
         data.put("classFileName",classRep.getName() + SERIALIZATION_FILE_NAME_SUFFIX);
         data.put("classRep",classRep);
@@ -189,7 +199,7 @@ public class PythonGenerator extends OntologyGenerator {
     }
 
     @Override
-    public Map<String, Object> getFactoryData(String fileName, List<ClassRepresentation> classes) {
+    public Map<String, Object> getFactoryData(String fileName, List<NormalClassRepresentation> classes) {
         Map<String, Object> data = new HashMap<>();
         data.put("classFileName",fileName);
         data.put("serializationClasses",classes);
