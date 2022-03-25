@@ -45,7 +45,7 @@ import ${entityPackage}.*;
 import ${rawPackage}.${vocabularyFileName};
 </#if>
 
-<#if isInterface ==true>abstract class ${classFileName}<T> <#else>public class ${classFileName?cap_first} extends ${serializationModelName}<${classRep.name?cap_first}></#if>{
+public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class ${classFileName?cap_first} extends ${serializationModelName}<${classRep.name?cap_first}></#if>{
 
 <#if isInterface ==true>
     abstract public void addToModel(Model model, T entity);
@@ -76,7 +76,7 @@ import ${rawPackage}.${vocabularyFileName};
                  }
              }
              return null;
-         }
+     }
 
      public Set<IRI> getAllIRIObjects(Model model,IRI predicate, IRI subject){
              Set<IRI> allObjectsIRIs = new HashSet<>();
@@ -149,25 +149,32 @@ import ${rawPackage}.${vocabularyFileName};
         <#else>
         <#if property.isFunctional() ==true>IRI<#else>Set<IRI></#if> ${property.name?uncap_first} = super.<#if property.isFunctional() ==true>getFirstIriObject<#else>getAllIRIObjects</#if>(model,${vocabularyFileName}.${property.getConstantName()},${classRep.name?uncap_first}.getIri());
         <#if property.isFunctional() ==true>
+        <#if property.rangeClass.getClassType().getName() =="Normal">
         if ( ${property.name?uncap_first} != null ){
             ${property.rangeClass.name?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, ${property.name?uncap_first});
             ${classRep.name?uncap_first}.set${property.name?cap_first}(${property.name?uncap_first}Instance);
         }
         <#else>
+        if ( ${property.name?uncap_first} != null ){
+            <@abstractClass property=property rangeClass=property.rangeClass/>
+        }
+        </#if>
+        <#else>
         for(IRI propValue:${property.name?uncap_first}){
+        <#if property.rangeClass.getClassType().getName() =="Normal">
             ${property.rangeClass.name?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, propValue);
             if(${property.name?uncap_first}Instance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
             ${classRep.name?uncap_first}.add${property.name?cap_first}(${property.name?uncap_first}Instance);
-        }
+        <#else>
+            <@abstractClass property=property rangeClass=property.rangeClass/>
         </#if>
+        }
+
+         </#if>
         </#if>
         </#list>
 
-         <#list classRep.getSuperClasses() as superClass>
-         <#if superClass.properties?size gt 0 || superClass.superClasses?size gt 0>
-        new ${superClass.getSerializationClassName()?cap_first}().setProperties(model, ${classRep.name?uncap_first});
-         </#if>
-         </#list>
+        <@innerSetProperties classRep=classRep/>
     }
 
     @Override
@@ -197,9 +204,7 @@ import ${rawPackage}.${vocabularyFileName};
             }
         }
 
-        <#list classRep.getSubClasses() as subClass>
-        allInstances.addAll( new ${subClass.getSerializationClassName()}().getAllInstancesFromModel(model));
-        </#list>
+                <@innerAllInstances classRep=classRep/>
 
         return allInstances;
     }
@@ -245,14 +250,103 @@ import ${rawPackage}.${vocabularyFileName};
         </#if>
         </#list>
 
-         <#list classRep.getSuperClasses() as superClass>
-         <#if superClass.properties?size gt 0 || superClass.superClasses?size gt 0>
-        new ${superClass.getSerializationClassName()?cap_first}().updateInstanceInModel(model, ${classRep.name?uncap_first});
-         </#if>
-         </#list>
+        <@innerAbstractUpdate classRep=classRep/>
     }
 
 
 </#if>
 
 }
+
+<#macro abstractClass property rangeClass>
+<#if rangeClass.isUnionOf() == true>
+    <#list rangeClass.getUnionOf() as unionClass>
+         <#if unionClass.getClassType().getName() == "Normal">
+        ${unionClass.name?cap_first} ${property.name?uncap_first}Instance${unionClass.name?cap_first} = new ${unionClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, ${property.name?uncap_first});
+        if(${property.name?uncap_first}Instance${unionClass.name?cap_first} != null){
+            ${classRep.name?uncap_first}.<#if property.isFunctional() == true>set<#else>add</#if>${property.name?cap_first}(${property.name?uncap_first}Instance${unionClass.name?cap_first});
+            <#if property.isFunctional() == true>continue;<#else>break;</#if>
+        }
+    <#else>
+    <@abstractClass property=property rangeClass=unionClass />
+     </#if>
+    </#list>
+<#elseif rangeClass.isIntersectionOf() == true>
+     <#list rangeClass.getIntersectionOf() as intersectionClass>
+        <#if intersectionClass.getClassType().getName() == "Normal">
+            SerializationModel instance =  new ${serializationFactory?cap_first}().getSerializationInstance(model,${property.name?uncap_first});
+            if(instance != null){
+                ${classRep.name?uncap_first}.<#if property.isFunctional() == true>set<#else>add</#if>${property.name?cap_first}(instance.getInstanceFromModel(model, ${property.name?uncap_first}));
+            }
+        <#else>
+            <@abstractClass property=property rangeClass=intersectionClass/>
+        </#if>
+     </#list>
+<#elseif rangeClass.isComplementOf() == true>
+    <#if rangeClass.complementOf.getClassType().getName() == "Normal">
+            //need to do
+    <#else>
+        <@abstractClass property=property rangeClass=rangeClass.getComplementOf()/>
+    </#if>
+</#if>
+</#macro>
+
+<#macro innerSetProperties classRep>
+<#list classRep.getSuperClasses() as superClass>
+          <#if superClass.getClassType().getName() == "Normal">
+         <#if superClass.properties?size gt 0 || superClass.superClasses?size gt 0>
+        new ${superClass.getSerializationClassName()?cap_first}().setProperties(model, ${classRep.name?uncap_first});
+         </#if>
+          <#else>
+                  <#if superClass.isUnionOf() == true>
+                       <#list superClass.getUnionOf() as unionClass>
+                         <@innerSetProperties classRep=unionClass />
+                       </#list>
+                  <#elseif superClass.isIntersectionOf() == true>
+                    <#list superClass.getIntersectionOf() as intersectionClass>
+                        <@innerSetProperties classRep=intersectionClass />
+                    </#list>
+                   <#elseif superClass.isComplementOf() == true>
+                    <@innerSetProperties classRep=superClass.getComplementOf() />
+                     </#if>
+         </#if>
+         </#list>
+</#macro>
+
+<#macro innerAllInstances classRep>
+<#list classRep.getSubClasses() as subClass>
+         <#if subClass.getClassType().getName() == "Normal">
+        allInstances.addAll( new ${subClass.getSerializationClassName()}().getAllInstancesFromModel(model));
+         <#else>
+         <#if subClass.isUnionOf() == true>
+              <#list subClass.getUnionOf() as unionClass>
+                <@innerAllInstances classRep=unionClass/>
+              </#list>
+         <#elseif subClass.isIntersectionOf() == true>
+            <#list subClass.getIntersectionOf() as intersectionClass>
+
+                       </#list>
+          <#elseif subClass.isComplementOf() == true>
+              <@innerAllInstances  classRep=subClass.getComplementOf()/>
+          </#if>
+          </#if>
+   </#list>
+</#macro>
+
+<#macro innerAbstractUpdate classRep>
+    <#list classRep.getSuperClasses() as superClass>
+          <#if superClass.getClassType().getName() == "Normal">
+         <#if superClass.properties?size gt 0 || superClass.superClasses?size gt 0>
+        new ${superClass.getSerializationClassName()?cap_first}().updateInstanceInModel(model, ${classRep.name?uncap_first});
+         </#if>
+         <#else>
+             <#if superClass.isUnionOf() == true>
+                <#list superClass.getUnionOf() as unionClass>
+                    <@innerAbstractUpdate classRep=unionClass />
+                </#list>
+             <#elseif superClass.isIntersectionOf() == true>
+             <#elseif superClass.isComplementOf() == true>
+             </#if>
+          </#if>
+         </#list>
+</#macro>

@@ -8,8 +8,21 @@ import java.util.List;
 public abstract class ClassRepresentation extends DefaultClassRepresentation{
 
     public enum CLASS_TYPE {
-        ABSTRACT,
-        NORMAL
+        ABSTRACT("Abstract"),
+        NORMAL("Normal");
+
+        private final String name;
+
+        /**
+         * @param name
+         */
+        private CLASS_TYPE(final String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 
     private CLASS_TYPE type;
@@ -23,6 +36,8 @@ public abstract class ClassRepresentation extends DefaultClassRepresentation{
     private boolean hasSuperAbstractClass;
 
     private List<ClassRepresentation> unionOf = new ArrayList<>();
+    private List<ClassRepresentation> intersectionOf = new ArrayList<>();
+    private ClassRepresentation complementOf;
 
     public ClassRepresentation(String namespace, String name,CLASS_TYPE type){
         super(namespace,name);
@@ -91,6 +106,30 @@ public abstract class ClassRepresentation extends DefaultClassRepresentation{
 
     public boolean isUnionOf(){
         return !unionOf.isEmpty();
+    }
+
+    public void addIntersectionOf(ClassRepresentation intersectionOf){
+        this.intersectionOf.add(intersectionOf);
+    }
+
+    public List<ClassRepresentation> getIntersectionOf(){
+        return intersectionOf;
+    }
+
+    public boolean isIntersectionOf(){
+        return !intersectionOf.isEmpty();
+    }
+
+    public void setComplementOf(ClassRepresentation complementOf){
+        this.complementOf = complementOf;
+    }
+
+    public ClassRepresentation getComplementOf(){
+        return complementOf;
+    }
+
+    public boolean isComplementOf(){
+        return complementOf != null;
     }
 
     abstract public Resource getResourceValue();

@@ -46,8 +46,12 @@ public class OntoCodeMaker {
             }
 
             OntologyMapper mapper = new OntologyMapper(modelOfTriples);
-            OntologyRepresentation ontology = mapper.getOWLOntology();
-            mapper.mapOntologyInformations(ontology);
+            List<OntologyRepresentation> ontologies = mapper.getOWLOntologies();
+            for(OntologyRepresentation ontology:ontologies){
+                mapper.mapOntologyInformations(ontology);
+            }
+           // OntologyRepresentation ontology = mapper.getOWLOntology();
+           // mapper.mapOntologyInformations(ontology);
             mapper.mapping();
             List<ClassRepresentation> classes = mapper.getMappedClasses();
 
@@ -62,7 +66,7 @@ public class OntoCodeMaker {
             }
             generator.addClasses(classes);
 
-            generator.setOntology(ontology);
+            generator.setOntologies(ontologies);
             if(outputDir!= null && !outputDir.isEmpty()){
                 generator.setOutputDir(outputDir);
             }

@@ -39,6 +39,10 @@ public abstract class DefaultClassRepresentation extends EntityRepresentation{
         this.superClasses.add(superClasses);
     }
 
+    public void addAllSuperClasses(List<ClassRepresentation> superClasses) {
+        this.superClasses.addAll(superClasses);
+    }
+
     public List<ClassRepresentation> getSuperClasses(){
         return superClasses;
     }

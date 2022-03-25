@@ -43,6 +43,10 @@ public class EntityRepresentation {
         return name;
     }
 
+    public String getFullName(){
+        return this.namespace + this.name;
+    }
+
     public void addCommentProperty(String comment){
         comments.add(comment);
     }

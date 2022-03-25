@@ -55,8 +55,8 @@ ${ captured?replace("\\n|\\r", "", "rm") }
 </#macro>
 package ${package};
 
+import org.eclipse.rdf4j.model.*;
 <#if isInterface ==false>
-import org.eclipse.rdf4j.model.IRI;
 import java.util.ArrayList;
 import java.util.List;
 <#if isAbstract ==false>
@@ -65,15 +65,15 @@ import ${rawPackage}.${vocabularyFileName};
 </#if>
 
 /**
+*   <#if classRep??>This is the class representing the ${classRep.name} class from ontology<#else>This is a base class for all the generated entities.</#if>
+*
 <#if classRep??>
 <#list classRep.labels as label>
 *  ${label}
 </#list>
-*
 <#list classRep.comments as comment>
 *  ${comment}
 </#list>
-*
 <#if classRep.creator??>
 *  Author of class ${classRep.creator}
 </#if>
@@ -84,11 +84,11 @@ import ${rawPackage}.${vocabularyFileName};
 public<#if isInterface == true > interface<#else><#if isAbstract == true> abstract</#if> class</#if> ${className}
 <#if mainInterface == false>
 <#if isExtends == true >
- extends <#list extendClasses as extendClass> ${extendClass}Int<#sep>,</#list>
+ extends <#list extendClasses as extendClass> ${extendClass}<#sep>,</#list>
 </#if>
 
 <#if isImplements == true >
- implements ${implementClass}
+ implements <#list implementClasses as implementClass> ${implementClass}<#sep>,</#list>
 </#if>
 
 </#if> {

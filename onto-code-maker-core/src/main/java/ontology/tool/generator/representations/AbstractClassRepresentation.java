@@ -1,12 +1,24 @@
 package ontology.tool.generator.representations;
 
+import ontology.tool.generator.OntologyGenerator;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Values;
+
+import static ontology.tool.generator.OntologyGenerator.ENTITY_ABSTRACTCLASS_SUFFIX;
 
 public class AbstractClassRepresentation extends ClassRepresentation {
     private String bnodeId;
 
     private boolean isGenerated = false;
+
+    private ABSTRACT_CREATE_OF createOf;
+
+    public enum ABSTRACT_CREATE_OF {
+        UNIONOF,
+        EQUIVALENT,
+        INTERSECTIONOF,
+        COMPLEMENT
+    }
 
     /**
      * This constructor is used for Bnodes , for abstract classes
@@ -39,6 +51,23 @@ public class AbstractClassRepresentation extends ClassRepresentation {
         for(ClassRepresentation eqClassRep: getUnionOf()) {
             unionName = unionName.concat(eqClassRep.getName());
         }
-        this.setName(unionName);
+        this.setName(unionName + ENTITY_ABSTRACTCLASS_SUFFIX);
     }
+
+    public void setClassNameWithConcatIntersectionClasses(){
+        String intersectionName = "IntersectionOf";
+        for(ClassRepresentation eqClassRep: getIntersectionOf()) {
+            intersectionName = intersectionName.concat(eqClassRep.getName());
+        }
+        this.setName(intersectionName + ENTITY_ABSTRACTCLASS_SUFFIX);
+    }
+
+    public void setClassNameWithConcatComplementClass(){
+        this.setName("ComplementOf"+ getComplementOf().getName() + ENTITY_ABSTRACTCLASS_SUFFIX);
+    }
+
+    public void setCreateOf(ABSTRACT_CREATE_OF createOf){
+        this.createOf = createOf;
+    }
+
 }

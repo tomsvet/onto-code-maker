@@ -2,10 +2,7 @@ package ontology.tool.generator.language_generators;
 
 import ontology.tool.generator.OntologyGenerator;
 import ontology.tool.generator.VocabularyConstant;
-import ontology.tool.generator.representations.AbstractClassRepresentation;
-import ontology.tool.generator.representations.ClassRepresentation;
-import ontology.tool.generator.representations.NormalClassRepresentation;
-import ontology.tool.generator.representations.PropertyRepresentation;
+import ontology.tool.generator.representations.*;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 
 import java.util.ArrayList;
@@ -61,14 +58,16 @@ public class PythonGenerator extends OntologyGenerator {
     public List<VocabularyConstant> createVocabularyConstants() {
         List<VocabularyConstant> properties = new ArrayList<>();
 
+        int index = 0;
         // ontology constants
-        if(ontology != null) {
+        for(OntologyRepresentation ontology:ontologies) {
             VocabularyConstant ontCon = new VocabularyConstant();
-            ontCon.setName(ontology.getName().toUpperCase() + "_ONTOLOGY_IRI");
+            ontCon.setName(ontology.getName().isEmpty()?"Default"+ index + "_ONTOLOGY_IRI":ontology.getName().toUpperCase() + "_ONTOLOGY_IRI");
             ontCon.setValue( ontology.getStringIRI());
             ontCon.setConstantOf("ontology");
             ontCon.setObjectName(ontology.getName());
             properties.add(ontCon);
+            index++;
         }
 
         //classes constants
@@ -199,13 +198,25 @@ public class PythonGenerator extends OntologyGenerator {
     }
 
     @Override
-    public Map<String, Object> getFactoryData(String fileName, List<NormalClassRepresentation> classes) {
+    public Map<String, Object> getOntologyFactoryData(List<OntologyRepresentation> ontologies,String fileName, List<NormalClassRepresentation> classes) {
         Map<String, Object> data = new HashMap<>();
         data.put("classFileName",fileName);
         data.put("serializationClasses",classes);
         data.put("package",this.packageName);
         data.put("entityClassName",CLASS_ENTITY_FILE_NAME);
         data.put("imports",new ArrayList<>());
+        return data;
+    }
+
+    public Map<String, Object> getSerializationFactoryData(List<NormalClassRepresentation> classes){
+        Map<String, Object> data = new HashMap<>();
+        data.put("classFileName",SERIALIZATION_FACTORY_FILE_NAME);
+        data.put("serializationClasses",classes);
+        data.put("typeOfFactory","Serialization");
+        data.put("package",this.packageName);
+        data.put("entityClassName",CLASS_ENTITY_FILE_NAME);
+        data.put("serializationPackage", this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_SERIALIZATION);
+        data.put("entityPackage", this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
         return data;
     }
 }

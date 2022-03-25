@@ -73,30 +73,19 @@ public class OntologyMapper {
             mapUnionOfClasses(classRep);
             mapEquivalentClasses(classRep);
             mapClassHierarchy(classRep);
-        }
+            mapIntersectionOfClass(classRep);
 
-        /*for(AbstractClassRepresentation classRep:abstractClassesMapping){
-            mapEquivalentClasses(classRep);
-            mapClassHierarchy(classRep);
-            mapUnionOfClasses(classRep);
-        }*/
+        }
 
 
         // then can map class properties
         for(ClassRepresentation classRep:ontologyClasses){
-
+            mapComplementOfClass(classRep);
             mapComments(classRep);
             mapLabels(classRep);
             mapCreator(classRep);
             mapProperties(classRep);
         }
-
-        /*for(AbstractClassRepresentation classRep:abstractClassesMapping){
-            mapComments(classRep);
-            mapLabels(classRep);
-            mapCreator(classRep);
-            mapProperties(classRep);
-        }*/
     }
 
     public void mapClasses(){
@@ -143,7 +132,16 @@ public class OntologyMapper {
     public void mapClassHierarchy(ClassRepresentation classRep) throws Exception {
 
         Set<Value> superClasses = modelManager.getAllObjects(SUBCLASS_PREDICATE_IRIS,classRep.getResourceValue());
-        for(Value superClassValue: superClasses){
+        Set<Value> finalSuperList = new HashSet<>(superClasses);
+        //to find subclass collections
+        for(Value superClass: superClasses){
+            if(superClass.isBNode()){
+                List<Value> subClassOfClasses = modelManager.getRDFCollection((Resource)superClass);
+                finalSuperList.remove(superClass);
+                finalSuperList.addAll(subClassOfClasses);
+            }
+        }
+        for(Value superClassValue: finalSuperList){
             if(superClassValue.isResource()) {
                 Resource superClassResource = (Resource) superClassValue;
                 ClassRepresentation superClassRep = getMappedClass(superClassResource);
@@ -162,12 +160,32 @@ public class OntologyMapper {
         }
     }
 
+    public Set<Value> mergeClassRepresenationLists(Set<Value> one,Set<Resource> two){
+        Set<Value> finalList = new HashSet<>(one);
+        for (Value x : two){
+            if (!finalList.contains(x)){
+                finalList.add(x);
+            }
+        }
+        return finalList;
+    }
+
     public List<ClassRepresentation> getEquivalentClasses(ClassRepresentation classRep, List<ClassRepresentation> actualEquivalentClasses) throws Exception {
 
         Set<Value> equivalentClasses = modelManager.getAllObjects(EQUIVALENT_CLASS_PREDICATE_IRIS,classRep.getResourceValue());
         Set<Resource> equivalentClassesSubjects = modelManager.getAllSubjects(EQUIVALENT_CLASS_PREDICATE_IRIS,classRep.getResourceValue());
         equivalentClasses.addAll(equivalentClassesSubjects);
+        Set<Value> finalEqList = new HashSet<>(equivalentClasses);
+        //to find equivalent collections
         for(Value eqClass: equivalentClasses){
+            if(eqClass.isBNode()){
+                List<Value> equivalentOfClasses = modelManager.getRDFCollection((Resource)eqClass);
+                finalEqList.remove(eqClass);
+                finalEqList.addAll(equivalentOfClasses);
+            }
+        }
+
+        for(Value eqClass: finalEqList){
 
             if(eqClass.isResource()) {
                 ClassRepresentation eqClassRep = getMappedClass((Resource) eqClass);
@@ -177,7 +195,7 @@ public class OntologyMapper {
                         actualEquivalentClasses.add(eqClassRep);
                         getEquivalentClasses(eqClassRep, actualEquivalentClasses);
                     }
-                } else {
+                }else{
                     throw new Exception("Class " + eqClass.stringValue() + " doesn't exist in the ontology.");
                 }
             }
@@ -197,6 +215,10 @@ public class OntologyMapper {
                 equivalentClass.addEquivalentClasses(equivalentClasses);
                 equivalentClass.setClassNameWithConcatEquivalentClasses();
                 classRep.setEquivalentClass(equivalentClass);
+                //this is here because of collection of equivalent classes
+                for(ClassRepresentation eqClass:equivalentClasses){
+                    eqClass.setEquivalentClass(equivalentClass);
+                }
 
                 equivalentClassesMapping.add(equivalentClass);
             }
@@ -233,12 +255,61 @@ public class OntologyMapper {
         }
     }
     
-    public void mapIntersectionOfClass(ClassRepresentation classRep){
+    public void mapIntersectionOfClass(ClassRepresentation classRep) throws Exception {
+        Resource intersectionNode = modelManager.getFirstResource(OWL.INTERSECTIONOF,classRep.getResourceValue());
+        if(intersectionNode == null){
+            return;
+        }
+        List<Value> intersectionOfClasses = modelManager.getRDFCollection(intersectionNode);
+        for (Value intersectionValue : intersectionOfClasses)
+        {
+            if (intersectionValue.isResource()) {
+                ClassRepresentation childClass = getMappedClass((Resource) intersectionValue);
 
+                if (childClass != null) {
+                    classRep.addIntersectionOf(childClass);
+                    if (classRep.getClassType().equals(ClassRepresentation.CLASS_TYPE.ABSTRACT)) {
+                        ((AbstractClassRepresentation) classRep).setClassNameWithConcatIntersectionClasses();
+                        childClass.setHasSuperAbstractClass(true);
+                    }
+                    //mapping union is to subclass
+                    //todo
+                    classRep.addSuperClasses(childClass);
+                    childClass.addSubClasses(classRep);
+                } else {
+                    throw new Exception("Class " + intersectionValue.stringValue() + " doesn't exist in the ontology.");
+                }
+            }
+        }
     }
 
-    public void mapComplementOfClass(ClassRepresentation classRep){
+    public void mapComplementOfClass(ClassRepresentation classRep) throws Exception {
+        Resource complementResource = modelManager.getFirstResource(OWL.COMPLEMENTOF,classRep.getResourceValue());
+        if(complementResource == null){
+            return;
+        }
 
+        ClassRepresentation complementOfClass = getMappedClass( complementResource);
+
+        if (complementOfClass != null) {
+            classRep.setComplementOf(complementOfClass);
+            if (classRep.getClassType().equals(ClassRepresentation.CLASS_TYPE.ABSTRACT)) {
+                ((AbstractClassRepresentation) classRep).setClassNameWithConcatComplementClass();
+                complementOfClass.setHasSuperAbstractClass(true);
+            }
+            List<ClassRepresentation> superClasses = complementOfClass.getSuperClasses();
+            classRep.addAllSuperClasses(superClasses);
+            for(ClassRepresentation superClass:superClasses){
+                superClass.addSubClasses(classRep);
+            }
+            //superClasses.add(classRep);
+                //mapping union is to subclass
+                //todo
+                //classRep.addSuperClasses(childClass);
+                //childClass.addSuperClasses(classRep);
+        } else {
+            throw new Exception("Class " + complementResource.stringValue() + " doesn't exist in the ontology.");
+        }
     }
 
     public void mapComments(ClassRepresentation classRep){
@@ -486,6 +557,19 @@ public class OntologyMapper {
             return onto;
         }
         return null;
+    }
+
+    public List<OntologyRepresentation> getOWLOntologies(){
+        Set<IRI> owlOntologyIRIs = modelManager.getAllIRISubjects(RDF.TYPE,OWL.ONTOLOGY);
+        List<OntologyRepresentation> ontologies = new ArrayList<>();
+        for(IRI owlOntologyIRI:owlOntologyIRIs){
+            if(!modelManager.getAllIRISubjects(OWL.PRIORVERSION,owlOntologyIRI).isEmpty()){
+                continue;
+            }
+            OntologyRepresentation onto = new OntologyRepresentation(owlOntologyIRI.getNamespace(), owlOntologyIRI.getLocalName());
+            ontologies.add(onto);
+        }
+        return ontologies;
     }
 
 }

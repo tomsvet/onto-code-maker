@@ -39,17 +39,18 @@ abstract public class OntologyGenerator {
     protected static String VOCABULARY_FILE_NAME = "Vocabulary";
     protected static String SERIALIZATION_MODEL_FILE_NAME = "SerializationModel";
     public static String SERIALIZATION_FILE_NAME_SUFFIX = "Serialization";
-    protected static String FACTORY_FILE_NAME_SUFFIX = "Factory" ;
-    protected static String DEFAULT_FACTORY_FILE_NAME = "Ontology" + FACTORY_FILE_NAME_SUFFIX;
     protected static String CLASS_ENTITY_FILE_NAME = "OntoEntity";
     //protected static String CLASS_ENTITY_FILE_NAME = CLASS_ENTITY_NAME ;
     protected static String ENTITY_INTERFACE_SUFFIX = "Int";
-    protected static String ENTITY_ABSTRACTCLASS_SUFFIX = "Abstract";
+    public static String ENTITY_ABSTRACTCLASS_SUFFIX = "Abstract";
     public static HashMap<IRI, String> dataTypes = new HashMap<>();
 
+    protected static String SERIALIZATION_FACTORY_FILE_NAME = "SerialializationFactory" ;
+    protected static String FACTORY_FILE_NAME_SUFFIX = "Worker" ;
+    protected static String DEFAULT_FACTORY_FILE_NAME = "Ontology" + FACTORY_FILE_NAME_SUFFIX;
     Configuration cfg;
     
-    protected OntologyRepresentation ontology = null;
+    protected List<OntologyRepresentation> ontologies = new ArrayList<>();
     protected List<ClassRepresentation> classes = new ArrayList<>();
     //protected List<ClassRepresentation> entityClasses = new ArrayList<>();
 
@@ -99,6 +100,18 @@ abstract public class OntologyGenerator {
         return classes.parallelStream().filter(classRep -> classRep instanceof NormalClassRepresentation).map(foundClass -> (NormalClassRepresentation)foundClass).collect(Collectors.toList());
     }
 
+    public List<AbstractClassRepresentation> getAbstractClassReps(){
+        return classes.parallelStream().filter(classRep -> classRep instanceof AbstractClassRepresentation).map(foundClass -> (AbstractClassRepresentation)foundClass).collect(Collectors.toList());
+    }
+
+    public List<AbstractClassRepresentation> getAbstractClassWithoutInterface(){
+        return classes.parallelStream().filter(classRep -> classRep instanceof AbstractClassRepresentation && !classRep.isHasInterface()).map(foundClass -> (AbstractClassRepresentation)foundClass).collect(Collectors.toList());
+    }
+
+    public List<AbstractClassRepresentation> getAbstractClassWithoutInterfaceFromSuperClass(ClassRepresentation classRep){
+        return classRep.getSuperClasses().parallelStream().filter(superClass -> superClass instanceof AbstractClassRepresentation && !superClass.isHasInterface()).map(foundClass -> (AbstractClassRepresentation)foundClass).collect(Collectors.toList());
+    }
+
     public void addClasses( List<ClassRepresentation> classes){
         this.classes.addAll(classes);
     }
@@ -107,8 +120,12 @@ abstract public class OntologyGenerator {
         this.entityClasses.addAll(classes);
     }*/
 
-    public void setOntology(OntologyRepresentation ontology){
+    /*public void setOntology(OntologyRepresentation ontology){
         this.ontology = ontology;
+    }*/
+
+    public void setOntologies(List<OntologyRepresentation> ontologies){
+        this.ontologies = ontologies;
     }
 
     public Template getTemplate(TEMPLATE_TYPE type) throws IOException {
@@ -163,7 +180,7 @@ abstract public class OntologyGenerator {
         }
 
         try {
-            generateFactory();
+            generateFactories();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -183,11 +200,11 @@ abstract public class OntologyGenerator {
                     }
                 }else if(property.getType().equals(PropertyRepresentation.PROPERTY_TYPE.OBJECT)){
                     if(property.getRangeClass() != null && property.getRangeResource() != null){
-                        String name = property.getRangeResource().isIRI()? ((IRI)property.getRangeResource()).getLocalName():((BNode)property.getRangeResource()).getID();
+                        //String name = property.getRangeResource().isIRI()? ((IRI)property.getRangeResource()).getLocalName():((BNode)property.getRangeResource()).getID();
                         if(property.getRangeClass().isHasInterface()){
-                            property.setRangeDatatype(name + ENTITY_INTERFACE_SUFFIX);
+                            property.setRangeDatatype(property.getRangeClass().getName() + ENTITY_INTERFACE_SUFFIX);
                         }else{
-                            property.setRangeDatatype(name);
+                            property.setRangeDatatype(property.getRangeClass().getName());
                         }
 
                     }
@@ -236,11 +253,21 @@ abstract public class OntologyGenerator {
         if(generatedClass.hasSubClass() && !generatedClass.isHasInterface()) {
             //If SubClasses Have More Super Classes
             // this is needed when subclasses of generated Class  have more than one superclass because it need extends more classes (in java only interfaces)
-            Optional<ClassRepresentation> result1 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 1).findFirst();
+            List<ClassRepresentation> resultList = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 1).collect(Collectors.toList());
+            boolean result1 = false;
+            if(!resultList.isEmpty()){
+                List<ClassRepresentation> res = resultList.parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 2 || classRep.getSuperClasses().get(0).getClassType() == classRep.getSuperClasses().get(1).getClassType()).collect(Collectors.toList());
+                if(res.size() == resultList.size()){
+                    result1 = true;
+                }
+            }
+
             // if subclasses have equivalent class
             Optional<ClassRepresentation> result2 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getEquivalentClass() != null).findFirst();
 
-            generatedClass.setHasInterface(result1.isPresent() || result2.isPresent());
+            //Optional<ClassRepresentation> result3 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getSuperClasses().size() == 2 && classRep.getSuperClasses().get(0).getClassType() != classRep.getSuperClasses().get(1).getClassType()).findFirst();
+
+            generatedClass.setHasInterface(result1 || result2.isPresent());
         }
     }
 
@@ -276,7 +303,7 @@ abstract public class OntologyGenerator {
             Map<String, Object> classData;
             if(generatedClass instanceof AbstractClassRepresentation){
                 AbstractClassRepresentation abstractGeneratedClass =(AbstractClassRepresentation) generatedClass;
-                filepath = entitiesOutputFile + abstractGeneratedClass.getName() + ENTITY_ABSTRACTCLASS_SUFFIX + FILE_EXTENSION;
+                filepath = entitiesOutputFile + abstractGeneratedClass.getName() + FILE_EXTENSION;
                 classData = getAbstractClassEntityData(abstractGeneratedClass);
             }else{
                 filepath = entitiesOutputFile + generatedClass.getName() + FILE_EXTENSION;
@@ -344,21 +371,30 @@ abstract public class OntologyGenerator {
         }
     }
 
-    public void generateFactory() throws IOException {
+    public void generateFactories() throws IOException {
         Template templateFile = getTemplate(TEMPLATE_TYPE.FACTORY);
         if (templateFile == null) {
             logger.error("Problem loading factory template.");
             return ;
         }
 
+        Map<String, Object> dataSer = getSerializationFactoryData(getNormalClassReps());
+        try (Writer fileWriter = new FileWriter(new File(this.outputDir + SERIALIZATION_FACTORY_FILE_NAME + FILE_EXTENSION))) {
+            templateFile.process(dataSer, fileWriter);
+        } catch (TemplateException e) {
+            e.printStackTrace();
+        }
+
         String fileName;
-        if(ontology != null && !ontology.getName().isEmpty()){
-            fileName = ontology.getName() + FACTORY_FILE_NAME_SUFFIX;
+        if(ontologies.size() == 1 && !ontologies.get(0).getName().isEmpty()){
+            fileName = ontologies.get(0).getName() + FACTORY_FILE_NAME_SUFFIX;
+        }else if(ontologies.size() > 1) {
+            fileName = "Ontologies" + FACTORY_FILE_NAME_SUFFIX;
         }else{
             fileName = DEFAULT_FACTORY_FILE_NAME ;
         }
 
-        Map<String, Object> data = getFactoryData(fileName,getNormalClassReps());
+        Map<String, Object> data = getOntologyFactoryData(ontologies,fileName,getNormalClassReps());
         try (Writer fileWriter = new FileWriter(new File(this.outputDir + fileName + FILE_EXTENSION))) {
             templateFile.process(data, fileWriter);
         } catch (TemplateException e) {
@@ -379,7 +415,6 @@ abstract public class OntologyGenerator {
 
     abstract public Map<String, Object> getMainSerializationData();
 
-    abstract public Map<String, Object> getFactoryData(String fileName,List<NormalClassRepresentation> classes);
 
     abstract public  List<VocabularyConstant> createVocabularyConstants();
 
@@ -387,4 +422,7 @@ abstract public class OntologyGenerator {
 
     abstract public Map<String, Object> getAbstractClassEntityData(AbstractClassRepresentation classRep);
 
+    abstract public Map<String, Object> getOntologyFactoryData(List<OntologyRepresentation> ontologies,String fileName,List<NormalClassRepresentation> classes);
+
+    abstract public Map<String, Object> getSerializationFactoryData(List<NormalClassRepresentation> classes);
 }
