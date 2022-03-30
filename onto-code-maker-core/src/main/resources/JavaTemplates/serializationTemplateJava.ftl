@@ -1,18 +1,19 @@
+<#global seqDatatypes = ["java.net.URL", "java.util.Date", "java.time.Duration","java.sql.Timestamp","java.lang.Integer","java.time.LocalTime"]>
 <#macro value property litName>
 <#if property.rangeDatatype == "java.net.URL">
 new java.net.URL(${litName}.stringValue())
 <#elseif property.rangeDatatype == "java.util.Date">
-new java.util.Date(${litName}.stringValue())
+${litName}.calendarValue().toGregorianCalendar().getTime()
 <#elseif property.rangeDatatype == "java.time.Duration">
-new java.time.Duration(${litName}.stringValue())
+Duration.parse(${litName}.stringValue())
 <#elseif property.rangeDatatype == "java.sql.Timestamp">
-new java.sql.Timestamp(${litName}.longValue())
-<#elseif property.rangeDatatype == "java.lang.Integer">
-new java.lang.Integer(${litName}.stringValue())
+new java.sql.Timestamp(${litName}.calendarValue().toGregorianCalendar().getTimeInMillis())
+<#elseif property.rangeDatatype == "Integer">
+Integer.valueOf(${litName}.intValue())
 <#elseif property.rangeDatatype == "java.time.LocalTime">
-new LocalTime(${litName}.stringValue())
+LocalTime.of(${litName}.calendarValue().getHour(),hasTime.calendarValue().getMinute(),hasTime.calendarValue().getSecond())
 <#else>
-${litName}.${property.rangeDatatype}Value()
+${litName}.${property.rangeDatatype?uncap_first}Value()
 </#if>
 </#macro>
 
@@ -35,24 +36,40 @@ import org.eclipse.rdf4j.model.*;
 import java.util.Collection;
 import java.util.Set;
 import java.util.HashSet;
-
-<#if isInterface ==false>
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.util.Values;
-import java.util.ArrayList;
-import java.time.LocalTime;
-import ${entityPackage}.*;
-import ${rawPackage}.${vocabularyFileName};
+import java.util.*;
+<#if classRep ??>
+<#list classRep.properties as property>
+<#if property.rangeDatatype == "java.time.Duration">
+import ${property.rangeDatatype};
+<#elseif property.rangeDatatype == "java.time.LocalTime">
+import ${property.rangeDatatype};
+</#if>
+</#list>
 </#if>
 
-public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class ${classFileName?cap_first} extends ${serializationModelName}<${classRep.name?cap_first}></#if>{
+import java.util.stream.Collectors;
+import ${entityPackage}.*;
+import org.eclipse.rdf4j.model.util.Values;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+
+<#if isInterface ==false>
+import java.time.LocalTime;
+import ${rawPackage}.${vocabularyFileName};
+<#else>
+import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.util.RDFCollections;
+
+</#if>
+
+public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class ${classFileName?cap_first} extends ${serializationModelName}<${classRep.getDatatypeValue()?cap_first}></#if>{
 
 <#if isInterface ==true>
     abstract public void addToModel(Model model, T entity);
 
-    abstract public T getInstanceFromModel(Model model, IRI name)throws Exception;
+    abstract public T getInstanceFromModel(Model model, IRI name, int nestingLevel)throws Exception;
 
-    abstract public Collection<T> getAllInstancesFromModel(Model model) throws Exception;
+    abstract public Collection<T> getAllInstancesFromModel(Model model,int nestingLevel) throws Exception;
 
     abstract public void removeInstanceFromModel(Model model, IRI name);
 
@@ -92,9 +109,85 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
      public Set<Value> getAllObjects(Model model,IRI predicate, IRI subject){
         return model.filter(subject, predicate, null).objects();
       }
+
+      public IRI getFirstIRISubject(Model model,IRI predicate, Resource object){
+              Set<Resource> subjects = getAllSubjects(model,predicate,object);
+              for(Resource subject : subjects){
+                  if(subject.isIRI()){
+                      return (IRI) subject;
+                  }
+              }
+              return null;
+          }
+
+    public Set<Resource> getAllSubjects(Model model,IRI predicate, Resource object){
+        return model.filter(null, predicate, object).subjects();
+    }
+
+     public Set<IRI> getAllIRISubjects(Model model,IRI predicate, Resource object){
+        Set<IRI> allSubjectsIRIs = new HashSet<>();
+        Set<Resource> subjects = getAllSubjects(model,predicate,object);
+        for(Resource subject:subjects){
+            if(subject.isIRI()){
+                allSubjectsIRIs.add((IRI) subject);
+            }
+        }
+        return allSubjectsIRIs;
+     }
+
+     public Set<Resource> getAllResourceObjects(Model model,IRI predicate, IRI subject){
+             Set<Resource> allObjectsIRIs = new HashSet<>();
+             Set<Value> objects = getAllObjects(model,predicate,subject);
+             for(Value object:objects){
+                 if(object.isResource()){
+                     allObjectsIRIs.add((Resource)object);
+                 }
+             }
+             return allObjectsIRIs;
+     }
+
+     public Model getModelRDFCollection(Model model,Resource node){
+        return RDFCollections.getCollection(model, node, new LinkedHashModel());
+     }
+
+    public List<Value> getRDFCollection(Model model,Resource node){
+        List<Value> retValues = new ArrayList<>();
+        RDFCollections.asValues(model, node, retValues);
+        return retValues;
+    }
+
+    public void setRDFCollection(Model model,IRI subject,IRI predicate,List<OntoEntity> values){
+        List<IRI> irisValues = values.stream().map( entity -> entity.getIri()).collect(Collectors.toList());
+        if(!irisValues.isEmpty()){
+            Resource head = Values.bnode();
+            model.addAll( RDFCollections.asRDF(irisValues, head, new LinkedHashModel()));
+            model.add(subject, predicate, head);
+        }
+    }
+
+    public IRI getSubjectOfCollectionValue(Model model,IRI predicate,Resource object){
+            if( model.contains(null,predicate,object)){
+                return getFirstIRISubject(model,predicate,object);
+            }else {
+                Set<Resource> objs = model.filter(null, null, object).subjects();
+                for (Resource obj : objs) {
+                    if (obj.isBNode() && model.contains(null, predicate, obj)) {
+                        return getFirstIRISubject(model, predicate, obj);
+                    }else if(obj.isBNode()){
+                        IRI retVal = getSubjectOfCollectionValue(model, predicate, obj);
+                        if(retVal != null){
+                            return retVal;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
 <#else>
     @Override
-    public void addToModel(Model model, ${classRep.name?cap_first} ${classRep.name?uncap_first}) {
+    public void addToModel(Model model, ${classRep.getDatatypeValue()?cap_first} ${classRep.name?uncap_first}) {
         model.add(${classRep.name?uncap_first}.getIri(),RDF.TYPE, ${classRep.name?uncap_first}.getClassIRI());
         <#assign propSize =  classRep.properties?size>
         <#assign superClassesNum =  classRep.superClasses?size>
@@ -105,38 +198,61 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
     }
 
    <#if  propSize gt 0 || superClassesNum gt 0 >
-    protected void addPropertiesToModel(Model model,  ${classRep.name?cap_first} ${classRep.name?uncap_first}) {
+    protected void addPropertiesToModel(Model model,  ${classRep.getDatatypeValue()?cap_first} ${classRep.name?uncap_first}) {
         <#list classRep.properties as property>
+        <#if property.isEquivalentTo ??>
+        <#else>
         <#if property.isFunctional() == true>
         <#if property.type == "DATATYPE">
-        <@compress_single_line>
-        model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},<@propertyType property=property classRep=classRep propValue= classRep.name?uncap_first + ".get" + property.name?cap_first+ "()"/>);
-        </@compress_single_line>
-        <#else>
         if(${classRep.name?uncap_first}.get${property.name?cap_first}() != null){
+        <@compress_single_line>
+            model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},<@propertyType property=property classRep=classRep propValue= classRep.name?uncap_first + ".get" + property.name?cap_first+ "()"/>);
+        </@compress_single_line>
+        }
+        <#else>
+        <#if property.isSuperProperty() == true>
+        if(${classRep.name?uncap_first}.get${property.name?cap_first}() != null
+        <@compress_single_line>
+        <#list property.getSubProperties() as subProperty>
+        <#if property.isFunctional() == true>
+         && ${classRep.name?uncap_first}.get${property.name?cap_first}() != ${classRep.name?uncap_first}.get${subProperty.name?cap_first}();
+        <#else>
+         && !${classRep.name?uncap_first}.get${subProperty.name?cap_first}().contains(${classRep.name?uncap_first}.get${property.name?cap_first}())
+         </#if>
+        </#list>
+        </@compress_single_line>
+        ){
+        <#else>
+        if(${classRep.name?uncap_first}.get${property.name?cap_first}() != null ){
+        </#if>
             <@compress_single_line>
             model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},<@propertyType property=property classRep=classRep propValue= classRep.name?uncap_first + ".get" + property.name?cap_first+ "()"/>);
             </@compress_single_line>
         }
         </#if>
         <#else>
-        for(${property.rangeDatatype} propValue:${classRep.name?uncap_first}.get${property.name?cap_first}()){
-        <@compress_single_line>
-            model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()}, <@propertyType property=property classRep=classRep propValue="propValue"/>);
-        </@compress_single_line>
-        }
+        List<OntoEntity> ${property.name?uncap_first}Pom = new ArrayList<>();
+                ${property.name?uncap_first}Pom.addAll(${classRep.name?uncap_first}.get${property.name?cap_first}());
+        <#if property.isSuperProperty() == true>
+        <#list property.getSubProperties() as subProperty>
+        ${property.name?uncap_first}Pom.removeAll(${classRep.name?uncap_first}.get${subProperty.name?cap_first}());
+        </#list>
         </#if>
-
+        setRDFCollection(model,${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},${property.name?uncap_first}Pom);
+        </#if>
+        </#if>
         </#list>
         <#list classRep.getSuperClasses() as superClass>
+        <#if superClass.getClassType().getName() == "Normal">
         <#if superClass.properties?size gt 0 || superClass.superClasses?size gt 0>
         new ${superClass.getSerializationClassName()?cap_first}().addPropertiesToModel(model, ${classRep.name?uncap_first});
+        </#if>
         </#if>
         </#list>
     }
     </#if>
 
-    protected void setProperties(Model model,${classRep.name?cap_first} ${classRep.name?uncap_first}) throws Exception{
+    protected void setProperties(Model model,${classRep.getDatatypeValue()?cap_first} ${classRep.name?uncap_first},int nestingLevel) throws Exception{
         <#list classRep.properties as property>
 
         <#if property.type == "DATATYPE">
@@ -147,11 +263,38 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
 
         }
         <#else>
-        <#if property.isFunctional() ==true>IRI<#else>Set<IRI></#if> ${property.name?uncap_first} = super.<#if property.isFunctional() ==true>getFirstIriObject<#else>getAllIRIObjects</#if>(model,${vocabularyFileName}.${property.getConstantName()},${classRep.name?uncap_first}.getIri());
+    <#if ! property.isEquivalentTo??>
+        <#if property.isFunctional() ==true>IRI<#else>Set<Resource></#if> ${property.name?uncap_first} = super.<#if property.isFunctional() ==true>getFirstIriObject<#else>getAllResourceObjects</#if>(model,${vocabularyFileName}.${property.getConstantName()},${classRep.name?uncap_first}.getIri());
         <#if property.isFunctional() ==true>
         <#if property.rangeClass.getClassType().getName() =="Normal">
+         <#list property.getEquivalentProperties() as eqProp>
+         if ( ${property.name?uncap_first} == null){
+              // check equivalent property ${eqProp.name}
+               ${property.name?uncap_first} = super.getFirstIriObject(model,${vocabularyFileName}.${eqProp.getConstantName()},${classRep.name?uncap_first}.getIri());
+         }
+         </#list>
+        <#if property.isInverseFunctionalTo() ==true || property.isInverseFunctionalOf() == true>
+        if ( ${property.name?uncap_first} == null){
+            // check inverse functional property
+            ${property.name?uncap_first} = super.getSubjectOfCollectionValue(model,${vocabularyFileName}.<#if property.isInverseFunctionalTo() ==true>${property.getInverseFunctionalTo().getConstantName()}<#else>${property.getInverseFunctionalOf().getConstantName()}</#if>,${classRep.name?uncap_first}.getIri());
+        }
+        </#if>
+        <#if property.isInverseTo() ==true>
+        <#list property.getInverseTo() as inverseProp>
+        if ( ${property.name?uncap_first} == null){
+            // check inverse property ${inverseProp.name}
+            ${property.name?uncap_first} = super.getSubjectOfCollectionValue(model,${vocabularyFileName}.${inverseProp.getConstantName()},${classRep.name?uncap_first}.getIri());
+            //${property.name?uncap_first} = super.getFirstIRISubject(model,${vocabularyFileName}.${inverseProp.getConstantName()},${classRep.name?uncap_first}.getIri());
+        }
+        </#list>
+        <#elseif property.isInverseOf() == true>
+         if ( ${property.name?uncap_first} == null){
+            // check inverse property ${property.isInverseOf().name}
+            ${property.name?uncap_first} = super.getFirstIRISubject(model,${vocabularyFileName}.${property.getInverseOf().getConstantName()},${classRep.name?uncap_first}.getIri());
+         }
+         </#if>
         if ( ${property.name?uncap_first} != null ){
-            ${property.rangeClass.name?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, ${property.name?uncap_first});
+            ${property.rangeClass.getDatatypeValue()?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, ${property.name?uncap_first},nestingLevel);
             ${classRep.name?uncap_first}.set${property.name?cap_first}(${property.name?uncap_first}Instance);
         }
         <#else>
@@ -160,17 +303,41 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
         }
         </#if>
         <#else>
-        for(IRI propValue:${property.name?uncap_first}){
-        <#if property.rangeClass.getClassType().getName() =="Normal">
-            ${property.rangeClass.name?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, propValue);
-            if(${property.name?uncap_first}Instance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
-            ${classRep.name?uncap_first}.add${property.name?cap_first}(${property.name?uncap_first}Instance);
-        <#else>
-            <@abstractClass property=property rangeClass=property.rangeClass/>
+         <#list property.getEquivalentProperties() as eqProp>
+         // check equivalent ${eqProp.name}
+         ${property.name?uncap_first}.addAll(super.getAllResourceObjects(model,${vocabularyFileName}.${eqProp.getConstantName()},${classRep.name?uncap_first}.getIri()));
+         </#list>
+        <#if property.isInverseTo() ==true>
+        <#list property.getInverseTo() as inverseProp>
+         // add also all values from inverse property ${inverseProp.name}
+         ${property.name?uncap_first}.addAll(super.getAllIRISubjects(model,${vocabularyFileName}.${property.getInverseTo().getConstantName()},${classRep.name?uncap_first}.getIri()));
+         </#list>
+        <#elseif property.isInverseOf() == true>
+        // add also all values from inverse property ${property.getInverseOf().name}
+         ${property.name?uncap_first}.addAll(super.getAllIRISubjects(model,${vocabularyFileName}.${property.getInverseOf().getConstantName()},${classRep.name?uncap_first}.getIri()));
         </#if>
+        for(Resource propValue:${property.name?uncap_first}){
+        <#if property.rangeClass.getClassType().getName() =="Normal">
+            if(propValue.isIRI()) {
+                ${property.rangeClass.getDatatypeValue()?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
+                if(${property.name?uncap_first}Instance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
+                ${classRep.name?uncap_first}.add${property.name?cap_first}(${property.name?uncap_first}Instance);
+        <#else>
+                <@abstractClass property=property rangeClass=property.rangeClass/>
+        </#if>
+            }else if(propValue.isBNode()){
+                List<Value> listOfValues = super.getRDFCollection(model,(BNode)propValue);
+                for(Value value:listOfValues){
+                    if(value.isIRI()){
+                        ${property.rangeClass.getDatatypeValue()?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, (IRI)value,nestingLevel);
+                        if(${property.name?uncap_first}Instance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
+                        ${classRep.name?uncap_first}.add${property.name?cap_first}(${property.name?uncap_first}Instance);
+                    }
+                 }
+            }
         }
-
-         </#if>
+        </#if>
+        </#if>
         </#if>
         </#list>
 
@@ -178,13 +345,14 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
     }
 
     @Override
-    public ${classRep.name?cap_first} getInstanceFromModel(Model model,IRI instanceIri) throws Exception{
+    public ${classRep.getDatatypeValue()?cap_first} getInstanceFromModel(Model model,IRI instanceIri,int nestingLevel) throws Exception{
         Model statements = model.filter(instanceIri,RDF.TYPE,${classRep.name?cap_first}.CLASS_IRI);
         if(statements.size() != 0){
             ${classRep.name?cap_first} ${classRep.name?uncap_first} = new ${classRep.name?cap_first}(instanceIri);
-
-            setProperties(model, ${classRep.name?uncap_first});
-
+            if(nestingLevel > 0){
+                nestingLevel--;
+                setProperties(model, ${classRep.name?uncap_first},nestingLevel);
+            }
             return ${classRep.name?uncap_first};
         }
 
@@ -192,14 +360,14 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
     }
 
     @Override
-    public Collection<${classRep.name?cap_first}> getAllInstancesFromModel(Model model)throws Exception{
+    public Collection<${classRep.getDatatypeValue()?cap_first}> getAllInstancesFromModel(Model model,int nestingLevel)throws Exception{
         Model statements = model.filter(null,RDF.TYPE,${classRep.name?cap_first}.CLASS_IRI);
-        Collection<${classRep.name?cap_first}> allInstances = new ArrayList<>();
+        Collection<${classRep.getDatatypeValue()?cap_first}> allInstances = new ArrayList<>();
         for(Statement statement:statements){
             Resource subject = statement.getSubject();
             if(subject.isIRI()){
                 IRI iri = (IRI) subject;
-                ${classRep.name?cap_first} ${classRep.name?uncap_first} = getInstanceFromModel(model,iri);
+                ${classRep.getDatatypeValue()?cap_first} ${classRep.name?uncap_first} = getInstanceFromModel(model,iri,nestingLevel);
                 allInstances.add(${classRep.name?uncap_first});
             }
         }
@@ -211,46 +379,31 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
 
     @Override
     public void removeInstanceFromModel(Model model,IRI instanceIri) {
-        model.remove(instanceIri,RDF.TYPE,${classRep.name?cap_first}.CLASS_IRI);
-
-        Model statements = model.filter(instanceIri,null,null);
-        for(Statement statement:statements){
-            model.remove(statement);
+        Set<Value> rdfCollections = model.filter(instanceIri,null,null).objects();
+        List<Value> listOfnodes = rdfCollections.stream().filter(o -> o.isBNode()).collect(Collectors.toList());
+        for(Value node:listOfnodes){
+            model.removeAll(getModelRDFCollection(model,(BNode)node));
+            model.remove(instanceIri,null,(BNode)node);
         }
+        model.remove(instanceIri,RDF.TYPE,${classRep.name?cap_first}.CLASS_IRI);
+        model.remove(instanceIri,null,null);
     }
 
     @Override
-    public void updateInstanceInModel(Model model,${classRep.name?cap_first} ${classRep.name?uncap_first}){
-        <#list classRep.properties as property>
+    public void updateInstanceInModel(Model model,${classRep.getDatatypeValue()?cap_first} ${classRep.name?uncap_first}){
+        Set<Value> rdfCollections = model.filter(${classRep.name?uncap_first}.getIri(),null,null).objects();
+        List<Value> listOfnodes = rdfCollections.stream().filter(Value::isBNode).collect(Collectors.toList());
+        for(Value node:listOfnodes){
+            model.removeAll(getModelRDFCollection(model,(BNode)node));
+            model.remove(${classRep.name?uncap_first}.getIri(),null,node);
+        }
 
-        <#if property.type == "DATATYPE">
-        Literal ${property.name?uncap_first} = super.getFirstLiteralObject(model,${vocabularyFileName}.${property.getConstantName()},${classRep.name?uncap_first}.getIri());
-        if ( ${property.name?uncap_first} == null || !${property.name?uncap_first}.equals(<@propertyType property=property classRep=classRep propValue= classRep.name?uncap_first + ".get" + property.name?cap_first+ "()"/>)){
-            model.remove(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},${property.name?uncap_first});
-            <@compress_single_line>
-            model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},<@propertyType property=property classRep=classRep propValue= classRep.name?uncap_first + ".get" + property.name?cap_first+ "()"/>);
-            </@compress_single_line>
-        }
-        <#else>
-        <#if property.isFunctional() ==true>IRI<#else>Set<IRI></#if> ${property.name?uncap_first} = super.<#if property.isFunctional() ==true>getFirstIriObject<#else>getAllIRIObjects</#if>(model,${vocabularyFileName}.${property.getConstantName()},${classRep.name?uncap_first}.getIri());
-        <#if property.isFunctional() ==true>
-        if (( ${property.name?uncap_first} == null && ${classRep.name?uncap_first}.get${property.name?cap_first}() != null ) ||( ${property.name?uncap_first} != null && !${property.name?uncap_first}.equals(${classRep.name?uncap_first}.get${property.name?cap_first}().getIri()))){
-            model.remove(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},${property.name?uncap_first});
-            model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},${classRep.name?uncap_first}.get${property.name?cap_first}().getIri());
+        Model statements = model.filter(${classRep.name?uncap_first}.getIri(),null,null);
+        statements.removeIf(event -> !event.getPredicate().equals(RDF.TYPE));
 
-        }
-        <#else>
-        for(IRI propValue:${property.name?uncap_first}){
-            model.remove(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},propValue);
-        }
-        for(${property.rangeClass.name?cap_first} propValue:${classRep.name?uncap_first}.get${property.name?cap_first}()){
-            model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},propValue.getIri());
-        }
+        <#if  propSize gt 0 || superClassesNum gt 0 >
+        addPropertiesToModel(model,${classRep.name?uncap_first});
         </#if>
-        </#if>
-        </#list>
-
-        <@innerAbstractUpdate classRep=classRep/>
     }
 
 
@@ -262,13 +415,13 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
 <#if rangeClass.isUnionOf() == true>
     <#list rangeClass.getUnionOf() as unionClass>
          <#if unionClass.getClassType().getName() == "Normal">
-        ${unionClass.name?cap_first} ${property.name?uncap_first}Instance${unionClass.name?cap_first} = new ${unionClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, ${property.name?uncap_first});
+        ${unionClass.name?cap_first} ${property.name?uncap_first}Instance${unionClass.name?cap_first} = new ${unionClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, ${property.name?uncap_first},nestingLevel);
         if(${property.name?uncap_first}Instance${unionClass.name?cap_first} != null){
             ${classRep.name?uncap_first}.<#if property.isFunctional() == true>set<#else>add</#if>${property.name?cap_first}(${property.name?uncap_first}Instance${unionClass.name?cap_first});
             <#if property.isFunctional() == true>continue;<#else>break;</#if>
         }
     <#else>
-    <@abstractClass property=property rangeClass=unionClass />
+    //todo
      </#if>
     </#list>
 <#elseif rangeClass.isIntersectionOf() == true>
@@ -276,7 +429,7 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
         <#if intersectionClass.getClassType().getName() == "Normal">
             SerializationModel instance =  new ${serializationFactory?cap_first}().getSerializationInstance(model,${property.name?uncap_first});
             if(instance != null){
-                ${classRep.name?uncap_first}.<#if property.isFunctional() == true>set<#else>add</#if>${property.name?cap_first}(instance.getInstanceFromModel(model, ${property.name?uncap_first}));
+                ${classRep.name?uncap_first}.<#if property.isFunctional() == true>set<#else>add</#if>${property.name?cap_first}(instance.getInstanceFromModel(model, ${property.name?uncap_first},nestingLevel));
             }
         <#else>
             <@abstractClass property=property rangeClass=intersectionClass/>
@@ -295,12 +448,12 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
 <#list classRep.getSuperClasses() as superClass>
           <#if superClass.getClassType().getName() == "Normal">
          <#if superClass.properties?size gt 0 || superClass.superClasses?size gt 0>
-        new ${superClass.getSerializationClassName()?cap_first}().setProperties(model, ${classRep.name?uncap_first});
+        new ${superClass.getSerializationClassName()?cap_first}().setProperties(model, ${classRep.name?uncap_first},nestingLevel);
          </#if>
           <#else>
                   <#if superClass.isUnionOf() == true>
                        <#list superClass.getUnionOf() as unionClass>
-                         <@innerSetProperties classRep=unionClass />
+                       //todo
                        </#list>
                   <#elseif superClass.isIntersectionOf() == true>
                     <#list superClass.getIntersectionOf() as intersectionClass>
@@ -316,11 +469,11 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
 <#macro innerAllInstances classRep>
 <#list classRep.getSubClasses() as subClass>
          <#if subClass.getClassType().getName() == "Normal">
-        allInstances.addAll( new ${subClass.getSerializationClassName()}().getAllInstancesFromModel(model));
+        allInstances.addAll( new ${subClass.getSerializationClassName()}().getAllInstancesFromModel(model,nestingLevel));
          <#else>
          <#if subClass.isUnionOf() == true>
               <#list subClass.getUnionOf() as unionClass>
-                <@innerAllInstances classRep=unionClass/>
+                    //todo
               </#list>
          <#elseif subClass.isIntersectionOf() == true>
             <#list subClass.getIntersectionOf() as intersectionClass>
@@ -342,7 +495,7 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
          <#else>
              <#if superClass.isUnionOf() == true>
                 <#list superClass.getUnionOf() as unionClass>
-                    <@innerAbstractUpdate classRep=unionClass />
+                   //todo
                 </#list>
              <#elseif superClass.isIntersectionOf() == true>
              <#elseif superClass.isComplementOf() == true>

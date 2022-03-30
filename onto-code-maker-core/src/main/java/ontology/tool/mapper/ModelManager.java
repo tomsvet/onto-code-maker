@@ -1,7 +1,9 @@
 package ontology.tool.mapper;
 
 import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.RDFCollections;
+import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 
 import java.util.ArrayList;
@@ -216,6 +218,12 @@ public class ModelManager {
         List<Value> retValues = new ArrayList<>();
         RDFCollections.asValues(model, node, retValues);
         return retValues;
+    }
+
+    public void setRDFCOllection(IRI subject,IRI predicate,List<IRI> values){
+        Resource head = Values.bnode();
+        model.addAll( RDFCollections.asRDF(values, head, new LinkedHashModel()));
+        model.add(subject, predicate, head);
     }
 
 }

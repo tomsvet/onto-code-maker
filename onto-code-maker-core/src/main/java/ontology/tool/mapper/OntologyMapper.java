@@ -80,6 +80,8 @@ public class OntologyMapper {
 
         // then can map class properties
         for(ClassRepresentation classRep:ontologyClasses){
+            findOutInterfaceClassValueOfClass(classRep);
+
             mapComplementOfClass(classRep);
             mapComments(classRep);
             mapLabels(classRep);
@@ -272,7 +274,7 @@ public class OntologyMapper {
                         ((AbstractClassRepresentation) classRep).setClassNameWithConcatIntersectionClasses();
                         childClass.setHasSuperAbstractClass(true);
                     }
-                    //mapping union is to subclass
+                    //mapping intersection is to subclass
                     //todo
                     classRep.addSuperClasses(childClass);
                     childClass.addSubClasses(classRep);
@@ -337,6 +339,28 @@ public class OntologyMapper {
         return classRep.getEquivalentClass()!= null?classRep.getEquivalentClass().getEquivalentClasses().stream().map( eqClass -> eqClass.getResourceValue()).collect(Collectors.toList()) : new ArrayList<>(Arrays.asList(classRep.getResourceValue()));
     }
 
+    public void findOutInterfaceClassValueOfClass(ClassRepresentation generatedClass){
+        if(generatedClass.hasSubClass() && !generatedClass.isHasInterface()) {
+            //If SubClasses Have More Super Classes
+            // this is needed when subclasses of generated Class  have more than one superclass because it need extends more classes (in java only interfaces)
+            List<ClassRepresentation> resultList = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 1).collect(Collectors.toList());
+            boolean result1 = false;
+            if(!resultList.isEmpty()){
+                List<ClassRepresentation> res = resultList.parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 2 || classRep.getSuperClasses().get(0).getClassType() == classRep.getSuperClasses().get(1).getClassType()).collect(Collectors.toList());
+                if(res.size() == resultList.size()){
+                    result1 = true;
+                }
+            }
+
+            // if subclasses have equivalent class
+            Optional<ClassRepresentation> result2 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getEquivalentClass() != null).findFirst();
+
+            //Optional<ClassRepresentation> result3 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getSuperClasses().size() == 2 && classRep.getSuperClasses().get(0).getClassType() != classRep.getSuperClasses().get(1).getClassType()).findFirst();
+
+            generatedClass.setHasInterface(result1 || result2.isPresent());
+        }
+    }
+
     /*public void mapProperties(){
         Set<Resource> datatypeProperties = modelManager.getAllSubjects(RDF.TYPE, OWL.DATATYPEPROPERTY);
         for(Resource property : datatypeProperties){
@@ -374,12 +398,14 @@ public class OntologyMapper {
                 property.setType(PropertyRepresentation.PROPERTY_TYPE.DATATYPE);
                 IRI range = modelManager.getFirstIRIObject(RDFS.RANGE, propertyIRI);
                 property.setRangeResource(range);
-                property.setIsFunctional(true);
+                //property.setIsFunctional(true);
                 classRep.addProperties(property);
 
+                mapFunctionalProperties(property);
                 mapEquivalentProperties(classRep,property);
-
                 mapPropertyHierarchy(classRep,property);
+
+                //datatypes properties cannot be inverse and inversefunctional
 
             }else if(modelManager.existStatementWithIRI(propertyIRI,RDF.TYPE, OWL.OBJECTPROPERTY)) {
                 PropertyRepresentation property = new PropertyRepresentation(propertyIRI.getNamespace(), propertyIRI.getLocalName());
@@ -425,6 +451,8 @@ public class OntologyMapper {
         if(isInverseFunctionalProperty) {
             PropertyRepresentation inverseProperty = createInverseProperty(classRep, property, Values.iri(classRep.getNamespace() + classRep.getName().toLowerCase()));
             inverseProperty.setIsFunctional(true);
+            inverseProperty.setInverseFunctionalOf(property);
+            property.setInverseFunctionalTo(inverseProperty);
         }
     }
 
@@ -434,6 +462,8 @@ public class OntologyMapper {
         Set<IRI> inverseIRIProperties = modelManager.getAllIRISubjects(OWL.INVERSEOF, property.getValueIRI());
         for(IRI inversePropertyIRI :inverseIRIProperties){
             PropertyRepresentation inverseProperty = createInverseProperty(classRep, property, inversePropertyIRI);
+            inverseProperty.setInverseOf(property);
+            property.addInverseTo(inverseProperty);
             /*PropertyRepresentation inverseProperty = new PropertyRepresentation(inversePropertyIRI.getNamespace(), inversePropertyIRI.getLocalName());
             inverseProperty.setRangeIRI(classRep.getValueIRI());
             inverseProperty.setRangeClass(classRep);
@@ -502,11 +532,16 @@ public class OntologyMapper {
                 //todo need to check if functional property is set in equivalent classes
                 equivalentPropertyRep.setIsFunctional(property.isFunctional());
                 //mapFunctionalProperties(equivalentPropertyRep);
-                equivalentPropertyRep.setIsEquivalentTo(property);
+                equivalentPropertyRep.setIsEquivalentTo(property);// todo collection equivalent properties
+                equivalentPropertyRep.addEquivalentProperty(property);
                 property.addEquivalentProperty(equivalentPropertyRep);
                 classRep.addProperties(equivalentPropertyRep);
                 mapEquivalentProperties(classRep, equivalentPropertyRep);
                 mapPropertyHierarchy(classRep, equivalentPropertyRep);
+                if(equivalentPropertyRep.getType().equals(PropertyRepresentation.PROPERTY_TYPE.OBJECT)){
+                    mapInverseProperties(classRep,equivalentPropertyRep);
+                    mapInverseFunctionalProperties(classRep,equivalentPropertyRep);
+                }
             }
         }
     }
@@ -525,8 +560,13 @@ public class OntologyMapper {
                 property.addSubProperty(subPropertyRep);
                 subPropertyRep.addSuperProperty(property);
                 classRep.addProperties(subPropertyRep);
+                mapFunctionalProperties(property);
                 mapEquivalentProperties(classRep, subPropertyRep);
                 mapPropertyHierarchy(classRep, subPropertyRep);
+                if(subPropertyRep.getType().equals(PropertyRepresentation.PROPERTY_TYPE.OBJECT)){
+                    mapInverseProperties(classRep,subPropertyRep);
+                    mapInverseFunctionalProperties(classRep,subPropertyRep);
+                }
             }
         }
     }

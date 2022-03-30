@@ -29,22 +29,22 @@
 <#if property.isEquivalentTo??>
 <#if property.isEquivalentTo.isFunctional() == true>
         if(this.${property.isEquivalentTo.name?uncap_first} == null || !this.${property.isEquivalentTo.name?uncap_first}.equals(${property.name})){
-            set${property.isEquivalentTo.name?cap_first}(${property.name});
+            this.${property.isEquivalentTo.name?uncap_first} = ${property.name};
         }
 <#else>
         if(!this.${property.isEquivalentTo.name?uncap_first}.contains(${property.name})){
-            add${property.isEquivalentTo.name?cap_first}(${property.name});
+            this.${property.isEquivalentTo.name?uncap_first}.add(${property.name});
         }
 </#if>
 </#if>
 <#list property.equivalentProperties as eqProp>
 <#if eqProp.isFunctional() == true>
         if(this.${eqProp.name?uncap_first} == null || !this.${eqProp.name?uncap_first}.equals(${property.name})){
-            set${eqProp.name?cap_first}(${property.name});
+            this.${eqProp.name?uncap_first} = ${property.name};
         }
 <#else>
         if(!this.${eqProp.name?uncap_first}.contains(${property.name})){
-            add${eqProp.name?cap_first}(${property.name});
+            this.${eqProp.name?uncap_first}.add(${property.name});
         }
 </#if>
 </#list>
@@ -56,18 +56,21 @@ ${ captured?replace("\\n|\\r", "", "rm") }
 package ${package};
 
 import org.eclipse.rdf4j.model.*;
+import java.util.List;
 <#if isInterface ==false>
 import java.util.ArrayList;
-import java.util.List;
 <#if isAbstract ==false>
 import ${rawPackage}.${vocabularyFileName};
 </#if>
 </#if>
 
 /**
-*   <#if classRep??>This is the class representing the ${classRep.name} class from ontology<#else>This is a base class for all the generated entities.</#if>
+*  <@compress_single_line>
+<#if classRep?? && isInterface == false>This is the class representing the ${classRep.name} class from ontology<#elseif mainInterface == true>This is a base class for all the generated entities.
+<#elseif isEquivalent ??> This is interface representing equivalence of classes<#elseif isInterface == true> This is interface for class ${className} </#if>
+</@compress_single_line>
 *
-<#if classRep??>
+<#if classRep?? && isInterface == false>
 <#list classRep.labels as label>
 *  ${label}
 </#list>
@@ -114,6 +117,8 @@ public<#if isInterface == true > interface<#else><#if isAbstract == true> abstra
     <#if property.isPrivate ==true>private<#else>public</#if> <#if property.isFunctional() == true>${property.rangeDatatype}<#else>List<${property.rangeDatatype}></#if> ${property.name}<#if property.isFunctional() == false> = new ArrayList<>()</#if>;
 </#list>
 
+<@superVariables classRep=classRep/>
+
     public ${className}(IRI iri){
             <#if extendedInterface == false>
             super(iri);
@@ -128,6 +133,17 @@ public<#if isInterface == true > interface<#else><#if isAbstract == true> abstra
     public IRI getIri();
 
     public IRI getClassIRI();
+    <#else>
+    <#list classRep.properties as property>
+    <#if ! property.isEquivalentTo ??>
+    <#if property.isFunctional() == true>
+    void set${property.name?cap_first}(${property.rangeDatatype} ${property.name});
+    <#else>
+    void add${property.name?cap_first}(${property.rangeDatatype} ${property.name});
+    </#if>
+    </#if>
+    <#if property.isFunctional() == true>${property.rangeDatatype}<#else>List<${property.rangeDatatype}></#if> get${property.name?cap_first}();
+    </#list>
     </#if>
 <#else>
     <#if extendedInterface == true>
@@ -145,24 +161,70 @@ public<#if isInterface == true > interface<#else><#if isAbstract == true> abstra
 
 <#if isInterface ==false>
 <#list classRep.properties as property>
+<#if property.isEquivalentTo ??>
+<#else>
     <#if property.isFunctional() == true>
     public void set${property.name?cap_first}(${property.rangeDatatype} ${property.name}){
         this.${property.name} = ${property.name};
-
-        <@settingProperty property=property/>
+        <@settingProperty property/>
     }
     <#else>
     public void add${property.name?cap_first}(${property.rangeDatatype} ${property.name}){
         this.${property.name}.add(${property.name});
-
-        <@settingProperty property=property/>
+        <@settingProperty property/>
     }
     </#if>
-
+</#if>
     public <#if property.isFunctional() == true>${property.rangeDatatype}<#else>List<${property.rangeDatatype}></#if> get${property.name?cap_first}(){
         return ${property.name};
     }
 
 </#list>
+
+    <@setterAndGetters classRep=classRep />
+
 </#if>
 }
+
+<#macro superVariables classRep >
+<#list classRep.getSuperClasses() as superClass>
+<#if superClass.hasInterface>
+<#list superClass.properties as property>
+    /**
+    * Property ${property.getStringIRI()}. This property is from super class.
+    <@variableComment property=property/>
+    **/
+    <#if property.isPrivate ==true>private<#else>public</#if> <#if property.isFunctional() == true>${property.rangeDatatype}<#else>List<${property.rangeDatatype}></#if> ${property.name}<#if property.isFunctional() == false> = new ArrayList<>()</#if>;
+
+</#list>
+<@superVariables classRep=superClass />
+</#if>
+</#list>
+</#macro>
+
+
+<#macro setterAndGetters classRep >
+<#list classRep.getSuperClasses() as superClass>
+<#if superClass.hasInterface>
+<#list superClass.properties as property>
+<#if ! property.isEquivalentTo ??>
+    <#if property.isFunctional() == true>
+    public void set${property.name?cap_first}(${property.rangeDatatype} ${property.name}){
+        this.${property.name} = ${property.name};
+        <@settingProperty property/>
+    }
+    <#else>
+    public void add${property.name?cap_first}(${property.rangeDatatype} ${property.name}){
+        this.${property.name}.add(${property.name});
+        <@settingProperty property/>
+    }
+    </#if>
+</#if>
+    public <#if property.isFunctional() == true>${property.rangeDatatype}<#else>List<${property.rangeDatatype}></#if> get${property.name?cap_first}(){
+        return ${property.name};
+    }
+</#list>
+<@setterAndGetters classRep=superClass />
+</#if>
+</#list>
+</#macro>

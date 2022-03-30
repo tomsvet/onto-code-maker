@@ -20,6 +20,10 @@ public class PropertyRepresentation extends EntityRepresentation {
     private String value;
     private ClassRepresentation rangeClass;
     private boolean isFunctional = false;
+    private PropertyRepresentation inverseFunctionalOf;
+    private PropertyRepresentation inverseFunctionalTo;
+    private PropertyRepresentation inverseOf;
+    private List<PropertyRepresentation> inverseTo = new ArrayList<>();
     private List<PropertyRepresentation> subProperties = new ArrayList<>();
     private List<PropertyRepresentation> superProperties = new ArrayList<>();
 
@@ -133,6 +137,10 @@ public class PropertyRepresentation extends EntityRepresentation {
         return !superProperties.isEmpty();
     }
 
+    public boolean isSuperProperty(){
+        return !subProperties.isEmpty();
+    }
+
     public void addSuperProperty(PropertyRepresentation superProperty) {
         this.superProperties.add(superProperty);
     }
@@ -148,4 +156,61 @@ public class PropertyRepresentation extends EntityRepresentation {
     public List<PropertyRepresentation> getEquivalentProperties(){
         return equivalentProperties;
     }
+
+    public boolean hasEquivalentProperties(){
+        return !equivalentProperties.isEmpty();
+    }
+
+
+
+    public void setInverseFunctionalOf(PropertyRepresentation property){
+        this.inverseFunctionalOf = property;
+    }
+
+    public PropertyRepresentation getInverseFunctionalOf(){
+        return this.inverseFunctionalOf;
+    }
+
+    public boolean isInverseFunctionalOf(){
+        return this.inverseFunctionalOf != null;
+    }
+
+    public void setInverseFunctionalTo(PropertyRepresentation property){
+        this.inverseFunctionalTo = property;
+    }
+
+    public PropertyRepresentation getInverseFunctionalTo(){
+        return this.inverseFunctionalTo;
+    }
+
+    public boolean isInverseFunctionalTo(){
+        return this.inverseFunctionalTo!= null;
+    }
+
+    public void setInverseOf(PropertyRepresentation property){
+        this.inverseOf = property;
+    }
+
+    public PropertyRepresentation getInverseOf(){
+        return this.inverseOf;
+    }
+
+    public boolean isInverseOf(){
+        return this.inverseOf != null;
+    }
+
+    public void addInverseTo(PropertyRepresentation property){
+        this.inverseTo.add(property);
+    }
+
+    public List<PropertyRepresentation> getInverseTo(){
+        return this.inverseTo;
+    }
+
+    public boolean isInverseTo(){
+        return !this.inverseTo.isEmpty();
+    }
+
+
+
 }

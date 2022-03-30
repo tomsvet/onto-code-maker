@@ -102,11 +102,11 @@ public class ${classFileName?cap_first}{
     }
 
     public ${serialization.name?cap_first} get${serialization.name?cap_first}FromModel(String name) throws Exception{
-        return (${serialization.name?cap_first}) serializationFactory.getSerializationInstance(${vocabularyFileName}.${serialization.getConstantName()}).getInstanceFromModel(ontology,Values.iri(name));
+        return (${serialization.name?cap_first}) serializationFactory.getSerializationInstance(${vocabularyFileName}.${serialization.getConstantName()}).getInstanceFromModel(ontology,Values.iri(name),2);
     }
 
     public Collection<${serialization.name?cap_first}> getAll${serialization.name?cap_first}InstancesFromModel() throws Exception{
-        return serializationFactory.getSerializationInstance(${vocabularyFileName}.${serialization.getConstantName()}).getAllInstancesFromModel(ontology);
+        return serializationFactory.getSerializationInstance(${vocabularyFileName}.${serialization.getConstantName()}).getAllInstancesFromModel(ontology,2);
     }
 
     public void remove${serialization.name?cap_first}FromModel(String name){

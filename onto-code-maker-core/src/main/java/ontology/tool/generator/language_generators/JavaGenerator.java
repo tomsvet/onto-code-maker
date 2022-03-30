@@ -20,22 +20,22 @@ public class JavaGenerator extends OntologyGenerator {
         FILE_EXTENSION = ".java";
 
         dataTypes.put(XSD.ANYURI,"java.net.URL");
-        dataTypes.put(XSD.BOOLEAN,"boolean");
-        dataTypes.put(XSD.BYTE,"byte");
+        dataTypes.put(XSD.BOOLEAN,"Boolean");
+        dataTypes.put(XSD.BYTE,"Byte");
         dataTypes.put(XSD.DATE,"java.util.Date");
         dataTypes.put(XSD.DATETIME,"java.util.Date");
         dataTypes.put(XSD.DATETIMESTAMP,"java.sql.Timestamp");
         dataTypes.put(XSD.DAYTIMEDURATION,"java.time.Duration");
-        dataTypes.put(XSD.DECIMAL,"float");
-        dataTypes.put(XSD.DOUBLE,"double");
+        dataTypes.put(XSD.DECIMAL,"Float");
+        dataTypes.put(XSD.DOUBLE,"Double");
         dataTypes.put(XSD.DURATION,"java.time.Duration");
-        dataTypes.put(XSD.FLOAT,"float");
-        dataTypes.put(XSD.INT,"int");
-        dataTypes.put(XSD.INTEGER,"java.lang.Integer");
-        dataTypes.put(XSD.LONG,"long");
-        dataTypes.put(XSD.SHORT,"short");
+        dataTypes.put(XSD.FLOAT,"Float");
+        dataTypes.put(XSD.INT,"Integer");
+        dataTypes.put(XSD.INTEGER,"Integer");
+        dataTypes.put(XSD.LONG,"Long");
+        dataTypes.put(XSD.SHORT,"Short");
         dataTypes.put(XSD.TIME,"java.time.LocalTime");
-        dataTypes.put(XSD.NON_NEGATIVE_INTEGER,"int");
+        dataTypes.put(XSD.NON_NEGATIVE_INTEGER,"Integer");
     }
     public JavaGenerator() {
         super();
@@ -118,6 +118,8 @@ public class JavaGenerator extends OntologyGenerator {
     public Map<String, Object> getEquivalentClassEntityData(String className, ClassRepresentation classRep){
         Map<String, Object> data = new HashMap<>();
         data.put("className",className + ENTITY_INTERFACE_SUFFIX);
+        data.put("classRep",classRep);
+        data.put("isEquivalent",true);
         data.put("isInterface",true);
         data.put("mainInterface",false);
         data.put("isExtends",true);
@@ -135,6 +137,7 @@ public class JavaGenerator extends OntologyGenerator {
     public Map<String, Object> getInterfaceEntityData(ClassRepresentation classRep){
         Map<String, Object> data = new HashMap<>();
         data.put("className",classRep.getName() + ENTITY_INTERFACE_SUFFIX);
+        data.put("classRep",classRep);
         data.put("isInterface",true);
         data.put("mainInterface",false);
         data.put("isExtends",true);
@@ -180,14 +183,14 @@ public class JavaGenerator extends OntologyGenerator {
                     extendClasses.add(absClasses.get(0).getName());
                 }
             }
-            if(!implementClasses.isEmpty()){
-                data.put("isImplements",true);
-                data.put("implementClasses", implementClasses);
-            }
-            if(!extendClasses.isEmpty()){
-                data.put("isExtends",true);
-                data.put("extendClasses",extendClasses);
-            }
+        }
+        if(!implementClasses.isEmpty()){
+            data.put("isImplements",true);
+            data.put("implementClasses", implementClasses);
+        }
+        if(!extendClasses.isEmpty()){
+            data.put("isExtends",true);
+            data.put("extendClasses",extendClasses);
         }
         data.put("rawPackage",this.packageName);
         data.put("package", this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
@@ -227,15 +230,16 @@ public class JavaGenerator extends OntologyGenerator {
                     extendClasses.add(absClasses.get(0).getName());
                 }
             }
-            if(!implementClasses.isEmpty()){
-                data.put("isImplements",true);
-                data.put("implementClasses", implementClasses);
-            }
-            if(!extendClasses.isEmpty()){
-                data.put("isExtends",true);
-                data.put("extendClasses",extendClasses);
-            }
         }
+        if(!implementClasses.isEmpty()){
+            data.put("isImplements",true);
+            data.put("implementClasses", implementClasses);
+        }
+        if(!extendClasses.isEmpty()){
+            data.put("isExtends",true);
+            data.put("extendClasses",extendClasses);
+        }
+
         data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
         data.put("properties",new ArrayList<>()); //classRep.
         data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
@@ -265,6 +269,7 @@ public class JavaGenerator extends OntologyGenerator {
         data.put("classFileName",SERIALIZATION_MODEL_FILE_NAME);
         data.put("isInterface",true);
         data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_SERIALIZATION);
+        data.put("entityPackage",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
         return data;
     }
 

@@ -4,6 +4,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Values;
 
+import static ontology.tool.generator.OntologyGenerator.ENTITY_INTERFACE_SUFFIX;
 import static ontology.tool.generator.OntologyGenerator.SERIALIZATION_FILE_NAME_SUFFIX;
 
 public class NormalClassRepresentation extends ClassRepresentation{
@@ -28,6 +29,14 @@ public class NormalClassRepresentation extends ClassRepresentation{
 
     public Resource getResourceValue(){
         return Values.iri(super.getNamespace() + super.getName());
+    }
+
+    public String getDatatypeValue(){
+        if(isHasInterface()){
+            return getName() + ENTITY_INTERFACE_SUFFIX;
+        }else{
+            return getName();
+        }
     }
 
 }

@@ -14,14 +14,15 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-enum TEMPLATE_TYPE {
-    CLASS,
-    VOCABULARY,
-    SERIALIZATION,
-    FACTORY
-}
 
 abstract public class OntologyGenerator {
+
+    enum TEMPLATE_TYPE {
+        CLASS,
+        VOCABULARY,
+        SERIALIZATION,
+        FACTORY
+    }
 
     private static final Logger logger = LogManager.getLogger(OntologyGenerator.class);
 
@@ -41,12 +42,12 @@ abstract public class OntologyGenerator {
     public static String SERIALIZATION_FILE_NAME_SUFFIX = "Serialization";
     protected static String CLASS_ENTITY_FILE_NAME = "OntoEntity";
     //protected static String CLASS_ENTITY_FILE_NAME = CLASS_ENTITY_NAME ;
-    protected static String ENTITY_INTERFACE_SUFFIX = "Int";
+    public static String ENTITY_INTERFACE_SUFFIX = "Int";
     public static String ENTITY_ABSTRACTCLASS_SUFFIX = "Abstract";
     public static HashMap<IRI, String> dataTypes = new HashMap<>();
 
     protected static String SERIALIZATION_FACTORY_FILE_NAME = "SerialializationFactory" ;
-    protected static String FACTORY_FILE_NAME_SUFFIX = "Worker" ;
+    protected static String FACTORY_FILE_NAME_SUFFIX = "Factory" ;
     protected static String DEFAULT_FACTORY_FILE_NAME = "Ontology" + FACTORY_FILE_NAME_SUFFIX;
     Configuration cfg;
     
@@ -57,6 +58,7 @@ abstract public class OntologyGenerator {
     protected String outputDir = DEFAULT_OUTPUT_DIR + "/";
     protected String packageName = "";
 
+    private List<String> primitiveDataTypes = Arrays.asList("int","long","short","boolean","float");
 
 
     public OntologyGenerator(){
@@ -293,7 +295,7 @@ abstract public class OntologyGenerator {
                 generateEquivalentClass(templateFile,entitiesOutputFile,generatedClass);
             }
 
-            findOutInterfaceClassValueOfClass(generatedClass);
+            //findOutInterfaceClassValueOfClass(generatedClass);
 
             if(generatedClass.isHasInterface()){
                 generateInterfaceClass(templateFile,entitiesOutputFile,generatedClass);
