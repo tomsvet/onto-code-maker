@@ -476,7 +476,7 @@ public class OntologyMapper {
 
             //todo check if can be possible inverse inversed property
             mapInverseProperties(rangeClass,inverseProperty);
-
+            List<PropertyRepresentation> actualEquivalentProperties =new ArrayList<>();
             mapEquivalentProperties(rangeClass,inverseProperty);
             mapPropertyHierarchy(rangeClass,inverseProperty);
         }
@@ -518,30 +518,37 @@ public class OntologyMapper {
     }
 
 
-
     public void mapEquivalentProperties(ClassRepresentation classRep, PropertyRepresentation property){
-        //List<IRI> equivalentProperties = new ArrayList<>();
-        Set<IRI> equivalentProperties = modelManager.getAllIRISubjects(OWL.EQUIVALENTPROPERTY, property.getValueIRI());
+        Set<Resource> equivalentProperties = modelManager.getAllSubjects(OWL.EQUIVALENTPROPERTY, property.getValueIRI());
 
-        //equivalentProperties = getEquivalentProperties(property.getValueIRI(),equivalentProperties);
-       // equivalentProperties.remove(property.getValueIRI());
-        for(IRI equivalentProperty:equivalentProperties){
-            List<IRI> setIRIs = getAllPropertiesIRIs(classRep);
-            if(!setIRIs.contains(equivalentProperty)) {
-                PropertyRepresentation equivalentPropertyRep = createSameProperty(property, equivalentProperty);
-                //todo need to check if functional property is set in equivalent classes
-                equivalentPropertyRep.setIsFunctional(property.isFunctional());
-                //mapFunctionalProperties(equivalentPropertyRep);
-                equivalentPropertyRep.setIsEquivalentTo(property);// todo collection equivalent properties
-                equivalentPropertyRep.addEquivalentProperty(property);
-                property.addEquivalentProperty(equivalentPropertyRep);
-                classRep.addProperties(equivalentPropertyRep);
-                mapEquivalentProperties(classRep, equivalentPropertyRep);
-                mapPropertyHierarchy(classRep, equivalentPropertyRep);
-                if(equivalentPropertyRep.getType().equals(PropertyRepresentation.PROPERTY_TYPE.OBJECT)){
-                    mapInverseProperties(classRep,equivalentPropertyRep);
-                    mapInverseFunctionalProperties(classRep,equivalentPropertyRep);
+        for(Resource equivalentProperty:equivalentProperties){
+            if(equivalentProperty.isIRI()) {
+                List<IRI> setIRIs = getAllPropertiesIRIs(classRep);
+                if (!setIRIs.contains(equivalentProperty)) {
+                    PropertyRepresentation equivalentPropertyRep = createSameProperty(property, (IRI)equivalentProperty);
+                    //todo need to check if functional property is set in equivalent classes
+                    equivalentPropertyRep.setIsFunctional(property.isFunctional());
+                    //mapFunctionalProperties(equivalentPropertyRep);
+                    equivalentPropertyRep.setIsEquivalentTo(property);// todo collection equivalent properties
+                    equivalentPropertyRep.addEquivalentProperty(property);
+                    property.addEquivalentProperty(equivalentPropertyRep);
+                    mapPropertyHierarchy(classRep, equivalentPropertyRep);
+                    if (equivalentPropertyRep.getType().equals(PropertyRepresentation.PROPERTY_TYPE.OBJECT)) {
+                        mapInverseProperties(classRep, equivalentPropertyRep);
+                        mapInverseFunctionalProperties(classRep, equivalentPropertyRep);
+                    }
+                    classRep.addProperties(equivalentPropertyRep);
+                    mapEquivalentProperties(classRep, equivalentPropertyRep);
+
+                    List<PropertyRepresentation> actualEquivalentProperties = new ArrayList<>();
+                    actualEquivalentProperties.addAll(equivalentPropertyRep.getEquivalentProperties());
+                    actualEquivalentProperties.remove(property);
+                    actualEquivalentProperties.add(equivalentPropertyRep);
+                    property.getEquivalentProperties().clear();
+                    property.getEquivalentProperties().addAll(actualEquivalentProperties);
                 }
+            }else if (equivalentProperty.isBNode()){
+
             }
         }
     }

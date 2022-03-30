@@ -153,6 +153,10 @@ public class PropertyRepresentation extends EntityRepresentation {
         this.equivalentProperties.add(equivalentProperty);
     }
 
+    public void addAllEquivalentProperty(List<PropertyRepresentation> equivalentProperty){
+        this.equivalentProperties.addAll(equivalentProperty);
+    }
+
     public List<PropertyRepresentation> getEquivalentProperties(){
         return equivalentProperties;
     }

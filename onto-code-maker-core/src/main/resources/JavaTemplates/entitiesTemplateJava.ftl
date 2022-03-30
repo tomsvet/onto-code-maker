@@ -12,39 +12,48 @@
 *  ${label}
 </#list>
 </#macro>
-<#macro settingProperty property>
-<#if property.isSubProperty() ==true>
-<#list property.getSuperProperties() as subProp>
-<#if subProp.isFunctional() == true>
-        if(this.${subProp.name?uncap_first} == null || !this.${subProp.name?uncap_first}.equals(${property.name})){
-            set${subProp.name?cap_first}(${property.name});
+<#macro settingProperty property valueName>
+    <#if property.isSubProperty() == true>
+        <#list property.getSuperProperties() as superProp>
+            <#if superProp.isFunctional() == true>
+        if(this.${superProp.name?uncap_first} == null || !this.${superProp.name?uncap_first}.equals(${valueName})){
+                <#if property.isEquivalentTo??>
+            set${superProp.name?cap_first}(${valueName});
+                <#else>
+            this.${superProp.name?uncap_first} = ${valueName};
+                </#if>
         }
-<#else>
-        if(!this.${subProp.name?uncap_first}.contains(${property.name})){
-            add${subProp.name?cap_first}(${property.name});
+            <#else>
+        if(!this.${superProp.name?uncap_first}.contains(${valueName})){
+                <#if property.isEquivalentTo??>
+            add${superProp.name?cap_first}(${valueName});
+                <#else>
+            this.${superProp.name?uncap_first}.add(${valueName});
+                </#if>
         }
-</#if>
-</#list>
-</#if>
+            </#if>
+         <@settingProperty property=superProp valueName=valueName/>
+        </#list>
+    </#if>
 <#if property.isEquivalentTo??>
 <#if property.isEquivalentTo.isFunctional() == true>
-        if(this.${property.isEquivalentTo.name?uncap_first} == null || !this.${property.isEquivalentTo.name?uncap_first}.equals(${property.name})){
-            this.${property.isEquivalentTo.name?uncap_first} = ${property.name};
+        if(this.${property.isEquivalentTo.name?uncap_first} == null || !this.${property.isEquivalentTo.name?uncap_first}.equals(${valueName})){
+            this.${property.isEquivalentTo.name?uncap_first} = ${valueName};
         }
 <#else>
-        if(!this.${property.isEquivalentTo.name?uncap_first}.contains(${property.name})){
-            this.${property.isEquivalentTo.name?uncap_first}.add(${property.name});
+        if(!this.${property.isEquivalentTo.name?uncap_first}.contains(${valueName})){
+            this.${property.isEquivalentTo.name?uncap_first}.add(${valueName});
         }
 </#if>
 </#if>
 <#list property.equivalentProperties as eqProp>
 <#if eqProp.isFunctional() == true>
-        if(this.${eqProp.name?uncap_first} == null || !this.${eqProp.name?uncap_first}.equals(${property.name})){
-            this.${eqProp.name?uncap_first} = ${property.name};
+        if(this.${eqProp.name?uncap_first} == null || !this.${eqProp.name?uncap_first}.equals(${valueName})){
+            this.${eqProp.name?uncap_first} = ${valueName};
         }
 <#else>
-        if(!this.${eqProp.name?uncap_first}.contains(${property.name})){
-            this.${eqProp.name?uncap_first}.add(${property.name});
+        if(!this.${eqProp.name?uncap_first}.contains(${valueName})){
+            this.${eqProp.name?uncap_first}.add(${valueName});
         }
 </#if>
 </#list>
@@ -161,17 +170,16 @@ public<#if isInterface == true > interface<#else><#if isAbstract == true> abstra
 
 <#if isInterface ==false>
 <#list classRep.properties as property>
-<#if property.isEquivalentTo ??>
-<#else>
+<#if ! property.isEquivalentTo ??>
     <#if property.isFunctional() == true>
     public void set${property.name?cap_first}(${property.rangeDatatype} ${property.name}){
         this.${property.name} = ${property.name};
-        <@settingProperty property/>
+        <@settingProperty property=property valueName=property.getName()/>
     }
     <#else>
     public void add${property.name?cap_first}(${property.rangeDatatype} ${property.name}){
         this.${property.name}.add(${property.name});
-        <@settingProperty property/>
+        <@settingProperty property=property valueName=property.getName() />
     }
     </#if>
 </#if>
