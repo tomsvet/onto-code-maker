@@ -1,3 +1,5 @@
+package unitTests;
+
 import ontology.tool.mapper.ModelManager;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.vocabulary.DC;
@@ -12,7 +14,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ModelManagerTests extends ModelSetUp{
+public class ModelManagerTests extends ModelSetUp {
 
     @Test
     @Order(1)
@@ -210,3 +212,4 @@ public class ModelManagerTests extends ModelSetUp{
     }
 
 }
+

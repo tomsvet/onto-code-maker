@@ -1,3 +1,5 @@
+package unitTests;
+
 import ontology.tool.generator.representations.ClassRepresentation;
 import ontology.tool.generator.representations.NormalClassRepresentation;
 import ontology.tool.generator.representations.OntologyRepresentation;
@@ -16,7 +18,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class OntologyMapperTests extends ModelSetUp{
+public class MapperTests extends ModelSetUp {
 
     IRI testOnt = Values.iri(ex, "testOntology.owl");
     IRI hasAge = Values.iri(ex, "hasAge");
@@ -428,8 +430,8 @@ public class OntologyMapperTests extends ModelSetUp{
         PropertyRepresentation subProp = findProperty(testedClass.getProperties(),hasSpouse);
 
         assertNotNull(subProp,"Tested class doesn't have correct property.");
-       // assertEquals(eqProp.getRangeIRI(),hasAgeDatatype,"Equivalent property has range value.");
-       // assertTrue(eqProp.isFunctional(),"Equivalent property doesn't have just one value.");
+        // assertEquals(eqProp.getRangeIRI(),hasAgeDatatype,"Equivalent property has range value.");
+        // assertTrue(eqProp.isFunctional(),"Equivalent property doesn't have just one value.");
 
     }
 
@@ -438,3 +440,4 @@ public class OntologyMapperTests extends ModelSetUp{
     //todo specialitky ako ekvivalencia s subclasss atd
 
 }
+

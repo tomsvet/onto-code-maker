@@ -1,0 +1,84 @@
+<rdf:RDF
+       xmlns:owl="http://www.w3.org/2002/07/owl#"
+       xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+       xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+      <owl:Ontology rdf:about="http://example.com/ontology/collections#Collection">
+      </owl:Ontology>
+
+      <owl:Class rdf:about="http://example.com/Class1">
+      </owl:Class>
+
+      <owl:Class rdf:about="http://example.com/Class2">
+      </owl:Class>
+
+      <owl:Class rdf:about="http://example.com/Class3">
+      </owl:Class>
+
+      <owl:Class rdf:about="http://example.com/Class4">
+      </owl:Class>
+
+      <owl:Class rdf:about="http://example.com/Class5">
+      </owl:Class>
+
+      <owl:Class rdf:about="http://example.com/Class6">
+      </owl:Class>
+
+      <owl:Class rdf:about="http://example.com/Class7">
+      </owl:Class>
+
+      <owl:Class rdf:about="http://example.com/Class8">
+      </owl:Class>
+
+      <owl:Class rdf:about="http://example.com/Class9">
+      </owl:Class>
+
+      <owl:Class rdf:about="http://example.com/SubclassCollection">
+          <rdfs:subClassOf rdf:parseType="Collection">
+            <owl:Class rdf:about="http://example.com/Class1"/>
+            <owl:Class rdf:about="http://example.com/Class2"/>
+          </rdfs:subClassOf>
+      </owl:Class>
+
+      <owl:Class rdf:about="http://example.com/EquivalentCollection">
+        <owl:equivalentClass rdf:parseType="Collection">
+            <owl:Class rdf:about="http://example.com/Class3"/>
+            <owl:Class rdf:about="http://example.com/Class4"/>
+        </owl:equivalentClass>
+      </owl:Class>
+
+    <owl:Class rdf:about="http://example.com/IntersectionOfCollection">
+        <owl:intersectionOf rdf:parseType="Collection">
+            <owl:Class rdf:about="http://example.com/Class5"/>
+            <owl:Class rdf:about="http://example.com/Class6"/>
+        </owl:intersectionOf>
+     </owl:Class>
+
+    <owl:Class rdf:about="http://example.com/UnionOfCollection">
+        <owl:unionOf rdf:parseType="Collection">
+            <owl:Class rdf:about="http://example.com/Class7"/>
+            <owl:Class rdf:about="http://example.com/Class8"/>
+        </owl:unionOf>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.com/Complement">
+        <owl:complementOf>
+            <owl:Class rdf:about="http://example.com/Class9"/>
+        </owl:complementOf>
+     </owl:Class>
+
+    <owl:Class rdf:about="http://example.com/Complement2">
+        <owl:complementOf>
+            <owl:Class rdf:about="http://example.com/SubclassCollection"/>
+        </owl:complementOf>
+     </owl:Class>
+
+
+    <owl:ObjectProperty rdf:about="http://example.com/Property1">
+        <rdfs:range rdf:resource="http://example.com/Class1"/>
+        <rdfs:domain rdf:resource="http://example.com/Class2"/>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/Property2">
+    </owl:ObjectProperty>
+
+</rdf:RDF>

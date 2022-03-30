@@ -1,3 +1,5 @@
+package unitTests;
+
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.TreeModel;
@@ -31,3 +33,4 @@ public class ModelSetUp {
         model.add(classPerson,OWL.EQUIVALENTCLASS,classHuman);
     }
 }
+
