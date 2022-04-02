@@ -10,6 +10,7 @@ public class AbstractClassRepresentation extends ClassRepresentation {
     private String bnodeId;
 
     private boolean isGenerated = false;
+    private boolean toRemove = false;
 
     private ABSTRACT_CREATE_OF createOf;
 
@@ -46,6 +47,14 @@ public class AbstractClassRepresentation extends ClassRepresentation {
         this.isGenerated = isGenerate;
     }
 
+    public boolean isToRemove(){
+        return toRemove;
+    }
+
+    public void setToRemove(boolean toRemove){
+        this.toRemove = toRemove;
+    }
+
     public void setClassNameWithConcatUnionClasses(){
         String unionName = "UnionOf";
         for(ClassRepresentation eqClassRep: getUnionOf()) {
@@ -69,5 +78,6 @@ public class AbstractClassRepresentation extends ClassRepresentation {
     public void setCreateOf(ABSTRACT_CREATE_OF createOf){
         this.createOf = createOf;
     }
+
 
 }

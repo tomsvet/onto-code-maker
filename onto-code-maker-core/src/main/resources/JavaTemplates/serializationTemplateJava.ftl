@@ -210,8 +210,8 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
     @Override
     public void addToModel(Model model, ${classRep.getDatatypeValue()?cap_first} ${classRep.name?uncap_first}) {
         model.add(${classRep.name?uncap_first}.getIri(),RDF.TYPE, ${classRep.name?uncap_first}.getClassIRI());
-        <#assign propSize =  classRep.properties?size>
-        <#assign superClassesNum =  classRep.superClasses?size>
+<#assign propSize =  classRep.properties?size>
+<#assign superClassesNum =  classRep.superClasses?size>
         <#if  propSize gt 0 || superClassesNum gt 0 >
         addPropertiesToModel(model,${classRep.name?uncap_first});
         </#if>
@@ -221,182 +221,20 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
 <#if  propSize gt 0 || superClassesNum gt 0 >
     protected void addPropertiesToModel(Model model,  ${classRep.getDatatypeValue()?cap_first} ${classRep.name?uncap_first}) {
 <#list classRep.properties as property>
-    <#if ! property.isEquivalentTo ??>
-        <#if property.isFunctional() == true>
-            <#if property.type == "DATATYPE">
-        if(${classRep.name?uncap_first}.get${property.name?cap_first}() != null){
-        <@compress_single_line>
-            model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},<@propertyType property=property classRep=classRep propValue= classRep.name?uncap_first + ".get" + property.name?cap_first+ "()"/>);
-        </@compress_single_line>
-        }
-            <#else>
-                <#if property.isSuperProperty() == true>
-        if(${classRep.name?uncap_first}.get${property.name?cap_first}() != null
-        <@compress_single_line>
-                    <#list property.getSubProperties() as subProperty>
-                        <#if property.isFunctional() == true>
-         && ${classRep.name?uncap_first}.get${property.name?cap_first}() != ${classRep.name?uncap_first}.get${subProperty.name?cap_first}();
-                        <#else>
-         && !${classRep.name?uncap_first}.get${subProperty.name?cap_first}().contains(${classRep.name?uncap_first}.get${property.name?cap_first}())
-                        </#if>
-                    </#list>
-        ){
-        </@compress_single_line>
-                <#else>
-        if(${classRep.name?uncap_first}.get${property.name?cap_first}() != null ){
-                </#if>
-            <@compress_single_line>
-            model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},<@propertyType property=property classRep=classRep propValue= classRep.name?uncap_first + ".get" + property.name?cap_first+ "()"/>);
-            </@compress_single_line>
-        }
-            </#if>
-        <#else>
-            <#if property.type == "DATATYPE">
-        List<Object> ${property.name?uncap_first}Pom = new ArrayList<>();
-            <#else>
-        List<OntoEntity> ${property.name?uncap_first}Pom = new ArrayList<>();
-            </#if>
-        ${property.name?uncap_first}Pom.addAll(${classRep.name?uncap_first}.get${property.name?cap_first}());
-            <#if property.isSuperProperty() == true>
-                <#list property.getSubProperties() as subProperty>
-        ${property.name?uncap_first}Pom.removeAll(${classRep.name?uncap_first}.get${subProperty.name?cap_first}());
-                </#list>
-            </#if>
-            <#if property.type == "DATATYPE">
-        setLiteralsRDFCollection(model,${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},${property.name?uncap_first}Pom);
-            <#else>
-        setRDFCollection(model,${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},${property.name?uncap_first}Pom);
-            </#if>
-        </#if>
-    </#if>
+    <@addProperties property=property classRep=classRep/>
 
 </#list>
-<#list classRep.getSuperClasses() as superClass>
-    <#if superClass.getClassType().getName() == "Normal">
-        <#if superClass.properties?size gt 0 || superClass.superClasses?size gt 0>
-        new ${superClass.getSerializationClassName()?cap_first}().addPropertiesToModel(model, ${classRep.name?uncap_first});
-        </#if>
-    </#if>
-</#list>
+
+    <@innerAddProperties classRep=classRep/>
     }
 </#if>
 
     protected void setProperties(Model model,${classRep.getDatatypeValue()?cap_first} ${classRep.name?uncap_first},int nestingLevel) throws Exception{
 <#list classRep.properties as property>
-    <#if property.type == "DATATYPE">
-        <#if ! property.isEquivalentTo??>
-        <#if property.isFunctional() ==true>Literal<#else>Set<Value></#if> ${property.name?uncap_first} = super.<#if property.isFunctional() ==true>getFirstLiteralObject<#else>getAllObjects</#if>(model,${vocabularyFileName}.${property.getConstantName()},${classRep.name?uncap_first}.getIri());
-        <#if property.isFunctional() ==true>
-        if ( ${property.name?uncap_first} != null ){
-            <@compress single_line=true> ${classRep.name?uncap_first}.set${property.name?cap_first}(<@value property=property litName=property.name?uncap_first/>);
-            </@compress>
-
-        }
-        <#else>
-            <#list property.getEquivalentProperties() as eqProp>
-             // check equivalent ${eqProp.name}
-        ${property.name?uncap_first}.addAll(super.getAllObjects(model,${vocabularyFileName}.${eqProp.getConstantName()},${classRep.name?uncap_first}.getIri()));
-            </#list>
-        for(Value propValue:${property.name?uncap_first}){
-             if(propValue.isLiteral()) {
-                Literal literalValue = (Literal) propValue;
-                <@compress single_line=true> ${classRep.name?uncap_first}.add${property.name?cap_first}(<@value property=property litName="literalValue"/>);
-                </@compress>
-
-             }else if(propValue.isBNode()){
-                List<Value> listOfValues = super.getRDFCollection(model,(BNode)propValue);
-                for(Value value:listOfValues){
-                    Literal literalValue = (Literal) value;
-                    if(value.isLiteral()){
-                       <@compress single_line=true> ${classRep.name?uncap_first}.add${property.name?cap_first}(<@value property=property litName="literalValue"/>);</@compress>
-
-                    }
-                }
-             }
-        }
-
-        </#if>
-        </#if>
-    <#else>
-            <#if ! property.isEquivalentTo??>
-                <#if property.isFunctional() ==true>IRI<#else>Set<Resource></#if> ${property.name?uncap_first} = super.<#if property.isFunctional() ==true>getFirstIriObject<#else>getAllResourceObjects</#if>(model,${vocabularyFileName}.${property.getConstantName()},${classRep.name?uncap_first}.getIri());
-                <#if property.isFunctional() ==true>
-                        <#if property.rangeClass.getClassType().getName() =="Normal">
-                            <#list property.getEquivalentProperties() as eqProp>
-         if ( ${property.name?uncap_first} == null){
-              // check equivalent property ${eqProp.name}
-               ${property.name?uncap_first} = super.getFirstIriObject(model,${vocabularyFileName}.${eqProp.getConstantName()},${classRep.name?uncap_first}.getIri());
-         }
-                            </#list>
-                            <#if property.isInverseFunctionalTo() ==true || property.isInverseFunctionalOf() == true>
-        if ( ${property.name?uncap_first} == null){
-            // check inverse functional property
-            ${property.name?uncap_first} = super.getSubjectOfCollectionValue(model,${vocabularyFileName}.<#if property.isInverseFunctionalTo() ==true>${property.getInverseFunctionalTo().getConstantName()}<#else>${property.getInverseFunctionalOf().getConstantName()}</#if>,${classRep.name?uncap_first}.getIri());
-        }
-                            </#if>
-                            <#if property.isInverseTo() ==true>
-                                <#list property.getInverseTo() as inverseProp>
-        if ( ${property.name?uncap_first} == null){
-            // check inverse property ${inverseProp.name}
-            ${property.name?uncap_first} = super.getSubjectOfCollectionValue(model,${vocabularyFileName}.${inverseProp.getConstantName()},${classRep.name?uncap_first}.getIri());
-            //${property.name?uncap_first} = super.getFirstIRISubject(model,${vocabularyFileName}.${inverseProp.getConstantName()},${classRep.name?uncap_first}.getIri());
-        }
-                                </#list>
-                            <#elseif property.isInverseOf() == true>
-         if ( ${property.name?uncap_first} == null){
-            // check inverse property ${property.isInverseOf().name}
-            ${property.name?uncap_first} = super.getFirstIRISubject(model,${vocabularyFileName}.${property.getInverseOf().getConstantName()},${classRep.name?uncap_first}.getIri());
-         }
-                            </#if>
-        if ( ${property.name?uncap_first} != null ){
-            ${property.rangeClass.getDatatypeValue()?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, ${property.name?uncap_first},nestingLevel);
-            ${classRep.name?uncap_first}.set${property.name?cap_first}(${property.name?uncap_first}Instance);
-        }
-                        <#else>
-        if ( ${property.name?uncap_first} != null ){
-            <@abstractClass property=property rangeClass=property.rangeClass/>
-        }
-                        </#if>
-                <#else>
-                    <#list property.getEquivalentProperties() as eqProp>
-         // check equivalent ${eqProp.name}
-         ${property.name?uncap_first}.addAll(super.getAllResourceObjects(model,${vocabularyFileName}.${eqProp.getConstantName()},${classRep.name?uncap_first}.getIri()));
-                    </#list>
-                    <#if property.isInverseTo() ==true>
-                        <#list property.getInverseTo() as inverseProp>
-         // add also all values from inverse property ${inverseProp.name}
-         ${property.name?uncap_first}.addAll(super.getAllIRISubjects(model,${vocabularyFileName}.${property.getInverseTo().getConstantName()},${classRep.name?uncap_first}.getIri()));
-                        </#list>
-                    <#elseif property.isInverseOf() == true>
-        // add also all values from inverse property ${property.getInverseOf().name}
-         ${property.name?uncap_first}.addAll(super.getAllIRISubjects(model,${vocabularyFileName}.${property.getInverseOf().getConstantName()},${classRep.name?uncap_first}.getIri()));
-                    </#if>
-        for(Resource propValue:${property.name?uncap_first}){
-                    <#if property.rangeClass.getClassType().getName() =="Normal">
-            if(propValue.isIRI()) {
-                ${property.rangeClass.getDatatypeValue()?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
-                if(${property.name?uncap_first}Instance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
-                ${classRep.name?uncap_first}.add${property.name?cap_first}(${property.name?uncap_first}Instance);
-                    <#else>
-                <@abstractClass property=property rangeClass=property.rangeClass/>
-                    </#if>
-            }else if(propValue.isBNode()){
-                List<Value> listOfValues = super.getRDFCollection(model,(BNode)propValue);
-                for(Value value:listOfValues){
-                    if(value.isIRI()){
-                        ${property.rangeClass.getDatatypeValue()?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, (IRI)value,nestingLevel);
-                        if(${property.name?uncap_first}Instance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
-                        ${classRep.name?uncap_first}.add${property.name?cap_first}(${property.name?uncap_first}Instance);
-                    }
-                 }
-            }
-        }
-            </#if>
-        </#if>
-    </#if>
+    <@setProperties property=property classRep=classRep/>
 </#list>
 
-        <@innerSetProperties classRep=classRep/>
+    <@innerSetProperties classRep=classRep/>
     }
 
     @Override
@@ -466,17 +304,17 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
 
 }
 
-<#macro abstractClass property rangeClass>
+<#macro abstractClass property rangeClass isCycle>
 <#if rangeClass.isUnionOf() == true>
     <#list rangeClass.getUnionOf() as unionClass>
          <#if unionClass.getClassType().getName() == "Normal">
-        ${unionClass.name?cap_first} ${property.name?uncap_first}Instance${unionClass.name?cap_first} = new ${unionClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, ${property.name?uncap_first},nestingLevel);
+        ${unionClass.getDatatypeValue()?cap_first} ${property.name?uncap_first}Instance${unionClass.name?cap_first} = new ${unionClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, ${property.name?uncap_first},nestingLevel);
         if(${property.name?uncap_first}Instance${unionClass.name?cap_first} != null){
             ${classRep.name?uncap_first}.<#if property.isFunctional() == true>set<#else>add</#if>${property.name?cap_first}(${property.name?uncap_first}Instance${unionClass.name?cap_first});
-            <#if property.isFunctional() == true>continue;<#else>break;</#if>
+             <#if isCycle == true><#if property.isFunctional() == true>continue;<#else>break;</#if></#if>
         }
-    <#else>
-    //todo
+        <#else>
+
      </#if>
     </#list>
 <#elseif rangeClass.isIntersectionOf() == true>
@@ -487,38 +325,64 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
                 ${classRep.name?uncap_first}.<#if property.isFunctional() == true>set<#else>add</#if>${property.name?cap_first}(instance.getInstanceFromModel(model, ${property.name?uncap_first},nestingLevel));
             }
         <#else>
-            <@abstractClass property=property rangeClass=intersectionClass/>
+            <@abstractClass property=property rangeClass=intersectionClass isCycle=false/>
         </#if>
      </#list>
 <#elseif rangeClass.isComplementOf() == true>
     <#if rangeClass.complementOf.getClassType().getName() == "Normal">
             //need to do
     <#else>
-        <@abstractClass property=property rangeClass=rangeClass.getComplementOf()/>
+        <@abstractClass property=property rangeClass=rangeClass.getComplementOf() isCycle=false/>
     </#if>
 </#if>
 </#macro>
 
 <#macro innerSetProperties classRep>
 <#list classRep.getSuperClasses() as superClass>
-          <#if superClass.getClassType().getName() == "Normal">
-         <#if superClass.properties?size gt 0 || superClass.superClasses?size gt 0>
+    <#if superClass.getClassType().getName() == "Normal">
+        <#if superClass.properties?size gt 0 || superClass.superClasses?size gt 0>
         new ${superClass.getSerializationClassName()?cap_first}().setProperties(model, ${classRep.name?uncap_first},nestingLevel);
          </#if>
-          <#else>
-                  <#if superClass.isUnionOf() == true>
-                       <#list superClass.getUnionOf() as unionClass>
-                       //todo
-                       </#list>
-                  <#elseif superClass.isIntersectionOf() == true>
-                    <#list superClass.getIntersectionOf() as intersectionClass>
-                        <@innerSetProperties classRep=intersectionClass />
-                    </#list>
-                   <#elseif superClass.isComplementOf() == true>
-                    <@innerSetProperties classRep=superClass.getComplementOf() />
-                     </#if>
+    <#else>
+        <#if superClass.isUnionOf() == true>
+            <#list superClass.getProperties() as property>
+                <@setProperties property=property classRep=classRep/>
+            </#list>
+        <#elseif superClass.isIntersectionOf() == true>
+            <#list superClass.getProperties() as property>
+                <@setProperties property=property classRep=classRep/>
+            </#list>
+        <#elseif superClass.isComplementOf() == true>
+            <#list superClass.getProperties() as property>
+                <@setProperties property=property classRep=classRep/>
+            </#list>
          </#if>
-         </#list>
+    </#if>
+</#list>
+</#macro>
+
+<#macro innerAddProperties classRep>
+<#list classRep.getSuperClasses() as superClass>
+    <#if superClass.getClassType().getName() == "Normal">
+         <#if superClass.properties?size gt 0 || superClass.superClasses?size gt 0>
+         new ${superClass.getSerializationClassName()?cap_first}().addPropertiesToModel(model, ${classRep.name?uncap_first});
+         </#if>
+    <#else>
+        <#if superClass.isUnionOf() == true>
+            <#list superClass.getProperties() as property>
+                <@addProperties property=property classRep=classRep/>
+            </#list>
+        <#elseif superClass.isIntersectionOf() == true>
+            <#list superClass.getProperties() as property>
+                <@addProperties property=property classRep=classRep/>
+            </#list>
+        <#elseif superClass.isComplementOf() == true>
+            <#list superClass.getProperties() as property>
+                <@addProperties property=property classRep=classRep/>
+            </#list>
+         </#if>
+    </#if>
+</#list>
 </#macro>
 
 <#macro innerAllInstances classRep>
@@ -557,4 +421,177 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
              </#if>
           </#if>
          </#list>
+</#macro>
+
+<#macro setProperties property classRep>
+<#if property.type == "DATATYPE">
+    <#if ! property.isEquivalentTo??>
+        <#if property.isFunctional() ==true>Literal<#else>Set<Value></#if> ${property.name?uncap_first} = super.<#if property.isFunctional() ==true>getFirstLiteralObject<#else>getAllObjects</#if>(model,${vocabularyFileName}.${property.getConstantName()},${classRep.name?uncap_first}.getIri());
+        <#if property.isFunctional() ==true>
+        if ( ${property.name?uncap_first} != null ){
+            <@compress single_line=true> ${classRep.name?uncap_first}.set${property.name?cap_first}(<@value property=property litName=property.name?uncap_first/>);
+            </@compress>
+
+        }
+        <#else>
+            <#list property.getEquivalentProperties() as eqProp>
+        // check equivalent ${eqProp.name}
+        ${property.name?uncap_first}.addAll(super.getAllObjects(model,${vocabularyFileName}.${eqProp.getConstantName()},${classRep.name?uncap_first}.getIri()));
+            </#list>
+        for(Value propValue:${property.name?uncap_first}){
+            if(propValue.isLiteral()) {
+                Literal literalValue = (Literal) propValue;
+                <@compress single_line=true> ${classRep.name?uncap_first}.add${property.name?cap_first}(<@value property=property litName="literalValue"/>);
+                </@compress>
+
+            }else if(propValue.isBNode()){
+                List<Value> listOfValues = super.getRDFCollection(model,(BNode)propValue);
+                for(Value value:listOfValues){
+                    Literal literalValue = (Literal) value;
+                    if(value.isLiteral()){
+                        <@compress single_line=true> ${classRep.name?uncap_first}.add${property.name?cap_first}(<@value property=property litName="literalValue"/>);</@compress>
+
+                    }
+                }
+            }
+        }
+
+        </#if>
+    </#if>
+ <#else>
+    <#if ! property.isEquivalentTo??>
+        <#if property.isFunctional() ==true>IRI<#else>Set<Resource></#if> ${property.name?uncap_first} = super.<#if property.isFunctional() ==true>getFirstIriObject<#else>getAllResourceObjects</#if>(model,${vocabularyFileName}.${property.getConstantName()},${classRep.name?uncap_first}.getIri());
+        <#if property.isFunctional() ==true>
+            <#if property.rangeClass.getClassType().getName() =="Normal">
+                <#list property.getEquivalentProperties() as eqProp>
+         if ( ${property.name?uncap_first} == null){
+              // check equivalent property ${eqProp.name}
+               ${property.name?uncap_first} = super.getFirstIriObject(model,${vocabularyFileName}.${eqProp.getConstantName()},${classRep.name?uncap_first}.getIri());
+         }
+                </#list>
+                <#if property.isInverseFunctionalTo() ==true || property.isInverseFunctionalOf() == true>
+        if ( ${property.name?uncap_first} == null){
+            // check inverse functional property
+            ${property.name?uncap_first} = super.getSubjectOfCollectionValue(model,${vocabularyFileName}.<#if property.isInverseFunctionalTo() ==true>${property.getInverseFunctionalTo().getConstantName()}<#else>${property.getInverseFunctionalOf().getConstantName()}</#if>,${classRep.name?uncap_first}.getIri());
+        }
+                </#if>
+                <#if property.isInverseTo() ==true>
+                    <#list property.getInverseTo() as inverseProp>
+        if ( ${property.name?uncap_first} == null){
+            // check inverse property ${inverseProp.name}
+            ${property.name?uncap_first} = super.getSubjectOfCollectionValue(model,${vocabularyFileName}.${inverseProp.getConstantName()},${classRep.name?uncap_first}.getIri());
+            //${property.name?uncap_first} = super.getFirstIRISubject(model,${vocabularyFileName}.${inverseProp.getConstantName()},${classRep.name?uncap_first}.getIri());
+        }
+                    </#list>
+                <#elseif property.isInverseOf() == true>
+         if ( ${property.name?uncap_first} == null){
+            // check inverse property ${property.isInverseOf().name}
+            ${property.name?uncap_first} = super.getFirstIRISubject(model,${vocabularyFileName}.${property.getInverseOf().getConstantName()},${classRep.name?uncap_first}.getIri());
+         }
+                </#if>
+        if ( ${property.name?uncap_first} != null ){
+            ${property.rangeClass.getDatatypeValue()?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, ${property.name?uncap_first},nestingLevel);
+            ${classRep.name?uncap_first}.set${property.name?cap_first}(${property.name?uncap_first}Instance);
+        }
+            <#else>
+        if ( ${property.name?uncap_first} != null ){
+            <@abstractClass property=property rangeClass=property.rangeClass isCycle=false/>
+        }
+            </#if>
+        <#else>
+            <#list property.getEquivalentProperties() as eqProp>
+         // check equivalent ${eqProp.name}
+         ${property.name?uncap_first}.addAll(super.getAllResourceObjects(model,${vocabularyFileName}.${eqProp.getConstantName()},${classRep.name?uncap_first}.getIri()));
+            </#list>
+             <#if property.isInverseOf() == true>
+        // add also all values from inverse property ${property.getInverseOf().name}
+         ${property.name?uncap_first}.addAll(super.getAllIRISubjects(model,${vocabularyFileName}.${property.getInverseOf().getConstantName()},${classRep.name?uncap_first}.getIri()));
+                    </#if>
+        for(Resource propValue:${property.name?uncap_first}){
+                    <#if property.rangeClass.getClassType().getName() =="Normal">
+            if(propValue.isIRI()) {
+                ${property.rangeClass.getDatatypeValue()?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
+                if(${property.name?uncap_first}Instance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
+                ${classRep.name?uncap_first}.add${property.name?cap_first}(${property.name?uncap_first}Instance);
+                    <#else>
+                <@abstractClass property=property rangeClass=property.rangeClass isCycle=true/>
+                    </#if>
+            }else if(propValue.isBNode()){
+                List<Value> listOfValues = super.getRDFCollection(model,(BNode)propValue);
+                for(Value value:listOfValues){
+                    if(value.isIRI()){
+                        ${property.rangeClass.getDatatypeValue()?cap_first} ${property.name?uncap_first}Instance = new ${property.rangeClass.getSerializationClassName()?cap_first}().getInstanceFromModel(model, (IRI)value,nestingLevel);
+                        if(${property.name?uncap_first}Instance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
+                        ${classRep.name?uncap_first}.add${property.name?cap_first}(${property.name?uncap_first}Instance);
+                    }
+                 }
+            }
+        }
+            </#if>
+        </#if>
+    </#if>
+</#macro>
+
+<#macro addProperties property classRep>
+    <#if ! property.isEquivalentTo ??>
+        <#if property.isFunctional() == true>
+            <#if property.type == "DATATYPE">
+        if(${classRep.name?uncap_first}.get${property.name?cap_first}() != null){
+        <@compress_single_line>
+            model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},<@propertyType property=property classRep=classRep propValue= classRep.name?uncap_first + ".get" + property.name?cap_first+ "()"/>);
+        </@compress_single_line>
+        }
+            <#else>
+                <#if property.isSuperProperty() == true>
+        <@compress_single_line>
+        if(${classRep.name?uncap_first}.get${property.name?cap_first}() != null
+                    <#list property.getSubProperties() as subProperty>
+                        <#if property.isFunctional() == true>
+         && ${classRep.name?uncap_first}.get${property.name?cap_first}() != ${classRep.name?uncap_first}.get${subProperty.name?cap_first}()
+                        <#else>
+         && !${classRep.name?uncap_first}.get${subProperty.name?cap_first}().contains(${classRep.name?uncap_first}.get${property.name?cap_first}())
+                        </#if>
+                    </#list>
+){
+        </@compress_single_line>
+                <#else>
+        if(${classRep.name?uncap_first}.get${property.name?cap_first}() != null ){
+                </#if>
+            <@compress_single_line>
+            model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},<@propertyType property=property classRep=classRep propValue= classRep.name?uncap_first + ".get" + property.name?cap_first+ "()"/>);
+            </@compress_single_line>
+            <#list property.getInverseTo() as inverseTo>
+            model.add(${classRep.name?uncap_first}.get${property.name?cap_first}() ,${vocabularyFileName}.${inverseTo.getConstantName()},${classRep.name?uncap_first}.getIri());
+            </#list>
+        }
+            </#if>
+        <#else>
+            <#if property.type == "DATATYPE">
+        List<Object> ${property.name?uncap_first}Pom = new ArrayList<>();
+            <#else>
+        List<OntoEntity> ${property.name?uncap_first}Pom = new ArrayList<>();
+            </#if>
+        ${property.name?uncap_first}Pom.addAll(${classRep.name?uncap_first}.get${property.name?cap_first}());
+            <#if property.isSuperProperty() == true>
+                <#list property.getSubProperties() as subProperty>
+        ${property.name?uncap_first}Pom.removeAll(${classRep.name?uncap_first}.get${subProperty.name?cap_first}());
+                </#list>
+            </#if>
+             <#list property.getEquivalentProperties() as eqProperty>
+                 <#list eqProperty.getSubProperties() as subProperty>
+        ${property.name?uncap_first}Pom.removeAll(${classRep.name?uncap_first}.get${subProperty.name?cap_first}());
+                 </#list>
+              </#list>
+            <#if property.type == "DATATYPE">
+        setLiteralsRDFCollection(model,${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},${property.name?uncap_first}Pom);
+            <#else>
+        setRDFCollection(model,${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},${property.name?uncap_first}Pom);
+            </#if>
+            <#list property.getInverseTo() as inverseTo>
+         for(OntoEntity pom:${property.name?uncap_first}Pom){
+             model.add(pom.getIri(),${vocabularyFileName}.${inverseTo.getConstantName()},${classRep.name?uncap_first}.getIri());
+         }
+            </#list>
+        </#if>
+    </#if>
 </#macro>

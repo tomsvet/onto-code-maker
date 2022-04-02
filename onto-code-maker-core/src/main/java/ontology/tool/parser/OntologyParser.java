@@ -6,6 +6,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
+import org.junit.platform.commons.logging.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -20,7 +21,7 @@ public class OntologyParser {
 
     public Model parseOntology(String[] inputFiles,String formatName) throws FileNotFoundException {
         
-        logger.info("Starting parser");
+        logger.trace("Starting parser");
 
         Model model = null;
 
@@ -31,7 +32,7 @@ public class OntologyParser {
                 throw new FileNotFoundException(filename);
             }
 
-            logger.info("Parsing file: " + filename);
+            logger.debug("Parsing file: " + filename);
 
             RDFFormat format;
 
@@ -51,16 +52,11 @@ public class OntologyParser {
                 }else{
                     model.addAll(newModel);
                 }
-                logger.info("File " + filename + " is loaded in the model.");
+                logger.debug("File " + filename + " is loaded in the model.");
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-
-        //todo this is for remove
-        for (Statement statement: model) {
-            System.out.println(statement);
         }
 
         return model;

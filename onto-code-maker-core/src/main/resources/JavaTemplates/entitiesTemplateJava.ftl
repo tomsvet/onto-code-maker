@@ -68,15 +68,19 @@ import org.eclipse.rdf4j.model.*;
 import java.util.List;
 <#if isInterface ==false>
 import java.util.ArrayList;
-<#if isAbstract ==false>
+    <#if isAbstract ==false>
 import ${rawPackage}.${vocabularyFileName};
-</#if>
+    </#if>
 </#if>
 
 /**
 *  <@compress_single_line>
 <#if classRep?? && isInterface == false>This is the class representing the ${classRep.name} class from ontology<#elseif mainInterface == true>This is a base class for all the generated entities.
-<#elseif isEquivalent ??> This is interface representing equivalence of classes<#elseif isInterface == true> This is interface for class ${className} </#if>
+<#elseif isEquivalent ??> This is interface representing equivalence of classes
+<#elseif classRep.isUnionOf() == true> This is interface which represent union of classes<#list classRep.getUnionOf() as union> ${union.getName()}<#sep>, </#list>.
+<#elseif classRep.isIntersectionOf() == true> This is abstract class which represent intersection of classes<#list classRep.getIntersectionOf() as inter> ${inter.getName()}<#sep>, </#list>.
+<#elseif classRep.isComplementOf() == true> This is abstract class which represent complement of class ${classRep.getComplementOf().getName()}.
+<#elseif isInterface == true> This is interface for class ${className} </#if>
 </@compress_single_line>
 *
 <#if classRep?? && isInterface == false>
@@ -95,9 +99,9 @@ import ${rawPackage}.${vocabularyFileName};
 <@compress_single_line>
 public<#if isInterface == true > interface<#else><#if isAbstract == true> abstract</#if> class</#if> ${className}
 <#if mainInterface == false>
-<#if isExtends == true >
+    <#if isExtends == true >
  extends <#list extendClasses as extendClass> ${extendClass}<#sep>,</#list>
-</#if>
+    </#if>
 
 <#if isImplements == true >
  implements <#list implementClasses as implementClass> ${implementClass}<#sep>,</#list>
@@ -106,7 +110,7 @@ public<#if isInterface == true > interface<#else><#if isAbstract == true> abstra
 </#if> {
 </@compress_single_line>
 
-<#if isInterface ==false && isAbstract == false>
+<#if isInterface ==false>
     <#if extendedInterface == true>
     // IRI instance
     protected IRI iri;
@@ -143,16 +147,16 @@ public<#if isInterface == true > interface<#else><#if isAbstract == true> abstra
 
     public IRI getClassIRI();
     <#else>
-    <#list classRep.properties as property>
-    <#if ! property.isEquivalentTo ??>
-    <#if property.isFunctional() == true>
+        <#list classRep.properties as property>
+            <#if ! property.isEquivalentTo ??>
+                <#if property.isFunctional() == true>
     void set${property.name?cap_first}(${property.rangeDatatype} ${property.name});
-    <#else>
+                <#else>
     void add${property.name?cap_first}(${property.rangeDatatype} ${property.name});
-    </#if>
-    </#if>
+                </#if>
+            </#if>
     <#if property.isFunctional() == true>${property.rangeDatatype}<#else>List<${property.rangeDatatype}></#if> get${property.name?cap_first}();
-    </#list>
+        </#list>
     </#if>
 <#else>
     <#if extendedInterface == true>
@@ -169,25 +173,25 @@ public<#if isInterface == true > interface<#else><#if isAbstract == true> abstra
 </#if>
 
 <#if isInterface ==false>
-<#list classRep.properties as property>
-<#if ! property.isEquivalentTo ??>
-    <#if property.isFunctional() == true>
+    <#list classRep.properties as property>
+        <#if ! property.isEquivalentTo ??>
+            <#if property.isFunctional() == true>
     public void set${property.name?cap_first}(${property.rangeDatatype} ${property.name}){
         this.${property.name} = ${property.name};
         <@settingProperty property=property valueName=property.getName()/>
     }
-    <#else>
+            <#else>
     public void add${property.name?cap_first}(${property.rangeDatatype} ${property.name}){
         this.${property.name}.add(${property.name});
-        <@settingProperty property=property valueName=property.getName() />
+        <@settingProperty property=property valueName=property.getName()/>
     }
-    </#if>
-</#if>
+            </#if>
+        </#if>
     public <#if property.isFunctional() == true>${property.rangeDatatype}<#else>List<${property.rangeDatatype}></#if> get${property.name?cap_first}(){
         return ${property.name};
     }
 
-</#list>
+    </#list>
 
     <@setterAndGetters classRep=classRep />
 
@@ -196,43 +200,43 @@ public<#if isInterface == true > interface<#else><#if isAbstract == true> abstra
 
 <#macro superVariables classRep >
 <#list classRep.getSuperClasses() as superClass>
-<#if superClass.hasInterface>
-<#list superClass.properties as property>
+    <#if superClass.hasInterface || superClass.getClassType().getName() == "Abstract">
+        <#list superClass.properties as property>
     /**
     * Property ${property.getStringIRI()}. This property is from super class.
     <@variableComment property=property/>
     **/
     <#if property.isPrivate ==true>private<#else>public</#if> <#if property.isFunctional() == true>${property.rangeDatatype}<#else>List<${property.rangeDatatype}></#if> ${property.name}<#if property.isFunctional() == false> = new ArrayList<>()</#if>;
 
-</#list>
+        </#list>
 <@superVariables classRep=superClass />
-</#if>
+    </#if>
 </#list>
 </#macro>
 
 
 <#macro setterAndGetters classRep >
 <#list classRep.getSuperClasses() as superClass>
-<#if superClass.hasInterface>
-<#list superClass.properties as property>
-<#if ! property.isEquivalentTo ??>
-    <#if property.isFunctional() == true>
+    <#if superClass.hasInterface || superClass.getClassType().getName() == "Abstract">
+        <#list superClass.properties as property>
+            <#if ! property.isEquivalentTo ??>
+                <#if property.isFunctional() == true>
     public void set${property.name?cap_first}(${property.rangeDatatype} ${property.name}){
         this.${property.name} = ${property.name};
-        <@settingProperty property/>
+        <@settingProperty property=property valueName=property.getName()/>
     }
-    <#else>
+                <#else>
     public void add${property.name?cap_first}(${property.rangeDatatype} ${property.name}){
         this.${property.name}.add(${property.name});
-        <@settingProperty property/>
+        <@settingProperty property=property valueName=property.getName()/>
     }
-    </#if>
-</#if>
+                </#if>
+            </#if>
     public <#if property.isFunctional() == true>${property.rangeDatatype}<#else>List<${property.rangeDatatype}></#if> get${property.name?cap_first}(){
         return ${property.name};
     }
-</#list>
-<@setterAndGetters classRep=superClass />
-</#if>
+        </#list>
+        <@setterAndGetters classRep=superClass />
+    </#if>
 </#list>
 </#macro>

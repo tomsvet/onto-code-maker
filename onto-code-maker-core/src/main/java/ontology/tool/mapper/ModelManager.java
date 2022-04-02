@@ -67,7 +67,7 @@ public class ModelManager {
         return null;
     }
 
-    public IRI getFirstIRISubject(List<IRI> predicates, Resource object){
+    public IRI getFirstIRISubject(List<IRI> predicates, Value object){
         for(IRI predicate:predicates){
             IRI iri = getFirstIRISubject(predicate,object);
             if(iri != null){
@@ -78,7 +78,7 @@ public class ModelManager {
     }
 
 
-    public IRI getFirstIRISubject(IRI predicate, Resource object){
+    public IRI getFirstIRISubject(IRI predicate, Value object){
         Set<Resource> subjects = getAllSubjects(predicate,object);
         for(Resource subject : subjects){
             if(subject.isIRI()){
@@ -164,6 +164,21 @@ public class ModelManager {
         return allSubjectsIRIs;
     }
 
+    public Set<IRI> getAllResourceSubjects(IRI predicate, List<Resource> objects){
+        Set<IRI> allSubjectsIRIs = new HashSet<>();
+        Set<Resource> subjects = new HashSet<>();
+        for(Resource object:objects){
+            subjects.addAll(getAllSubjects(predicate,object));
+        }
+
+        for(Resource subject:subjects){
+            if(subject.isIRI()){
+                allSubjectsIRIs.add((IRI) subject);
+            }
+        }
+        return allSubjectsIRIs;
+    }
+
     public Set<IRI> getAllIRISubjects(IRI predicate, List<Resource> objects){
         Set<IRI> allSubjectsIRIs = new HashSet<>();
         Set<Resource> subjects = new HashSet<>();
@@ -180,7 +195,7 @@ public class ModelManager {
     }
 
 
-    public Set<Resource> getAllSubjects(IRI predicate, Resource object){
+    public Set<Resource> getAllSubjects(IRI predicate, Value object){
         return model.filter(null, predicate, object).subjects();
     }
 
@@ -224,6 +239,37 @@ public class ModelManager {
         Resource head = Values.bnode();
         model.addAll( RDFCollections.asRDF(values, head, new LinkedHashModel()));
         model.add(subject, predicate, head);
+    }
+
+    public Set<IRI> getSubjectOfCollectionValue(IRI predicate, List<Resource> objects){
+        Set<IRI> allSubjectsIRIs = new HashSet<>();
+        for(Resource object: objects){
+            IRI retVal = getSubjectOfCollectionValue(predicate, object);
+            if(retVal!= null){
+                allSubjectsIRIs.add(retVal);
+            }
+        }
+        return allSubjectsIRIs;
+    }
+
+    public IRI getSubjectOfCollectionValue(IRI predicate,Value object){
+        if( model.contains(null,predicate,object)){
+            return getFirstIRISubject(predicate,object);
+        }else {
+            Set<Resource> objs = model.filter(null, null, object).subjects();
+            for (Resource obj : objs) {
+                if (obj.isBNode() && model.contains(null, predicate, obj)) {
+                    return getFirstIRISubject(predicate, obj);
+                }else if(obj.isBNode()){
+                    IRI retVal = getSubjectOfCollectionValue( predicate, obj);
+                    if(retVal != null){
+                        return retVal;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
 }

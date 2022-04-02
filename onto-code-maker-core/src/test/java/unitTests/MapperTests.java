@@ -248,7 +248,11 @@ public class MapperTests extends ModelSetUp {
     void testMapDataTypeProperty(){
         OntologyMapper mapper = new OntologyMapper(model);
         ClassRepresentation testedClass = mapAndGetTestedClass(mapper,classHuman);
-        mapper.mapProperties(testedClass);
+        try {
+            mapper.mapProperties(testedClass);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         assertEquals(2,testedClass.getProperties().size(),
                 "Tested class doesn't have one property.");
         PropertyRepresentation prop = testedClass.getProperties().get(0);
@@ -269,7 +273,7 @@ public class MapperTests extends ModelSetUp {
     @Test
     @Order(12)
     @DisplayName("Test map Equivalent Datatype Property")
-    void testMapEquivalentDataTypeProperty(){
+    void testMapEquivalentDataTypeProperty() throws Exception {
         IRI age = Values.iri(ex,"age");
         model.add(age,OWL.EQUIVALENTPROPERTY,hasAge);
         OntologyMapper mapper = new OntologyMapper(model);
@@ -287,7 +291,7 @@ public class MapperTests extends ModelSetUp {
     @Test
     @Order(13)
     @DisplayName("Simple test map Object Property")
-    void testMapObjectProperty(){
+    void testMapObjectProperty() throws Exception {
         OntologyMapper mapper = new OntologyMapper(model);
         ClassRepresentation testedClass = mapAndGetTestedClass(mapper,classHuman);
         mapper.mapProperties(testedClass);
@@ -306,7 +310,7 @@ public class MapperTests extends ModelSetUp {
     @Test
     @Order(14)
     @DisplayName("Test map Equivalent Object Property")
-    void testMapEquivalentObjectProperty(){
+    void testMapEquivalentObjectProperty() throws Exception {
         IRI dog = Values.iri(ex,"dog");
         model.add(dog,OWL.EQUIVALENTPROPERTY,hasDog);
         OntologyMapper mapper = new OntologyMapper(model);
@@ -327,7 +331,7 @@ public class MapperTests extends ModelSetUp {
     @Test
     @Order(15)
     @DisplayName("Simple test map Functional Property")
-    void testMapFunctionalProperty(){
+    void testMapFunctionalProperty() throws Exception {
         model.add(hasDog,RDF.TYPE,OWL.FUNCTIONALPROPERTY);
 
         OntologyMapper mapper = new OntologyMapper(model);
@@ -345,7 +349,7 @@ public class MapperTests extends ModelSetUp {
     @Test
     @Order(16)
     @DisplayName("Simple test map Inverse Property")
-    void testMapInversProperty(){
+    void testMapInversProperty() throws Exception {
         IRI hasHuman = Values.iri(ex,"hasHuman");
         model.add(hasHuman,OWL.INVERSEOF,hasDog);
 
@@ -371,7 +375,11 @@ public class MapperTests extends ModelSetUp {
 
         OntologyMapper mapper = new OntologyMapper(model);
         ClassRepresentation testedClass = mapAndGetTestedClass(mapper,classHuman);
-        mapper.mapProperties(testedClass);
+        try {
+            mapper.mapProperties(testedClass);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         PropertyRepresentation objProp = findProperty(testedClass.getProperties(),hasDog);
         assertNotNull(objProp,"Tested class doesn't have correct property.");
@@ -396,10 +404,11 @@ public class MapperTests extends ModelSetUp {
         ClassRepresentation testedClass = mapAndGetTestedClass(mapper,classPerson);
         try {
             mapper.mapEquivalentClasses(testedClass);
+            mapper.mapProperties(testedClass);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        mapper.mapProperties(testedClass);
+
         assertEquals(2,testedClass.getProperties().size(),
                 "Tested class doesn't have one property.");
         PropertyRepresentation prop = testedClass.getProperties().get(0);
@@ -424,7 +433,11 @@ public class MapperTests extends ModelSetUp {
 
         OntologyMapper mapper = new OntologyMapper(model);
         ClassRepresentation testedClass = mapAndGetTestedClass(mapper,classMen);
-        mapper.mapProperties(testedClass);
+        try {
+            mapper.mapProperties(testedClass);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         assertEquals(2,testedClass.getProperties().size(),
                 "Tested class doesn't have hasWife property.");
         PropertyRepresentation subProp = findProperty(testedClass.getProperties(),hasSpouse);

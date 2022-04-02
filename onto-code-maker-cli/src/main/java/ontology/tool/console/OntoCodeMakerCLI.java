@@ -26,6 +26,11 @@ public class OntoCodeMakerCLI {
                                 .build();
         maker.generateCodeFromOntology();
 
+        if(parser.getInputFiles().length == 1) {
+            System.out.println("The code for your ontology is successfully generated.");
+        }else if(parser.getInputFiles().length > 1){
+            System.out.println("The code for your ontologies is successfully generated.");
 
+        }
     }
 }

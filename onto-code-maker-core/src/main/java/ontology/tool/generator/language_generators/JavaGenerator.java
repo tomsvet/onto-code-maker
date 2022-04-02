@@ -36,6 +36,7 @@ public class JavaGenerator extends OntologyGenerator {
         dataTypes.put(XSD.SHORT,"Short");
         dataTypes.put(XSD.TIME,"java.time.LocalTime");
         dataTypes.put(XSD.NON_NEGATIVE_INTEGER,"Integer");
+        dataTypes.put(XSD.STRING,"String");
     }
     public JavaGenerator() {
         super();
@@ -107,6 +108,8 @@ public class JavaGenerator extends OntologyGenerator {
             if(superClass.getClassType().equals(ClassRepresentation.CLASS_TYPE.ABSTRACT)){
                 if(superClass.isHasInterface()) {
                     retVals.add(superClass.getName() + ENTITY_INTERFACE_SUFFIX);
+                }else if(superClass.isUnionOf()){
+                    retVals.add(superClass.getName());
                 }
             }else{
                 retVals.add(superClass.getName() + ENTITY_INTERFACE_SUFFIX);
@@ -156,41 +159,52 @@ public class JavaGenerator extends OntologyGenerator {
         Map<String, Object> data = new HashMap<>();
         data.put("className",classRep.getName());
         data.put("classRep",classRep);
-        data.put("isInterface",false);
-        data.put("isAbstract",true);
         data.put("mainInterface",false);
         data.put("isExtends",false);
         data.put("isImplements",false);
         data.put("extendedInterface", true);
         ArrayList<String> extendClasses =new ArrayList<>();
         ArrayList<String> implementClasses =new ArrayList<>();
-        if( classRep.getEquivalentClass() != null){
-            implementClasses.add(classRep.getEquivalentClass().getName() + ENTITY_INTERFACE_SUFFIX);
-        }
-        if (classRep.isHasInterface()) {
-            implementClasses.add(classRep.getName() + ENTITY_INTERFACE_SUFFIX);
-        } else {
-            if (classRep.hasOneSuperClass()) {
-                ClassRepresentation superClass = classRep.getSuperClasses().get(0);
-                extendClasses.add(superClass.getName());
-                data.put("extendedInterface", false);
-            } else if (!classRep.hasSuperClass()) {
-                implementClasses.add(CLASS_ENTITY_FILE_NAME);
+        if(classRep.isUnionOf()) {
+            data.put("isInterface",true);
+            data.put("isAbstract",false);
+            data.put("isExtends",true);
+            if (classRep.hasSuperClass()) {
+                data.put("extendClasses", getAllSuperClassInterfaceNames(classRep));
             } else {
-                implementClasses.addAll(getAllSuperClassInterfaceNames(classRep));
-                List<AbstractClassRepresentation> absClasses = getAbstractClassWithoutInterfaceFromSuperClass(classRep);
-                if(absClasses.size() == 1){
-                    extendClasses.add(absClasses.get(0).getName());
+                data.put("extendClasses", new ArrayList<>(Collections.singletonList(CLASS_ENTITY_FILE_NAME)));
+            }
+        }else {
+            data.put("isInterface",false);
+            data.put("isAbstract",true);
+            if (classRep.getEquivalentClass() != null) {
+                implementClasses.add(classRep.getEquivalentClass().getName() + ENTITY_INTERFACE_SUFFIX);
+            }
+            if (classRep.isHasInterface()) {
+                implementClasses.add(classRep.getName() + ENTITY_INTERFACE_SUFFIX);
+            } else {
+                if (classRep.hasOneSuperClass()) {
+                    ClassRepresentation superClass = classRep.getSuperClasses().get(0);
+                    extendClasses.add(superClass.getName());
+                    data.put("extendedInterface", false);
+                } else if (!classRep.hasSuperClass()) {
+                    implementClasses.add(CLASS_ENTITY_FILE_NAME);
+                } else {
+                    implementClasses.addAll(getAllSuperClassInterfaceNames(classRep));
+                    /*List<AbstractClassRepresentation> absClasses = getAbstractClassWithoutInterfaceFromSuperClass(classRep);
+                    if (absClasses.size() == 1) {
+                        extendClasses.add(absClasses.get(0).getName());
+                    }*/
                 }
             }
-        }
-        if(!implementClasses.isEmpty()){
-            data.put("isImplements",true);
-            data.put("implementClasses", implementClasses);
-        }
-        if(!extendClasses.isEmpty()){
-            data.put("isExtends",true);
-            data.put("extendClasses",extendClasses);
+            if (!implementClasses.isEmpty()) {
+                data.put("isImplements", true);
+                data.put("implementClasses", implementClasses);
+            }
+            if (!extendClasses.isEmpty()) {
+                data.put("isExtends", true);
+                data.put("extendClasses", extendClasses);
+            }
         }
         data.put("rawPackage",this.packageName);
         data.put("package", this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
@@ -217,18 +231,24 @@ public class JavaGenerator extends OntologyGenerator {
         } else {
             if (classRep.hasOneSuperClass()) {
                 ClassRepresentation superClass = classRep.getSuperClasses().get(0);
-                extendClasses.add(superClass.getName());
-                data.put("extendedInterface", false);
+                if(superClass.getClassType().equals(ClassRepresentation.CLASS_TYPE.ABSTRACT) && superClass.isUnionOf()){
+                    implementClasses.add(superClass.getName());
+                    data.put("extendedInterface", true);
+                }else{
+                    extendClasses.add(superClass.getName());
+                    data.put("extendedInterface", false);
+                }
+
             } else if (!classRep.hasSuperClass()) {
                 if(implementClasses.isEmpty()){
                     implementClasses.add(CLASS_ENTITY_FILE_NAME);
                 }
             } else {
                 implementClasses.addAll(getAllSuperClassInterfaceNames(classRep));
-                List<AbstractClassRepresentation> absClasses = getAbstractClassWithoutInterfaceFromSuperClass(classRep);
+                /*List<AbstractClassRepresentation> absClasses = getAbstractClassWithoutInterfaceFromSuperClass(classRep);
                 if(absClasses.size() == 1){
                     extendClasses.add(absClasses.get(0).getName());
-                }
+                }*/
             }
         }
         if(!implementClasses.isEmpty()){
