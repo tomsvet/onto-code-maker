@@ -1,0 +1,310 @@
+<rdf:RDF
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="http://example.com/ontology/allVariantsOfObjectProperties.owl#ObjectPropertiesTest">
+    </owl:Ontology>
+
+
+    <owl:Class rdf:about="http://example.com/Class1">
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.com/Class2">
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.com/Class3">
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.com/Class4">
+    </owl:Class>
+
+    <!---
+        Properties with mistakes
+    -->
+
+    <owl:ObjectProperty rdf:about="http://example.com/hasEmptyObject">
+        <rdfs:comment>Empty Object Property.</rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/missingRange">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:comment>Missing Range Object Property.</rdfs:comment>
+        <rdfs:label>Missing range</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/missingDomain">
+        <rdfs:range rdf:resource="http://example.com/Class1"/>
+        <rdfs:comment>Missing domain Object Property.</rdfs:comment>
+        <rdfs:label>Missing domain</rdfs:label>
+    </owl:ObjectProperty>
+
+    <!---
+          Good properties
+     -->
+
+    <owl:ObjectProperty rdf:about="http://example.com/normalObjectProperty">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://example.com/Class2"/>
+        <rdfs:comment>Normal Object Property.</rdfs:comment>
+        <rdfs:label>Normal</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/functionalObjectProperty">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://example.com/Class2"/>
+        <rdfs:comment>Functional Object Property.</rdfs:comment>
+        <rdfs:label>Functional</rdfs:label>
+    </owl:ObjectProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/functionalObjectProperty"/>
+
+    <owl:ObjectProperty rdf:about="http://example.com/functionalObjectProperty2">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://example.com/Class2"/>
+        <rdfs:comment>Functional Object Property 2.</rdfs:comment>
+        <rdfs:label>Functional 2</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/inverseFunctionalObjectProperty">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://example.com/Class2"/>
+        <rdfs:comment>Inverse Functional Object Property.</rdfs:comment>
+        <rdfs:label>Inverse Functional</rdfs:label>
+    </owl:ObjectProperty>
+    <owl:InverseFunctionalProperty rdf:about="http://example.com/inverseFunctionalObjectProperty"/>
+
+    <owl:ObjectProperty rdf:about="http://example.com/inverseFunctionalObjectProperty2">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://example.com/Class2"/>
+        <rdfs:comment>Inverse Functional Object Property 2.</rdfs:comment>
+        <rdfs:label>Inverse Functional 2 </rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/equivalentObjectProperty">
+        <owl:equivalentProperty rdf:resource="http://example.com/normalObjectProperty"/>
+        <rdfs:comment>Equivalent Object Property.</rdfs:comment>
+        <rdfs:label>Equivalent </rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/subPropertyOfObjectProperty">
+        <rdfs:subPropertyOf rdf:resource="http://example.com/normalObjectProperty"/>
+        <rdfs:comment>Subproperty of Object Property.</rdfs:comment>
+        <rdfs:label>Subproperty of</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/inverseOfObjectProperty">
+        <owl:inverseOf rdf:resource="http://example.com/normalObjectProperty"/>
+        <rdfs:comment>Inverse Object Property.</rdfs:comment>
+        <rdfs:label>Inverse</rdfs:label>
+    </owl:ObjectProperty>
+
+    <!---
+              Combinations
+        -->
+
+    <owl:ObjectProperty rdf:about="http://example.com/equivalentToFunctionalObjectProperty">
+        <owl:equivalentProperty rdf:resource="http://example.com/functionalObjectProperty"/>
+        <rdfs:comment>Equivalent to functional Object Property.</rdfs:comment>
+        <rdfs:label>Equivalent to functional </rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/equivalentToSubpropertyObjectProperty">
+        <owl:equivalentProperty rdf:resource="http://example.com/subPropertyOfObjectProperty"/>
+        <rdfs:comment>Equivalent to subproperty Object Property.</rdfs:comment>
+        <rdfs:label>Equivalent to subproperty </rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/equivalentToInverseFunctionalObjectProperty">
+        <owl:equivalentProperty rdf:resource="http://example.com/inverseFunctionalObjectProperty"/>
+        <rdfs:comment>Equivalent to inverse functional Object Property.</rdfs:comment>
+        <rdfs:label>Equivalent to inverse functional </rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/equivalentToEquivalentObjectProperty">
+        <owl:equivalentProperty rdf:resource="http://example.com/equivalentObjectProperty"/>
+        <rdfs:comment>Equivalent to equivalent Object Property.</rdfs:comment>
+        <rdfs:label>Equivalent to equivalent </rdfs:label>
+    </owl:ObjectProperty>
+
+
+    <owl:ObjectProperty rdf:about="http://example.com/subPropertyOfEquivalentObjectProperty">
+        <rdfs:subPropertyOf rdf:resource="http://example.com/equivalentObjectProperty"/>
+        <rdfs:comment>Subproperty of Equivalent Object Property.</rdfs:comment>
+        <rdfs:label>Subproperty of equivalent functional </rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/subPropertyOfFunctionalObjectProperty">
+        <rdfs:subPropertyOf rdf:resource="http://example.com/functionalObjectProperty"/>
+        <rdfs:comment>Subproperty of Functional Object Property.</rdfs:comment>
+        <rdfs:label>Subproperty of functional </rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/subPropertyOfInverseFunctionalObjectProperty">
+        <rdfs:subPropertyOf rdf:resource="http://example.com/inverseFunctionalObjectProperty"/>
+        <rdfs:comment>Subproperty of Inverse Functional Object Property.</rdfs:comment>
+        <rdfs:label>Subproperty of inverse functional </rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/subPropertyOfSubpropertyObjectProperty">
+        <rdfs:subPropertyOf rdf:resource="http://example.com/subPropertyOfObjectProperty"/>
+        <rdfs:comment>Subproperty of subproperty Object Property.</rdfs:comment>
+        <rdfs:label>Subproperty of subproperty </rdfs:label>
+    </owl:ObjectProperty>
+
+    <!---
+           unionOf, intersectionOf, complement
+    -->
+
+   <owl:ObjectProperty rdf:about="http://example.com/domainIsAbstractUnionFunctional">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://example.com/Class2"/>
+                    <rdf:Description rdf:about="http://example.com/Class1"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://example.com/Class3"/>
+        <rdfs:comment>Functional Datatype property created with union of Class1 and Class2.</rdfs:comment>
+        <rdfs:label>Union Of</rdfs:label>
+    </owl:ObjectProperty>
+
+ <!--- not see in the model -->
+  <owl:ObjectProperty rdf:about="http://example.com/domainIsUnionFunctional">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain>
+                <owl:unionOf>
+                    <owl:Class rdf:resource="http://example.com/Class2"/>
+                    <owl:Class rdf:resource="http://example.com/Class1"/>
+                </owl:unionOf>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://example.com/Class3"/>
+        <rdfs:comment>Functional Datatype property created with Abstract class which is union of Class1 and Class2.</rdfs:comment>
+        <rdfs:label>Union Of</rdfs:label>
+    </owl:ObjectProperty>
+
+
+    <owl:ObjectProperty rdf:about="http://example.com/domainIsAbstractIntersectionOfFunctional">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://example.com/Class2"/>
+                    <rdf:Description rdf:about="http://example.com/Class4"/>
+                </owl:intersectionOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://example.com/Class3"/>
+        <rdfs:comment>Functional Datatype property created with abstract class which is Intersection of Class1 and Class2.</rdfs:comment>
+        <rdfs:label>Abstract Class Intersection Of</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/domainIsIntersectionOfFunctional">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain>
+                <owl:intersectionOf >
+                    <owl:Class rdf:resource="http://example.com/Class2"/>
+                    <owl:Class rdf:resource="http://example.com/Class4"/>
+                </owl:intersectionOf>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://example.com/Class3"/>
+        <rdfs:comment>Functional Datatype property created with Intersection of Class1 and Class2.</rdfs:comment>
+        <rdfs:label>Intersection Of</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/domainIsComplementOfFunctional">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain>
+                <owl:complementOf>
+                    <owl:Class rdf:resource="http://example.com/Class2"/>
+                </owl:complementOf>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://example.com/Class3"/>
+        <rdfs:comment>Functional Datatype property created with Complement of Class2.</rdfs:comment>
+        <rdfs:label>Complement Of</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/domainIsAbstractComplementOfFunctional">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:complementOf>
+                    <rdf:Description rdf:about="http://example.com/Class2"/>
+                </owl:complementOf>
+            </owl:Class>
+        </rdfs:domain>
+        <rdfs:range rdf:resource="http://example.com/Class3"/>
+        <rdfs:comment>Functional Datatype property created with abstract class which is complement of Class2.</rdfs:comment>
+        <rdfs:label>Abstract complement Of</rdfs:label>
+    </owl:ObjectProperty>
+
+
+
+
+    <owl:ObjectProperty rdf:about="http://example.com/rangeIsAbstractUnionFunctional">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:range>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://example.com/Class2"/>
+                    <rdf:Description rdf:about="http://example.com/Class1"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:range>
+        <rdfs:domain rdf:resource="http://example.com/Class3"/>
+        <rdfs:comment>Functional Datatype property where range is union of Class1 and Class2.</rdfs:comment>
+        <rdfs:label>Union Of</rdfs:label>
+    </owl:ObjectProperty>
+
+<!--    <owl:ObjectProperty rdf:about="http://example.com/rangeIsUnionFunctional">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:range>
+                <owl:unionOf >
+                    <owl:Class rdf:resource="http://example.com/Class2"/>
+                    <owl:Class rdf:resource="http://example.com/Class1"/>
+                </owl:unionOf>
+        </rdfs:range>
+        <rdfs:domain rdf:resource="http://example.com/Class3"/>
+        <rdfs:comment>Functional Datatype property where range is Abstract class which is union of Class1 and Class2.</rdfs:comment>
+        <rdfs:label>Union Of</rdfs:label>
+    </owl:ObjectProperty>
+-->
+    <!--
+        collections
+    -->
+
+  <owl:ObjectProperty rdf:about="http://example.com/normalProperty1">
+        <rdfs:domain rdf:resource="http://example.com/Class3"/>
+        <rdfs:range rdf:resource="http://example.com/Class4"/>
+        <rdfs:comment>Normal Object Property.</rdfs:comment>
+        <rdfs:label>Normal</rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/normalProperty2">
+        <rdfs:domain rdf:resource="http://example.com/Class3"/>
+        <rdfs:range rdf:resource="http://example.com/Class4"/>
+        <rdfs:comment>Normal Object Property.</rdfs:comment>
+        <rdfs:label>Normal</rdfs:label>
+    </owl:ObjectProperty>
+<!-- this is not supported
+    <owl:ObjectProperty rdf:about="http://example.com/equivalentCollection">
+        <owl:equivalentProperty rdf:parseType="Collection">
+            <owl:ObjectProperty rdf:about="http://example.com/normalProperty1"/>
+            <owl:ObjectProperty rdf:about="http://example.com/normalProperty2"/>
+        </owl:equivalentProperty>
+        <rdfs:comment>Equivalent of Collection Object Property.</rdfs:comment>
+        <rdfs:label>Equivalent of Collection </rdfs:label>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.com/subpropertyCollection">
+        <rdfs:subPropertyOf rdf:parseType="Collection">
+            <owl:Class rdf:about="http://example.com/normalProperty1"/>
+            <owl:Class rdf:about="http://example.com/normalProperty2"/>
+        </rdfs:subPropertyOf>
+        <rdfs:comment>Equivalent of Collection Object Property.</rdfs:comment>
+        <rdfs:label>Equivalent of Collection </rdfs:label>
+    </owl:ObjectProperty>-->
+
+</rdf:RDF>
