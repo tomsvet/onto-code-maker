@@ -18,6 +18,7 @@
             <artifactId>maven-shade-plugin</artifactId>
             <executions>
                 <execution>
+                    <phase>package</phase>
                     <goals>
                         <goal>shade</goal>
                     </goals>
@@ -29,6 +30,17 @@
                                 <mainClass>ontology.tool.console.OntoCodeMakerCLI</mainClass>
                             </transformer>
                         </transformers>
+                        <filters>
+                            <filter>
+                                <artifact>*:*</artifact>
+                                <excludes>
+                                    <!-- Exclude the following files to prevent verification errors when the program is started  -->
+                                    <exclude>META-INF/*.SF</exclude>
+                                    <exclude>META-INF/*.DSA</exclude>
+                                    <exclude>META-INF/*.RSA</exclude>
+                                </excludes>
+                            </filter>
+                        </filters>
                     </configuration>
                 </execution>
             </executions>
