@@ -8,18 +8,19 @@ import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
 public class ModelSetUp {
-    String ex = "http://example.org/";
-    Model model = new TreeModel();
-    IRI classPerson = Values.iri(ex, "Person");
-    IRI classHuman = Values.iri(ex, "Human");
-    IRI classMen = Values.iri(ex, "Men");
-    IRI classWoman = Values.iri(ex, "Woman");
+    static String ex = "http://example.org/";
+    static Model model = new TreeModel();
+    static IRI classPerson = Values.iri(ex, "Person");
+    static IRI classHuman = Values.iri(ex, "Human");
+    static IRI classMen = Values.iri(ex, "Men");
+    static IRI classWoman = Values.iri(ex, "Woman");
 
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    public static void setUp() {
         model.add(classHuman, RDF.TYPE, RDFS.CLASS);
         model.add(classPerson, RDF.TYPE, RDFS.CLASS);
         model.add(classMen, RDF.TYPE, OWL.CLASS);

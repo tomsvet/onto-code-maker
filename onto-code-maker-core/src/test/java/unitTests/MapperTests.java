@@ -14,22 +14,23 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.Order;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static ontology.tool.generator.OntologyGenerator.ENTITY_EQUIVALENCE_PREFIX;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class MapperTests extends ModelSetUp {
 
-    IRI testOnt = Values.iri(ex, "testOntology.owl");
-    IRI hasAge = Values.iri(ex, "hasAge");
-    IRI hasAgeDatatype = Values.iri("http://www.w3.org/2001/XMLSchema#nonNegativeInteger");
-    IRI hasDog = Values.iri(ex, "hasDog");
-    IRI classDog = Values.iri(ex, "Dog");
+   static IRI testOnt = Values.iri(ex, "testOntology.owl");
+   static IRI hasAge = Values.iri(ex, "hasAge");
+   static IRI hasAgeDatatype = Values.iri("http://www.w3.org/2001/XMLSchema#nonNegativeInteger");
+   static IRI hasDog = Values.iri(ex, "hasDog");
+   static IRI classDog = Values.iri(ex, "Dog");
 
-    @Override
-    @BeforeEach
-    void setUp() {
-        super.setUp();
+    @BeforeAll
+    public static void setUp() {
+        ModelSetUp.setUp();
         model.add(testOnt,RDF.TYPE,OWL.ONTOLOGY);
 
         model.add(classDog, RDF.TYPE, OWL.CLASS);
@@ -47,7 +48,7 @@ public class MapperTests extends ModelSetUp {
 
     @Test
     @Order(1)
-    @DisplayName("Simple getClasses should work")
+    @DisplayName("1.Simple getClasses should work")
     void testGetClasses() {
         OntologyMapper mapper = new OntologyMapper(model);
         assertEquals(5,  mapper.getClasses().size(),
@@ -56,7 +57,7 @@ public class MapperTests extends ModelSetUp {
 
     @Test
     @Order(2)
-    @DisplayName("Simple mapClasses should work")
+    @DisplayName("2.Simple mapClasses should work")
     void testMapClasses() {
         OntologyMapper mapper = new OntologyMapper(model);
         mapper.mapClasses();
@@ -87,7 +88,7 @@ public class MapperTests extends ModelSetUp {
 
     @Test
     @Order(3)
-    @DisplayName("Simple test for mapClassHierarchy method, should work")
+    @DisplayName("3.Simple test for mapClassHierarchy method, should work")
     void testMapClassHierarchy(){
         OntologyMapper mapper = new OntologyMapper(model);
         ClassRepresentation testedClass = mapAndGetTestedClass(mapper,classMen);
@@ -104,7 +105,7 @@ public class MapperTests extends ModelSetUp {
 
     @Test
     @Order(4)
-    @DisplayName("Simple test for mapEquivalentClasses method, should work")
+    @DisplayName("4.Simple test for mapEquivalentClasses method, should work")
     void testMapEquivalentClasses(){
         OntologyMapper mapper = new OntologyMapper(model);
         ClassRepresentation testedClass = mapAndGetTestedClass(mapper,classPerson);
@@ -118,8 +119,8 @@ public class MapperTests extends ModelSetUp {
                 "Number of equivalent classes doesn't equal.");
         List<Resource> allIRIs = mapper.getAllEquivalentResources(testedClass);
         assertTrue(allIRIs.contains(classHuman),"Equivalent class is not correct.");
-        String firstName = classPerson.getLocalName() + classHuman.getLocalName();
-        String secondName = classHuman.getLocalName() + classPerson.getLocalName();
+        String firstName = ENTITY_EQUIVALENCE_PREFIX + classPerson.getLocalName() + classHuman.getLocalName();
+        String secondName = ENTITY_EQUIVALENCE_PREFIX + classHuman.getLocalName() + classPerson.getLocalName();
         assertTrue(testedClass.getEquivalentClass().getName().equals(firstName) || testedClass.getEquivalentClass().getName().equals(secondName) ,
                 "Name of equivalent class is not good. Name is: " + testedClass.getEquivalentClass().getName());
 
@@ -127,7 +128,7 @@ public class MapperTests extends ModelSetUp {
 
     @Test
     @Order(5)
-    @DisplayName("Test for mapEquivalentClasses method with 3 equivalent classes, should work")
+    @DisplayName("5.Test for mapEquivalentClasses method with 3 equivalent classes, should work")
     void testMapEquivalentClasses2(){
         IRI classHuman2 = Values.iri(ex, "Human2");
         IRI classHuman3 = Values.iri(ex, "Human3");
@@ -244,7 +245,7 @@ public class MapperTests extends ModelSetUp {
 
     @Test
     @Order(11)
-    @DisplayName("Simple test map Datatype Property")
+    @DisplayName("11.Simple test map Datatype Property")
     void testMapDataTypeProperty(){
         OntologyMapper mapper = new OntologyMapper(model);
         ClassRepresentation testedClass = mapAndGetTestedClass(mapper,classHuman);
@@ -258,7 +259,7 @@ public class MapperTests extends ModelSetUp {
         PropertyRepresentation prop = testedClass.getProperties().get(0);
         assertEquals(prop.getValueIRI(),hasAge,"Tested class has wrong property.");
         assertEquals(prop.getRangeResource(),hasAgeDatatype,"Tested class has range value.");
-        assertTrue(prop.isFunctional(),"Property doesn't have just one value.");
+        assertFalse(prop.isFunctional(),"Property is functional.");
     }
 
     public PropertyRepresentation findProperty(List<PropertyRepresentation> properties,IRI lookingFor){
@@ -272,7 +273,7 @@ public class MapperTests extends ModelSetUp {
 
     @Test
     @Order(12)
-    @DisplayName("Test map Equivalent Datatype Property")
+    @DisplayName("12.Test map Equivalent Datatype Property")
     void testMapEquivalentDataTypeProperty() throws Exception {
         IRI age = Values.iri(ex,"age");
         model.add(age,OWL.EQUIVALENTPROPERTY,hasAge);
@@ -285,18 +286,18 @@ public class MapperTests extends ModelSetUp {
 
         assertNotNull(eqProp,"Tested class doesn't have correct property.");
         assertEquals(eqProp.getRangeResource(),hasAgeDatatype,"Equivalent property has range value.");
-        assertTrue(eqProp.isFunctional(),"Equivalent property doesn't have just one value.");
+        assertFalse(eqProp.isFunctional(),"Equivalent property is functional.");
     }
 
     @Test
     @Order(13)
-    @DisplayName("Simple test map Object Property")
+    @DisplayName("13.Simple test map Object Property")
     void testMapObjectProperty() throws Exception {
         OntologyMapper mapper = new OntologyMapper(model);
         ClassRepresentation testedClass = mapAndGetTestedClass(mapper,classHuman);
         mapper.mapProperties(testedClass);
 
-        assertEquals(2,testedClass.getProperties().size(),
+        assertEquals(3,testedClass.getProperties().size(),
                 "Tested class doesn't have two properties.");
 
         PropertyRepresentation objectProp = findProperty(testedClass.getProperties(),hasDog);
@@ -309,7 +310,7 @@ public class MapperTests extends ModelSetUp {
 
     @Test
     @Order(14)
-    @DisplayName("Test map Equivalent Object Property")
+    @DisplayName("14.Test map Equivalent Object Property")
     void testMapEquivalentObjectProperty() throws Exception {
         IRI dog = Values.iri(ex,"dog");
         model.add(dog,OWL.EQUIVALENTPROPERTY,hasDog);
@@ -317,8 +318,8 @@ public class MapperTests extends ModelSetUp {
         ClassRepresentation testedClass = mapAndGetTestedClass(mapper,classHuman);
         mapper.mapProperties(testedClass);
 
-        assertEquals(3,testedClass.getProperties().size(),
-                "Tested class doesn't have two properties.");
+        assertEquals(4,testedClass.getProperties().size(),
+                "Tested class doesn't have four properties.");
 
         PropertyRepresentation eqProp = findProperty(testedClass.getProperties(),dog);
 
@@ -330,7 +331,7 @@ public class MapperTests extends ModelSetUp {
 
     @Test
     @Order(15)
-    @DisplayName("Simple test map Functional Property")
+    @DisplayName("15.Simple test map Functional Property")
     void testMapFunctionalProperty() throws Exception {
         model.add(hasDog,RDF.TYPE,OWL.FUNCTIONALPROPERTY);
 
@@ -348,7 +349,7 @@ public class MapperTests extends ModelSetUp {
 
     @Test
     @Order(16)
-    @DisplayName("Simple test map Inverse Property")
+    @DisplayName("16.Simple test map Inverse Property")
     void testMapInversProperty() throws Exception {
         IRI hasHuman = Values.iri(ex,"hasHuman");
         model.add(hasHuman,OWL.INVERSEOF,hasDog);
@@ -369,7 +370,7 @@ public class MapperTests extends ModelSetUp {
 
     @Test
     @Order(17)
-    @DisplayName("Simple test map Inverse Functional Property")
+    @DisplayName("17.Simple test map Inverse Functional Property")
     void testMapInverseFunctionalProperty(){
         model.add(hasDog,RDF.TYPE,OWL.INVERSEFUNCTIONALPROPERTY);
 
@@ -385,12 +386,16 @@ public class MapperTests extends ModelSetUp {
         assertNotNull(objProp,"Tested class doesn't have correct property.");
         ClassRepresentation rangeClass = objProp.getRangeClass();
         assertNotNull(rangeClass,"Range class doesn't exist.");
-        assertEquals(1,rangeClass.getProperties().size(),
+        assertEquals(2,rangeClass.getProperties().size(),
                 "Range class doesn't have one inverse property.");
 
-        PropertyRepresentation invFuncProp = rangeClass.getProperties().get(0);
+        //List<String> listOfPropertiesNames = rangeClass.getProperties().parallelStream().map(rangeC-> rangeC.getStringIRI()).collect(Collectors.toList());
+        IRI humanProp = Values.iri(hasDog.getNamespace() + "human");
+
+        PropertyRepresentation invFuncProp = findProperty(rangeClass.getProperties(),humanProp);
+
         assertNotNull(invFuncProp,"Range class doesn't have correct property.");
-        assertEquals(invFuncProp.getStringIRI(),hasDog.getNamespace() + "human","Range class has wrong range value.");
+        //assertEquals(invFuncProp.getStringIRI(),hasDog.getNamespace() + "human","Range class has wrong range value.");
         assertTrue(invFuncProp.isFunctional(),"Inverse functional property is not set.");
 
 
@@ -409,11 +414,19 @@ public class MapperTests extends ModelSetUp {
             e.printStackTrace();
         }
 
-        assertEquals(2,testedClass.getProperties().size(),
-                "Tested class doesn't have one property.");
-        PropertyRepresentation prop = testedClass.getProperties().get(0);
+        assertEquals(4,testedClass.getProperties().size(),
+                "Tested class doesn't have 4 properties.");
+        //PropertyRepresentation prop = testedClass.getProperties().get(0);
+        PropertyRepresentation prop = findProperty(testedClass.getProperties(),hasAge);
+
         assertEquals(prop.getValueIRI(),hasAge,"Tested class has wrong property.");
         assertEquals(prop.getRangeResource(),hasAgeDatatype,"Tested class has range value.");
+        assertFalse(prop.isFunctional(),"Property doesn't have just one value.");
+
+        prop = findProperty(testedClass.getProperties(),hasDog);
+
+        assertEquals(prop.getValueIRI(),hasDog,"Tested class has wrong property.");
+        assertEquals(prop.getRangeResource(),classDog,"Tested class has range value.");
         assertTrue(prop.isFunctional(),"Property doesn't have just one value.");
     }
 
