@@ -55,23 +55,34 @@ public class AbstractClassRepresentation extends ClassRepresentation {
         this.toRemove = toRemove;
     }
 
-    public void setClassNameWithConcatUnionClasses(){
-        String unionName = "UnionOf";
-        for(ClassRepresentation eqClassRep: getUnionOf()) {
-            unionName = unionName.concat(eqClassRep.getName());
+
+    public void setAbstractClassName(){
+        if(ABSTRACT_CREATE_OF.UNIONOF.equals(this.createOf)){
+            setClassNameWithConcatUnionClasses();
+        }else if(ABSTRACT_CREATE_OF.INTERSECTIONOF.equals(this.createOf)){
+            setClassNameWithConcatIntersectionClasses();
+        }else if(ABSTRACT_CREATE_OF.COMPLEMENT.equals(this.createOf)){
+            setClassNameWithConcatComplementClass();
         }
-        this.setName(unionName + ENTITY_ABSTRACTCLASS_SUFFIX);
     }
 
-    public void setClassNameWithConcatIntersectionClasses(){
+    private void setClassNameWithConcatUnionClasses(){
+        String unionName = "UnionOf";
+        for(DefaultClassRepresentation eqClassRep: getUnionOf()) {
+            unionName = unionName.concat(eqClassRep.getName());
+        }
+        this.setName(unionName);
+    }
+
+    private void setClassNameWithConcatIntersectionClasses(){
         String intersectionName = "IntersectionOf";
-        for(ClassRepresentation eqClassRep: getIntersectionOf()) {
+        for(DefaultClassRepresentation eqClassRep: getIntersectionOf()) {
             intersectionName = intersectionName.concat(eqClassRep.getName());
         }
         this.setName(intersectionName + ENTITY_ABSTRACTCLASS_SUFFIX);
     }
 
-    public void setClassNameWithConcatComplementClass(){
+    private void setClassNameWithConcatComplementClass(){
         this.setName("ComplementOf"+ getComplementOf().getName() + ENTITY_ABSTRACTCLASS_SUFFIX);
     }
 
@@ -79,5 +90,12 @@ public class AbstractClassRepresentation extends ClassRepresentation {
         this.createOf = createOf;
     }
 
+    public ABSTRACT_CREATE_OF getCreateOf(){
+        return createOf;
+    }
 
+
+    public boolean isEmptyClass(){
+        return !(this.isUnionOf() || this.isIntersectionOf() || this.isComplementOf() || this.getEquivalentClass() != null || this.hasSubClass());
+    }
 }

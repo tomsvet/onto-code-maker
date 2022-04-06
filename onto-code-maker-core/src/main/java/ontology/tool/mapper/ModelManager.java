@@ -5,6 +5,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.RDFCollections;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -227,6 +228,26 @@ public class ModelManager {
     public boolean existStatementWithIRI(Resource subject,IRI predicate,Value object){
         Model resultModel =  model.filter(subject, predicate, object);
         return resultModel.size() > 0;
+    }
+
+    public Statement getStatementWithIRI(Resource subject,IRI predicate,Value object){
+        Iterable<Statement> stat = model.getStatements(subject, predicate, object);
+        return stat.iterator().hasNext()? stat.iterator().next():null;
+    }
+
+    public Statement getFirstStatementWithIRI(Resource subject,List<IRI> predicates,Value object){
+        Statement res = null;
+        for(IRI predicate:predicates){
+            res = getStatementWithIRI(subject, predicate, object);
+            if(res != null){
+                break;
+            }
+        }
+        return res;
+    }
+
+    public boolean isCollection(Resource subject){
+        return existStatementWithIRI(subject, RDF.FIRST,null);
     }
 
     public List<Value> getRDFCollection(Resource node){

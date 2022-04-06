@@ -43,7 +43,8 @@ abstract public class OntologyGenerator {
     protected static String CLASS_ENTITY_FILE_NAME = "OntoEntity";
     //protected static String CLASS_ENTITY_FILE_NAME = CLASS_ENTITY_NAME ;
     public static String ENTITY_INTERFACE_SUFFIX = "Int";
-    public static String ENTITY_ABSTRACTCLASS_SUFFIX = "Abstract";
+    public static String ENTITY_ABSTRACTCLASS_SUFFIX = "";
+    public static String ENTITY_EQUIVALENCE_PREFIX = "Equivalence";
     public static HashMap<IRI, String> dataTypes = new HashMap<>();
 
     protected static String SERIALIZATION_FACTORY_FILE_NAME = "SerialializationFactory" ;
@@ -199,6 +200,8 @@ abstract public class OntologyGenerator {
                         }else{
                             property.setRangeDatatype("String");
                         }
+                    }else{
+                        property.setRangeDatatype("String");
                     }
                 }else if(property.getType().equals(PropertyRepresentation.PROPERTY_TYPE.OBJECT)){
                     if(property.getRangeClass() != null && property.getRangeResource() != null){
@@ -216,6 +219,13 @@ abstract public class OntologyGenerator {
         }
     }
 
+    public void setUpInterfaces(){
+        for(ClassRepresentation classRep:this.classes) {
+            findOutInterfaceClassValueOfClass(classRep);
+        }
+
+    }
+
 
     public void generateMainEntityClass(Template templateFile,String entitiesOutputFile){
         String interfaceClassPath = entitiesOutputFile + CLASS_ENTITY_FILE_NAME +  FILE_EXTENSION;
@@ -231,7 +241,7 @@ abstract public class OntologyGenerator {
     public void generateEquivalentClass(Template templateFile, String entitiesOutputFile, ClassRepresentation generatedClass){
         //generatedClass.getEquivalentClass().setClassNameWithConcatEquivalentClasses();
         String equivalentClassName = generatedClass.getEquivalentClass().getName();
-        String equivalentClassFileName = entitiesOutputFile + equivalentClassName + ENTITY_INTERFACE_SUFFIX +  FILE_EXTENSION;
+        String equivalentClassFileName = entitiesOutputFile + equivalentClassName +  FILE_EXTENSION;
 
         Map<String, Object> dataInt = getEquivalentClassEntityData(equivalentClassName,generatedClass);
         try (Writer fileWriter = new FileWriter(new File(equivalentClassFileName))) {
@@ -252,29 +262,41 @@ abstract public class OntologyGenerator {
     }
 
     public void findOutInterfaceClassValueOfClass(ClassRepresentation generatedClass){
-        if(generatedClass.hasSubClass() && !generatedClass.isHasInterface()) {
-            //If SubClasses Have More Super Classes
-            // this is needed when subclasses of generated Class  have more than one superclass because it need extends more classes (in java only interfaces)
-            List<ClassRepresentation> resultList = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 1).collect(Collectors.toList());
-            boolean result1 = false;
-            if(!resultList.isEmpty()){
-                List<ClassRepresentation> res = resultList.parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 2 || classRep.getSuperClasses().get(0).getClassType() == classRep.getSuperClasses().get(1).getClassType()).collect(Collectors.toList());
-                if(res.size() == resultList.size()){
+        if(!(generatedClass instanceof AbstractClassRepresentation && generatedClass.isUnionOf())) {
+            if (generatedClass.hasSubClass() && !generatedClass.isHasInterface()) {
+                //If SubClasses Have More Super Classes
+                // this is needed when subclasses of generated Class  have more than one superclass because it need extends more classes (in java only interfaces)
+                List<ClassRepresentation> resultList = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 1).collect(Collectors.toList());
+                boolean result1 = false;
+                if (!resultList.isEmpty()) {
                     result1 = true;
+                    generatedClass.getSuperClasses().parallelStream().forEach(superClass-> superClass.setHasInterface(true));
+                    /*List<ClassRepresentation> res = resultList.parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 2 || classRep.getSuperClasses().get(0).getClassType() == classRep.getSuperClasses().get(1).getClassType()).collect(Collectors.toList());
+                    if (res.size() == resultList.size()) {
+                        result1 = true;
+                    }*/
                 }
+
+                // if subclass is interface
+                if(!result1){
+                    List<ClassRepresentation> resultList2 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.isHasInterface()).collect(Collectors.toList());
+                    result1 = !resultList2.isEmpty();
+                }
+
+                // if subclasses have equivalent class
+                Optional<ClassRepresentation> result2 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getEquivalentClass() != null).findFirst();
+
+                //Optional<ClassRepresentation> result3 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getSuperClasses().size() == 2 && classRep.getSuperClasses().get(0).getClassType() != classRep.getSuperClasses().get(1).getClassType()).findFirst();
+
+                generatedClass.setHasInterface(result1 || result2.isPresent());
             }
-
-            // if subclasses have equivalent class
-            Optional<ClassRepresentation> result2 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getEquivalentClass() != null).findFirst();
-
-            //Optional<ClassRepresentation> result3 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getSuperClasses().size() == 2 && classRep.getSuperClasses().get(0).getClassType() != classRep.getSuperClasses().get(1).getClassType()).findFirst();
-
-            generatedClass.setHasInterface(result1 || result2.isPresent());
         }
     }
 
 
     public void generateClasses() throws IOException {
+
+        setUpInterfaces();
 
         Template templateFile = getTemplate(TEMPLATE_TYPE.CLASS);
         if(templateFile == null){

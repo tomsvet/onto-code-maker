@@ -7,55 +7,34 @@ import java.util.List;
 
 public abstract class ClassRepresentation extends DefaultClassRepresentation{
 
-    public enum CLASS_TYPE {
-        ABSTRACT("Abstract"),
-        NORMAL("Normal");
-
-        private final String name;
-
-        /**
-         * @param name
-         */
-        private CLASS_TYPE(final String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
-
-    private CLASS_TYPE type;
 
     private EquivalentClassRepresentation equivalentClass;
 
     private List<PropertyRepresentation> properties = new ArrayList<>();
 
+    private List<RestrictionRepresentation> restrictions = new ArrayList<>();
+
     private boolean hasInterface;
 
     private boolean hasSuperAbstractClass;
 
-    private List<ClassRepresentation> unionOf = new ArrayList<>();
-    private List<ClassRepresentation> intersectionOf = new ArrayList<>();
-    private ClassRepresentation complementOf;
+    private boolean isUnion = false;
+    private List<DefaultClassRepresentation> unionOf = new ArrayList<>();
+    private boolean isIntersection = false;
+    private List<DefaultClassRepresentation> intersectionOf = new ArrayList<>();
+    private DefaultClassRepresentation complementOf;
+    private int sameNameIndex = 0;
 
     public ClassRepresentation(String namespace, String name,CLASS_TYPE type){
-        super(namespace,name);
-        this.type = type;
+        super(namespace,name,type);
     }
 
     public ClassRepresentation(String name,CLASS_TYPE type){
-        super(name);
-        this.type = type;
+        super(name,type);
     }
 
     public ClassRepresentation(CLASS_TYPE type){
-        super();
-        this.type = type;
-    }
-
-    public CLASS_TYPE getClassType(){
-        return type;
+        super(type);
     }
 
     public void addProperties(PropertyRepresentation property){
@@ -96,11 +75,11 @@ public abstract class ClassRepresentation extends DefaultClassRepresentation{
         return equivalentClass;
     }
 
-    public void addUnionOf(ClassRepresentation unionOf){
+    public void addUnionOf(DefaultClassRepresentation unionOf){
         this.unionOf.add(unionOf);
     }
 
-    public List<ClassRepresentation> getUnionOf(){
+    public List<DefaultClassRepresentation> getUnionOf(){
         return unionOf;
     }
 
@@ -108,11 +87,11 @@ public abstract class ClassRepresentation extends DefaultClassRepresentation{
         return !unionOf.isEmpty();
     }
 
-    public void addIntersectionOf(ClassRepresentation intersectionOf){
+    public void addIntersectionOf(DefaultClassRepresentation intersectionOf){
         this.intersectionOf.add(intersectionOf);
     }
 
-    public List<ClassRepresentation> getIntersectionOf(){
+    public List<DefaultClassRepresentation> getIntersectionOf(){
         return intersectionOf;
     }
 
@@ -120,11 +99,11 @@ public abstract class ClassRepresentation extends DefaultClassRepresentation{
         return !intersectionOf.isEmpty();
     }
 
-    public void setComplementOf(ClassRepresentation complementOf){
+    public void setComplementOf(DefaultClassRepresentation complementOf){
         this.complementOf = complementOf;
     }
 
-    public ClassRepresentation getComplementOf(){
+    public DefaultClassRepresentation getComplementOf(){
         return complementOf;
     }
 
@@ -134,4 +113,23 @@ public abstract class ClassRepresentation extends DefaultClassRepresentation{
 
     abstract public Resource getResourceValue();
 
+    public int getSameNameIndex(){
+        return sameNameIndex;
+    }
+
+    public void setSameNameIndex(int index){
+        this.sameNameIndex = index;
+    }
+
+    public boolean isSameName(){
+        return this.sameNameIndex != 0;
+    }
+
+    public void addRestriction(RestrictionRepresentation restriction){
+        restrictions.add(restriction);
+    }
+
+    public List<RestrictionRepresentation> getRestrictions(){
+        return restrictions;
+    }
 }

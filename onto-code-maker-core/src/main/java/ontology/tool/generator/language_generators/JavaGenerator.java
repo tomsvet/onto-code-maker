@@ -120,7 +120,7 @@ public class JavaGenerator extends OntologyGenerator {
 
     public Map<String, Object> getEquivalentClassEntityData(String className, ClassRepresentation classRep){
         Map<String, Object> data = new HashMap<>();
-        data.put("className",className + ENTITY_INTERFACE_SUFFIX);
+        data.put("className", className);
         data.put("classRep",classRep);
         data.put("isEquivalent",true);
         data.put("isInterface",true);
@@ -168,17 +168,21 @@ public class JavaGenerator extends OntologyGenerator {
         if(classRep.isUnionOf()) {
             data.put("isInterface",true);
             data.put("isAbstract",false);
-            data.put("isExtends",true);
+            if (classRep.getEquivalentClass() != null) {
+                extendClasses.add(classRep.getEquivalentClass().getName());
+            }
             if (classRep.hasSuperClass()) {
-                data.put("extendClasses", getAllSuperClassInterfaceNames(classRep));
+                extendClasses.addAll( getAllSuperClassInterfaceNames(classRep));
             } else {
-                data.put("extendClasses", new ArrayList<>(Collections.singletonList(CLASS_ENTITY_FILE_NAME)));
+                if(extendClasses.isEmpty()){
+                    extendClasses.add(CLASS_ENTITY_FILE_NAME);
+                }
             }
         }else {
             data.put("isInterface",false);
             data.put("isAbstract",true);
             if (classRep.getEquivalentClass() != null) {
-                implementClasses.add(classRep.getEquivalentClass().getName() + ENTITY_INTERFACE_SUFFIX);
+                implementClasses.add(classRep.getEquivalentClass().getName());
             }
             if (classRep.isHasInterface()) {
                 implementClasses.add(classRep.getName() + ENTITY_INTERFACE_SUFFIX);
@@ -197,14 +201,14 @@ public class JavaGenerator extends OntologyGenerator {
                     }*/
                 }
             }
-            if (!implementClasses.isEmpty()) {
-                data.put("isImplements", true);
-                data.put("implementClasses", implementClasses);
-            }
-            if (!extendClasses.isEmpty()) {
-                data.put("isExtends", true);
-                data.put("extendClasses", extendClasses);
-            }
+        }
+        if (!implementClasses.isEmpty()) {
+            data.put("isImplements", true);
+            data.put("implementClasses", implementClasses);
+        }
+        if (!extendClasses.isEmpty()) {
+            data.put("isExtends", true);
+            data.put("extendClasses", extendClasses);
         }
         data.put("rawPackage",this.packageName);
         data.put("package", this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
@@ -224,7 +228,7 @@ public class JavaGenerator extends OntologyGenerator {
         ArrayList<String> extendClasses =new ArrayList<>();
         ArrayList<String> implementClasses =new ArrayList<>();
         if( classRep.getEquivalentClass() != null){
-            implementClasses.add(classRep.getEquivalentClass().getName() + ENTITY_INTERFACE_SUFFIX);
+            implementClasses.add(classRep.getEquivalentClass().getName());
         }
         if (classRep.isHasInterface()) {
             implementClasses.add(classRep.getName() + ENTITY_INTERFACE_SUFFIX);

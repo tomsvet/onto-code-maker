@@ -8,19 +8,48 @@ import java.util.List;
 
 public abstract class DefaultClassRepresentation extends EntityRepresentation{
 
+    public enum CLASS_TYPE {
+        ABSTRACT("Abstract"),
+        NORMAL("Normal"),
+        RESTRICTION("Restriction"),
+        EQUIVALENT("Equivalent");
+
+        private final String name;
+
+        /**
+         * @param name
+         */
+        private CLASS_TYPE(final String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    private ClassRepresentation.CLASS_TYPE type;
+
     private List<ClassRepresentation> subClasses = new ArrayList<>();
     private List<ClassRepresentation> superClasses = new ArrayList<>();
 
-    public DefaultClassRepresentation(String namespace, String name){
+    public DefaultClassRepresentation(String namespace, String name,CLASS_TYPE type){
         super(namespace,name);
+        this.type = type;
     }
 
-    public DefaultClassRepresentation(String name){
+    public DefaultClassRepresentation(String name,CLASS_TYPE type){
         super(name);
+        this.type = type;
     }
 
-    public DefaultClassRepresentation(){
+    public DefaultClassRepresentation(CLASS_TYPE type){
         super();
+        this.type = type;
+    }
+
+    public CLASS_TYPE getClassType(){
+        return type;
     }
 
     public void addSubClasses(ClassRepresentation subClasses) {

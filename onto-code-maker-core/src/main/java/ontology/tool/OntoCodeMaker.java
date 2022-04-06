@@ -10,6 +10,7 @@ import ontology.tool.mapper.OntologyMapper;
 import ontology.tool.parser.OntologyParser;
 import org.eclipse.rdf4j.model.Model;
 
+import java.io.FileNotFoundException;
 import java.util.List;
 
 public class OntoCodeMaker {
@@ -36,48 +37,49 @@ public class OntoCodeMaker {
         this.inputFiles = inputFiles;
     }
 
-    public void generateCodeFromOntology(){
+    public void generateCodeFromOntology() throws Exception {
         Model modelOfTriples;
-        try {
-            modelOfTriples = ontoParser.parseOntology(inputFiles,formatName);
-            if(modelOfTriples == null){
-                System.err.println("Error: Model is empty.");
-                return;
-            }
+        modelOfTriples = ontoParser.parseOntology(inputFiles,formatName);
+        if(modelOfTriples == null){
+            throw new Exception("Error: Model is empty.");
+        }
 
-            OntologyMapper mapper = new OntologyMapper(modelOfTriples);
-            List<OntologyRepresentation> ontologies = mapper.getOWLOntologies();
-            for(OntologyRepresentation ontology:ontologies){
-                mapper.mapOntologyInformations(ontology);
-            }
-           // OntologyRepresentation ontology = mapper.getOWLOntology();
-           // mapper.mapOntologyInformations(ontology);
-            mapper.mapping();
-            List<ClassRepresentation> classes = mapper.getMappedClasses();
+        OntologyMapper mapper = new OntologyMapper(modelOfTriples);
+        List<OntologyRepresentation> ontologies = mapper.getOWLOntologies();
+        for(OntologyRepresentation ontology:ontologies){
+            mapper.mapOntologyInformations(ontology);
+        }
 
-            OntologyGeneratorFactory factory = new OntologyGeneratorFactory();
-            if(language == null || language.isEmpty()){
-                language = "java";
-            }
-            OntologyGenerator generator = factory.getOntologyGenerator(language);
-            if(generator == null){
-                System.err.println("The language " + language + " is not supported. Supported languages are defined in the help message.");
-                return;
-            }
-            generator.addClasses(classes);
+        mapper.mapping();
+        List<ClassRepresentation> classes = mapper.getMappedClasses();
 
-            generator.setOntologies(ontologies);
-            if(outputDir!= null && !outputDir.isEmpty()){
-                generator.setOutputDir(outputDir);
-            }
-            if(packageName!= null && !packageName.isEmpty()){
-                generator.setPackageName(packageName);
-            }
+        OntologyGeneratorFactory factory = new OntologyGeneratorFactory();
+        if(language == null || language.isEmpty()){
+            language = "java";
+        }
+        OntologyGenerator generator = factory.getOntologyGenerator(language);
+        if(generator == null){
+            throw new Exception("The language " + language + " is not supported. Supported languages are defined in the help message.");
+        }
+        generator.addClasses(classes);
 
-            generator.generateCode();
-            
-        } catch (Exception e) {
-            e.printStackTrace();
+        generator.setOntologies(ontologies);
+        if(outputDir!= null && !outputDir.isEmpty()){
+            generator.setOutputDir(outputDir);
+        }
+        if(packageName!= null && !packageName.isEmpty()){
+            generator.setPackageName(packageName);
+        }
+
+        generator.generateCode();
+
+
+        if(inputFiles.length == 1) {
+            //todo change for logger
+            System.out.println("The code for your ontology is successfully generated.");
+        }else if(inputFiles.length > 1){
+            System.out.println("The code for your ontologies is successfully generated.");
+
         }
     }
 

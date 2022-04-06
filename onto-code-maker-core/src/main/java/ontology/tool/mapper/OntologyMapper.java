@@ -24,6 +24,7 @@ public class OntologyMapper {
     List<IRI> SUBCLASS_PREDICATE_IRIS = new ArrayList<>(Collections.singletonList(RDFS.SUBCLASSOF));
     List<IRI> EQUIVALENT_CLASS_PREDICATE_IRIS = new ArrayList<>(Collections.singletonList(OWL.EQUIVALENTCLASS));
     IRI SUBPROPERTY_PREDICATE_IRIS = RDFS.SUBPROPERTYOF;
+    List<IRI> RESTRICTION_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(OWL.CARDINALITY,OWL.MAXCARDINALITY,OWL.MAXQUALIFIEDCARDINALITY,OWL.MINCARDINALITY,OWL.MINQUALIFIEDCARDINALITY,OWL.QUALIFIEDCARDINALITY,OWL.ALLVALUESFROM,OWL.HASVALUE,OWL.SOMEVALUESFROM,OWL.TARGETVALUE));
 
     List<ClassRepresentation> ontologyClasses = new ArrayList<>();
     //List<AbstractClassRepresentation> abstractClassesMapping = new ArrayList<>();
@@ -51,7 +52,7 @@ public class OntologyMapper {
     }*/
 
     public ClassRepresentation getMappedClass(Resource classResource){
-        Optional<ClassRepresentation> res = ontologyClasses.stream().filter(classRep -> classRep.getResourceValue().equals(classResource)).findFirst();
+        Optional<ClassRepresentation> res = ontologyClasses.stream().filter(classRep -> !classRep.isSameName()? classRep.getResourceValue().equals(classResource): classRep.getResourceValue().equals(Values.iri(classResource.stringValue() + classRep.getSameNameIndex()))).findFirst();
         return res.orElse(null);
     }
 
@@ -76,23 +77,47 @@ public class OntologyMapper {
         // first need to map class equivalence and then hierarchy
         for(ClassRepresentation classRep:ontologyClasses){
             mapUnionOfClasses(classRep);
+            mapIntersectionOfClass(classRep);
+            mapComplementOfClass(classRep);
+
             mapEquivalentClasses(classRep);
             mapClassHierarchy(classRep);
-            mapIntersectionOfClass(classRep);
+
 
         }
 
 
         // then can map class properties
         for(ClassRepresentation classRep:ontologyClasses){
-            findOutInterfaceClassValueOfClass(classRep);
+            if(classRep.getClassType().equals(DefaultClassRepresentation.CLASS_TYPE.ABSTRACT)){
+                ((AbstractClassRepresentation)classRep).setAbstractClassName();
+            }
+            if(classRep.getEquivalentClass() != null){
+                classRep.getEquivalentClass().setClassNameWithConcatEquivalentClasses();
+            }
+            //findOutInterfaceClassValueOfClass(classRep);
 
-            mapComplementOfClass(classRep);
             mapComments(classRep);
             mapLabels(classRep);
             mapCreator(classRep);
             mapProperties(classRep);
         }
+
+
+        //change duplicate names
+       /* for(ClassRepresentation classRep:ontologyClasses){
+            boolean isDuplicateName = true;
+            int i = 0;
+            String name = classRep.getName();
+            while(isDuplicateName){
+                if(getMappedClassesWithSameName(classRep) == null){
+                    isDuplicateName = false;
+                }else{
+                    classRep.setName(name + i);
+                    i++;
+                }
+            }
+        }*/
 
         //remove duplicate abstract classes
         for(AbstractClassRepresentation classRep:getAbstractClassReps()){
@@ -123,6 +148,14 @@ public class OntologyMapper {
 
     }
 
+    public ClassRepresentation getMappedClassesWithSameName(List<ClassRepresentation> allClassRep,ClassRepresentation classRep){
+        /*List<ClassRepresentation> allClassRep = new ArrayList<>();
+        allClassRep.addAll(ontologyClasses);
+        allClassRep.remove(classRep);*/
+        Optional<ClassRepresentation> duplicateClassRep = allClassRep.parallelStream().filter(x -> x.getName().equals(classRep.getName())).findFirst();
+        return duplicateClassRep.isPresent()?duplicateClassRep.get():null;
+    }
+
     public void mapClasses(){
         List<ClassRepresentation> allClassRep = new ArrayList<>();
         //List<AbstractClassRepresentation> allAbstractClassRep = new ArrayList<>();
@@ -131,6 +164,18 @@ public class OntologyMapper {
             if(classResource.isIRI()){
                 IRI classIRI = (IRI) classResource;
                 NormalClassRepresentation classRep = new NormalClassRepresentation(classIRI.getNamespace(),classIRI.getLocalName());
+                boolean isDuplicateName = true;
+                int i = 2;
+                String name = classRep.getName();
+                while(isDuplicateName){
+                    if(getMappedClassesWithSameName(allClassRep,classRep) == null){
+                        isDuplicateName = false;
+                    }else{
+                        classRep.setName(name + i);
+                        classRep.setSameNameIndex(i);
+                        i++;
+                    }
+                }
                 allClassRep.add(classRep);
             }else if(classResource.isBNode()){
                 BNode classBNode = (BNode) classResource;
@@ -170,10 +215,16 @@ public class OntologyMapper {
         Set<Value> finalSuperList = new HashSet<>(superClasses);
         //to find subclass collections
         for(Value superClass: superClasses){
-            if(superClass.isBNode()){
-                List<Value> subClassOfClasses = modelManager.getRDFCollection((Resource)superClass);
-                finalSuperList.remove(superClass);
-                finalSuperList.addAll(subClassOfClasses);
+            if(superClass.isBNode() ){
+                if(modelManager.isCollection((Resource)superClass)) {
+                    List<Value> subClassOfClasses = modelManager.getRDFCollection((Resource) superClass);
+                    finalSuperList.remove(superClass);
+                    finalSuperList.addAll(subClassOfClasses);
+                }else{
+                    if(!isMappedClass(superClass)) {
+                        finalSuperList.remove(superClass);
+                    }
+                }
             }
         }
         for(Value superClassValue: finalSuperList){
@@ -213,10 +264,18 @@ public class OntologyMapper {
         Set<Value> finalEqList = new HashSet<>(equivalentClasses);
         //to find equivalent collections
         for(Value eqClass: equivalentClasses){
-            if(eqClass.isBNode()){
-                List<Value> equivalentOfClasses = modelManager.getRDFCollection((Resource)eqClass);
-                finalEqList.remove(eqClass);
-                finalEqList.addAll(equivalentOfClasses);
+            if(eqClass.isBNode() ){
+                Resource eqResource = (Resource) eqClass;
+                if(modelManager.isCollection(eqResource)) {
+                    List<Value> equivalentOfClasses = modelManager.getRDFCollection(eqResource);
+                    finalEqList.remove(eqClass);
+                    finalEqList.addAll(equivalentOfClasses);
+                }else {
+                    checkAndMapRestriction(classRep,eqResource, RestrictionRepresentation.RESTRICTION_IN_TYPE.EQUIVALENT);
+                    if(!isMappedClass(eqClass)) {
+                        finalEqList.remove(eqClass);
+                    }
+                }
             }
         }
 
@@ -262,6 +321,44 @@ public class OntologyMapper {
         }
     }
 
+    public boolean checkAndMapRestriction(ClassRepresentation classRep, Value unionValue, RestrictionRepresentation.RESTRICTION_IN_TYPE type){
+        BNode unionBnode = (BNode) unionValue;
+        if(modelManager.existStatementWithIRI(unionBnode,RDF.TYPE,OWL.RESTRICTION)){
+            IRI onProperty = modelManager.getFirstIRIObject(OWL.ONPROPERTY, unionBnode);
+            Statement restrictionType = modelManager.getFirstStatementWithIRI(unionBnode,RESTRICTION_PREDICATE_IRIS,null);
+            RestrictionRepresentation restRep = new RestrictionRepresentation("Restr" + onProperty.getLocalName().substring(0, 1).toUpperCase() + onProperty.getLocalName().substring(1));
+            restRep.setOnProperty(onProperty);
+            restRep.setType(restrictionType.getPredicate().stringValue());
+            restRep.setValue(restrictionType.getObject().stringValue());
+            if(type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.UNIONOF)){
+                restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.UNIONOF);
+                classRep.addRestriction(restRep);
+                classRep.addUnionOf(restRep);
+                ((AbstractClassRepresentation) classRep).setCreateOf(AbstractClassRepresentation.ABSTRACT_CREATE_OF.UNIONOF);
+                ((AbstractClassRepresentation) classRep).setAbstractClassName();
+            }else if(type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.INTERSECTIONOF)){
+                restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.INTERSECTIONOF);
+                classRep.addRestriction(restRep);
+                ((AbstractClassRepresentation) classRep).setCreateOf(AbstractClassRepresentation.ABSTRACT_CREATE_OF.INTERSECTIONOF);
+                ((AbstractClassRepresentation) classRep).setAbstractClassName();
+                classRep.addIntersectionOf(restRep);
+            }else if(type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.COMPLEMENT)){
+                restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.COMPLEMENT);
+                classRep.addRestriction(restRep);
+                classRep.setComplementOf(restRep);
+                ((AbstractClassRepresentation) classRep).setCreateOf(AbstractClassRepresentation.ABSTRACT_CREATE_OF.COMPLEMENT);
+                ((AbstractClassRepresentation) classRep).setAbstractClassName();
+            }else if(type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.EQUIVALENT)){
+                restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.EQUIVALENT);
+                classRep.addRestriction(restRep);
+            }
+            restRep.setClassName(classRep.getName());
+
+            return true;
+        }
+        return  false;
+    }
+
     public void mapUnionOfClasses(ClassRepresentation classRep) throws Exception {
         Resource unionNode = modelManager.getFirstResource(OWL.UNIONOF,classRep.getResourceValue());
         if(unionNode == null){
@@ -276,7 +373,8 @@ public class OntologyMapper {
                 if (childClass != null) {
                     classRep.addUnionOf(childClass);
                     if (classRep.getClassType().equals(ClassRepresentation.CLASS_TYPE.ABSTRACT)) {
-                        ((AbstractClassRepresentation) classRep).setClassNameWithConcatUnionClasses();
+                        ((AbstractClassRepresentation) classRep).setCreateOf(AbstractClassRepresentation.ABSTRACT_CREATE_OF.UNIONOF);
+                        ((AbstractClassRepresentation) classRep).setAbstractClassName();
                         childClass.setHasSuperAbstractClass(true);
                     }
                     //mapping union is to subclass
@@ -285,6 +383,13 @@ public class OntologyMapper {
                     childClass.addSuperClasses(classRep);
                     classRep.addSubClasses(childClass);
                 } else {
+                    if (unionValue.isBNode()) {
+                        checkAndMapRestriction(classRep,unionValue,RestrictionRepresentation.RESTRICTION_IN_TYPE.UNIONOF);
+                        //todo check this situation
+                        continue;
+
+
+                    }
                     throw new Exception("Class " + unionValue.stringValue() + " doesn't exist in the ontology.");
                 }
             }
@@ -305,7 +410,8 @@ public class OntologyMapper {
                 if (childClass != null) {
                     classRep.addIntersectionOf(childClass);
                     if (classRep.getClassType().equals(ClassRepresentation.CLASS_TYPE.ABSTRACT)) {
-                        ((AbstractClassRepresentation) classRep).setClassNameWithConcatIntersectionClasses();
+                        ((AbstractClassRepresentation) classRep).setCreateOf(AbstractClassRepresentation.ABSTRACT_CREATE_OF.INTERSECTIONOF);
+                        ((AbstractClassRepresentation) classRep).setAbstractClassName();
                         childClass.setHasSuperAbstractClass(true);
                     }
                     //mapping intersection is to subclass
@@ -313,6 +419,12 @@ public class OntologyMapper {
                     classRep.addSuperClasses(childClass);
                     childClass.addSubClasses(classRep);
                 } else {
+                    if (intersectionValue.isBNode()) {
+                        checkAndMapRestriction(classRep,intersectionValue,RestrictionRepresentation.RESTRICTION_IN_TYPE.INTERSECTIONOF);
+                        //todo check this situation
+                        continue;
+
+                    }
                     throw new Exception("Class " + intersectionValue.stringValue() + " doesn't exist in the ontology.");
                 }
             }
@@ -335,7 +447,8 @@ public class OntologyMapper {
         if (complementOfClass != null) {
             classRep.setComplementOf(complementOfClass);
             if (classRep.getClassType().equals(ClassRepresentation.CLASS_TYPE.ABSTRACT)) {
-                ((AbstractClassRepresentation) classRep).setClassNameWithConcatComplementClass();
+                ((AbstractClassRepresentation) classRep).setCreateOf(AbstractClassRepresentation.ABSTRACT_CREATE_OF.COMPLEMENT);
+                ((AbstractClassRepresentation) classRep).setAbstractClassName();
                 complementOfClass.setHasSuperAbstractClass(true);
             }
             List<ClassRepresentation> superClasses = complementOfClass.getSuperClasses();
@@ -350,7 +463,9 @@ public class OntologyMapper {
                 //classRep.addSuperClasses(childClass);
                 //childClass.addSuperClasses(classRep);
         } else {
-            throw new Exception("Class " + complementResource.stringValue() + " doesn't exist in the ontology.");
+            if(!(complementResource.isBNode() && checkAndMapRestriction(classRep,complementResource,RestrictionRepresentation.RESTRICTION_IN_TYPE.COMPLEMENT))) {
+                throw new Exception("Class " + complementResource.stringValue() + " doesn't exist in the ontology.");
+            }
         }
     }
 
@@ -387,10 +502,18 @@ public class OntologyMapper {
                 List<ClassRepresentation> resultList = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 1).collect(Collectors.toList());
                 boolean result1 = false;
                 if (!resultList.isEmpty()) {
-                    List<ClassRepresentation> res = resultList.parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 2 || classRep.getSuperClasses().get(0).getClassType() == classRep.getSuperClasses().get(1).getClassType()).collect(Collectors.toList());
+                    result1 = true;
+                    generatedClass.getSuperClasses().parallelStream().forEach(superClass-> superClass.setHasInterface(true));
+                    /*List<ClassRepresentation> res = resultList.parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 2 || classRep.getSuperClasses().get(0).getClassType() == classRep.getSuperClasses().get(1).getClassType()).collect(Collectors.toList());
                     if (res.size() == resultList.size()) {
                         result1 = true;
-                    }
+                    }*/
+                }
+
+                // if subclass is interface
+                if(!result1){
+                    List<ClassRepresentation> resultList2 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.isHasInterface()).collect(Collectors.toList());
+                    result1 = !resultList2.isEmpty();
                 }
 
                 // if subclasses have equivalent class
@@ -586,9 +709,13 @@ public class OntologyMapper {
         //to find equivalent collections
         for(Value eqProp: equivalentProperties){
             if(eqProp.isBNode()){
-                List<Value> equivalentOfProperties = modelManager.getRDFCollection((Resource)eqProp);
-                finalEqList.remove(eqProp);
-                finalEqList.addAll(equivalentOfProperties);
+                if(modelManager.isCollection((Resource)eqProp)) {
+                    List<Value> equivalentOfProperties = modelManager.getRDFCollection((Resource) eqProp);
+                    finalEqList.remove(eqProp);
+                    finalEqList.addAll(equivalentOfProperties);
+                }else{
+                    finalEqList.remove(eqProp);
+                }
             }
         }
         for(Value equivalentProperty:finalEqList){
@@ -632,10 +759,14 @@ public class OntologyMapper {
         Set<Value> finalSuperList = new HashSet<>(subProperties);
         //to find subclass collections
         for(Value superProperty: subProperties){
-            if(superProperty.isBNode()){
-                List<Value> subClassOfProperty = modelManager.getRDFCollection((Resource)superProperty);
-                finalSuperList.remove(superProperty);
-                finalSuperList.addAll(subClassOfProperty);
+            if(superProperty.isBNode() ){
+                if(modelManager.isCollection((Resource)superProperty)) {
+                    List<Value> subClassOfProperty = modelManager.getRDFCollection((Resource) superProperty);
+                    finalSuperList.remove(superProperty);
+                    finalSuperList.addAll(subClassOfProperty);
+                }else{
+                    finalSuperList.remove(superProperty);
+                }
             }
         }
         for(Value subProperty: finalSuperList){

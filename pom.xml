@@ -11,7 +11,6 @@
     <modules>
         <module>onto-code-maker-cli</module>
         <module>onto-code-maker-core</module>
-        <module>onto-code-maker-result-tester</module>
     </modules>
 
     <properties>

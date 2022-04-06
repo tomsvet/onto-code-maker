@@ -1,0 +1,34 @@
+<rdf:RDF
+       xmlns:owl="http://www.w3.org/2002/07/owl#"
+       xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+       xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+       xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <owl:Ontology rdf:about="http://example.com/ontology/subUnionOfClasses.owl#"/>
+
+
+      <owl:ObjectProperty rdf:about="http://example.com/hasChild">
+        <rdfs:domain rdf:resource="http://example.com/Parent"/>
+        <rdfs:range rdf:resource="http://example.com/Person"/>
+      </owl:ObjectProperty>
+
+      <owl:Class rdf:about="http://example.com/Person">
+      </owl:Class>
+
+      <owl:Class rdf:about="http://example.com/Father">
+      </owl:Class>
+
+      <owl:Class rdf:about="http://example.com/Mother">
+      </owl:Class>
+
+      <owl:Class rdf:about="http://example.com/Parent">
+        <rdfs:subClassOf>
+         <owl:Class>
+            <owl:unionOf rdf:parseType="Collection">
+                <owl:Class rdf:about="http://example.com/Mother"/>
+                <rdf:Description rdf:about="http://example.com/Father"/>
+            </owl:unionOf>
+         </owl:Class>
+         </rdfs:subClassOf>
+      </owl:Class>
+
+</rdf:RDF>

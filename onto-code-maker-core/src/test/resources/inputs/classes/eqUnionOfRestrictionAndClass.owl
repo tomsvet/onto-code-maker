@@ -1,0 +1,39 @@
+<rdf:RDF
+       xmlns:owl="http://www.w3.org/2002/07/owl#"
+       xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+       xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+       xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <owl:Ontology rdf:about="http://example.com/ontology/eqUnionOfRestrictionAndClass.owl#"/>
+
+
+      <owl:ObjectProperty rdf:about="http://example.com/hasChild">
+        <rdfs:domain rdf:resource="http://example.com/Parent"/>
+        <rdfs:range rdf:resource="http://example.com/Person"/>
+      </owl:ObjectProperty>
+
+      <owl:DatatypeProperty rdf:about="http://example.com/hasAge">
+        <rdfs:domain rdf:resource="http://example.com/Parent"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"/>
+      </owl:DatatypeProperty>
+
+      <owl:Class rdf:about="http://example.com/Person">
+      </owl:Class>
+
+      <owl:Class rdf:about="http://example.com/ClassTest1">
+      </owl:Class>
+
+      <owl:Class rdf:about="http://example.com/Parent">
+        <owl:equivalentClass>
+         <owl:Class>
+            <owl:unionOf rdf:parseType="Collection">
+                <owl:Restriction>
+                    <owl:onProperty rdf:resource="http://example.com/hasChild"/>
+                    <owl:someValuesFrom rdf:resource="http://example.com/Person"/>
+                </owl:Restriction>
+               <rdf:Description rdf:about="http://example.com/ClassTest1"/>
+            </owl:unionOf>
+         </owl:Class>
+         </owl:equivalentClass>
+      </owl:Class>
+
+</rdf:RDF>

@@ -55,6 +55,12 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 <#if isInterface ==false>
 import java.time.LocalTime;
 import ${rawPackage}.${vocabularyFileName};
+import ${entityPackage}.${classRep.getDatatypeValue()?cap_first};
+<#list classRep.properties as property>
+<#if property.rangeClass??>
+import ${entityPackage}.${property.rangeClass.getDatatypeValue()};
+</#if>
+</#list>
 <#else>
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -292,7 +298,7 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
         }
 
         Model statements = model.filter(${classRep.name?uncap_first}.getIri(),null,null);
-        statements.removeIf(event -> !event.getPredicate().equals(RDF.TYPE));
+        statements.removeIf(x -> !x.getPredicate().equals(RDF.TYPE));
 
         <#if  propSize gt 0 || superClassesNum gt 0 >
         addPropertiesToModel(model,${classRep.name?uncap_first});
@@ -561,7 +567,7 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
             model.add(${classRep.name?uncap_first}.getIri(),${vocabularyFileName}.${property.getConstantName()},<@propertyType property=property classRep=classRep propValue= classRep.name?uncap_first + ".get" + property.name?cap_first+ "()"/>);
             </@compress_single_line>
             <#list property.getInverseTo() as inverseTo>
-            model.add(${classRep.name?uncap_first}.get${property.name?cap_first}() ,${vocabularyFileName}.${inverseTo.getConstantName()},${classRep.name?uncap_first}.getIri());
+            model.add(${classRep.name?uncap_first}.get${property.name?cap_first}().getIri() ,${vocabularyFileName}.${inverseTo.getConstantName()},${classRep.name?uncap_first}.getIri());
             </#list>
         }
             </#if>
