@@ -79,6 +79,7 @@ public class OntologyMapper {
             mapUnionOfClasses(classRep);
             mapIntersectionOfClass(classRep);
             mapComplementOfClass(classRep);
+            mapDisjointWith(classRep);
 
             mapEquivalentClasses(classRep);
             mapClassHierarchy(classRep);
@@ -221,6 +222,7 @@ public class OntologyMapper {
                     finalSuperList.remove(superClass);
                     finalSuperList.addAll(subClassOfClasses);
                 }else{
+                    checkAndMapRestriction(classRep,superClass, RestrictionRepresentation.RESTRICTION_IN_TYPE.SUBCLASS);
                     if(!isMappedClass(superClass)) {
                         finalSuperList.remove(superClass);
                     }
@@ -321,6 +323,39 @@ public class OntologyMapper {
         }
     }
 
+    public void mapDisjointWith(ClassRepresentation classRep) throws Exception {
+        Set<Value> disjointWithValues = modelManager.getAllObjects(OWL.DISJOINTWITH,classRep.getResourceValue());
+        Set<Value> finalDisjointList = new HashSet<>(disjointWithValues);
+        //to find equivalent collections
+        for(Value disValue: disjointWithValues){
+            if(disValue.isBNode() ){
+                Resource disResource = (Resource) disValue;
+                if(modelManager.isCollection(disResource)) {
+                    List<Value> disjointWithClassValue = modelManager.getRDFCollection(disResource);
+                    finalDisjointList.remove(disValue);
+                    finalDisjointList.addAll(disjointWithClassValue);
+                }else {
+                    checkAndMapRestriction(classRep,disValue, RestrictionRepresentation.RESTRICTION_IN_TYPE.EQUIVALENT);
+                    if(!isMappedClass(disValue)) {
+                        finalDisjointList.remove(disValue);
+                    }
+                }
+            }
+        }
+
+        for(Value disjointValue:finalDisjointList){
+            if(disjointValue.isResource()) {
+                ClassRepresentation disjointClassRep = getMappedClass((Resource) disjointValue);
+                if (disjointClassRep != null) {
+                    classRep.addDisjointWith(disjointClassRep);
+                }else{
+                    throw new Exception("Class " + disjointValue.stringValue() + " doesn't exist in the ontology. This class is used in disjointWith tag in class " + classRep.getResourceValue().stringValue() + ".");
+                }
+            }
+        }
+
+    }
+
     public boolean checkAndMapRestriction(ClassRepresentation classRep, Value unionValue, RestrictionRepresentation.RESTRICTION_IN_TYPE type){
         BNode unionBnode = (BNode) unionValue;
         if(modelManager.existStatementWithIRI(unionBnode,RDF.TYPE,OWL.RESTRICTION)){
@@ -330,26 +365,29 @@ public class OntologyMapper {
             restRep.setOnProperty(onProperty);
             restRep.setType(restrictionType.getPredicate().stringValue());
             restRep.setValue(restrictionType.getObject().stringValue());
+            restRep.setRestrictionIn(type);
             if(type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.UNIONOF)){
-                restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.UNIONOF);
+               // restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.UNIONOF);
                 classRep.addRestriction(restRep);
                 classRep.addUnionOf(restRep);
                 ((AbstractClassRepresentation) classRep).setCreateOf(AbstractClassRepresentation.ABSTRACT_CREATE_OF.UNIONOF);
                 ((AbstractClassRepresentation) classRep).setAbstractClassName();
             }else if(type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.INTERSECTIONOF)){
-                restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.INTERSECTIONOF);
+               // restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.INTERSECTIONOF);
                 classRep.addRestriction(restRep);
                 ((AbstractClassRepresentation) classRep).setCreateOf(AbstractClassRepresentation.ABSTRACT_CREATE_OF.INTERSECTIONOF);
                 ((AbstractClassRepresentation) classRep).setAbstractClassName();
                 classRep.addIntersectionOf(restRep);
             }else if(type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.COMPLEMENT)){
-                restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.COMPLEMENT);
+                //restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.COMPLEMENT);
                 classRep.addRestriction(restRep);
                 classRep.setComplementOf(restRep);
                 ((AbstractClassRepresentation) classRep).setCreateOf(AbstractClassRepresentation.ABSTRACT_CREATE_OF.COMPLEMENT);
                 ((AbstractClassRepresentation) classRep).setAbstractClassName();
             }else if(type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.EQUIVALENT)){
-                restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.EQUIVALENT);
+                //restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.EQUIVALENT);
+                classRep.addRestriction(restRep);
+            }else if(type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.DISJOINTWITH) || type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.SUBCLASS)){
                 classRep.addRestriction(restRep);
             }
             restRep.setClassName(classRep.getName());
@@ -378,17 +416,12 @@ public class OntologyMapper {
                         childClass.setHasSuperAbstractClass(true);
                     }
                     //mapping union is to subclass
-                    //todo
-                    //classRep.addSuperClasses(childClass);
                     childClass.addSuperClasses(classRep);
                     classRep.addSubClasses(childClass);
                 } else {
                     if (unionValue.isBNode()) {
                         checkAndMapRestriction(classRep,unionValue,RestrictionRepresentation.RESTRICTION_IN_TYPE.UNIONOF);
-                        //todo check this situation
                         continue;
-
-
                     }
                     throw new Exception("Class " + unionValue.stringValue() + " doesn't exist in the ontology.");
                 }
@@ -414,14 +447,11 @@ public class OntologyMapper {
                         ((AbstractClassRepresentation) classRep).setAbstractClassName();
                         childClass.setHasSuperAbstractClass(true);
                     }
-                    //mapping intersection is to subclass
-                    //todo
                     classRep.addSuperClasses(childClass);
                     childClass.addSubClasses(classRep);
                 } else {
                     if (intersectionValue.isBNode()) {
                         checkAndMapRestriction(classRep,intersectionValue,RestrictionRepresentation.RESTRICTION_IN_TYPE.INTERSECTIONOF);
-                        //todo check this situation
                         continue;
 
                     }
@@ -457,11 +487,6 @@ public class OntologyMapper {
             for(ClassRepresentation superClass:filteredSuperClasses){
                 superClass.addSubClasses(classRep);
             }
-            //superClasses.add(classRep);
-                //mapping union is to subclass
-                //todo
-                //classRep.addSuperClasses(childClass);
-                //childClass.addSuperClasses(classRep);
         } else {
             if(!(complementResource.isBNode() && checkAndMapRestriction(classRep,complementResource,RestrictionRepresentation.RESTRICTION_IN_TYPE.COMPLEMENT))) {
                 throw new Exception("Class " + complementResource.stringValue() + " doesn't exist in the ontology.");

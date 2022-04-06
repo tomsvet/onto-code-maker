@@ -101,6 +101,14 @@ import ${rawPackage}.${vocabularyFileName};
 </#if>
 </#if>
 <#if classRep??>
+<#assign disjointSize =  classRep.getDisjointWith()?size>
+<#if disjointSize gt 0>
+*   This class is disjoint with classes:
+<#list classRep.getDisjointWith() as disjointWith>
+*        ${disjointWith.getName()}(${disjointWith.getFullName()})
+</#list>.
+*
+</#if>
 <#assign restSize =  classRep.restrictions?size>
 <#if restSize gt 0>
 *   Restrictions:

@@ -13,7 +13,8 @@ public class RestrictionRepresentation extends DefaultClassRepresentation {
         EQUIVALENT,
         INTERSECTIONOF,
         COMPLEMENT,
-        SUBCLASS
+        SUBCLASS,
+        DISJOINTWITH
     }
     private String className;
     private IRI onProperty;

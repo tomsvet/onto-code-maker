@@ -6,6 +6,7 @@ import ontology.tool.generator.representations.OntologyRepresentation;
 import ontology.tool.generator.representations.PropertyRepresentation;
 import ontology.tool.mapper.OntologyMapper;
 import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -30,7 +31,10 @@ public class MapperTests extends ModelSetUp {
 
     @BeforeAll
     public static void setUp() {
+        //model reset
+        model = new TreeModel();
         ModelSetUp.setUp();
+
         model.add(testOnt,RDF.TYPE,OWL.ONTOLOGY);
 
         model.add(classDog, RDF.TYPE, OWL.CLASS);

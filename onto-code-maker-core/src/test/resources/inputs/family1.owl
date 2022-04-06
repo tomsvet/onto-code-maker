@@ -18,10 +18,12 @@
 
       <owl:Class rdf:about="http://example.com/Men">
       <rdfs:subClassOf rdf:resource="http://example.com/Human"/>
+      <owl:disjointWith rdf:resource="http://example.com/Woman"/>
       </owl:Class>
 
       <owl:Class rdf:about="http://example.com/Woman">
         <rdfs:subClassOf rdf:resource="http://example.com/Human"/>
+        <owl:disjointWith rdf:resource="http://example.com/Men"/>
       </owl:Class>
 
       <owl:Class rdf:about="http://example.com/Dog">

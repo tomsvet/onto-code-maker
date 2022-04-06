@@ -62,7 +62,7 @@ public class FileGeneratorTests {
     @Test
     @Order(1)
     @DisplayName("Generate one class ontology.")
-    public void generateOneClassOWL() throws Exception {
+    public void generateOneClassOWL(){
         String[] inputFiles = { simpleClassesDir + "simpleOWLCLass.owl"};
         assertDoesNotThrow(() -> generateFromRDMXMLToJava(inputFiles,"oneClassOWL"));
     }
@@ -122,7 +122,7 @@ public class FileGeneratorTests {
     @Test
     @Order(7)
     @DisplayName("Generate equivalent class.")
-    public void generateEquivalentClass() throws Exception {
+    public void generateEquivalentClass(){
         String[] inputFiles = { simpleClassesDir + "equivalentClass.owl"};
         assertDoesNotThrow(() -> generateFromRDMXMLToJava(inputFiles,"equivalentClass"));
     }
@@ -130,7 +130,7 @@ public class FileGeneratorTests {
     @Test
     @Order(8)
     @DisplayName("Check generated files from equivalentClass.owl.")
-    public void checkEquivalentClassFiles() throws Exception {
+    public void checkEquivalentClassFiles() {
         List<String> listOfEntityClasses = Arrays.asList("Human","Person");
         List<String> listOfInterfaces = Arrays.asList("EquivalencePersonHuman","OntoEntity");
         File folderEntities = new File(outputDir+ "equivalentClass/entities/");
@@ -142,7 +142,7 @@ public class FileGeneratorTests {
     @Test
     @Order(9)
     @DisplayName("Generate subclassof.")
-    public void generateSubClassOf() throws Exception {
+    public void generateSubClassOf(){
         String[] inputFiles = { simpleClassesDir + "subClassOf.owl"};
         assertDoesNotThrow(() -> generateFromRDMXMLToJava(inputFiles,"subClassOf"));
     }
@@ -150,7 +150,7 @@ public class FileGeneratorTests {
     @Test
     @Order(10)
     @DisplayName("Check generated files from subClassOf.owl.")
-    public void checkSubClassOfFiles() throws Exception {
+    public void checkSubClassOfFiles(){
         List<String> listOfEntityClasses = Arrays.asList("Human","Men");
         List<String> listOfInterfaces = Arrays.asList("OntoEntity");
         File folderEntities = new File(outputDir+ "subClassOf/entities/");
@@ -203,7 +203,7 @@ public class FileGeneratorTests {
     @Order(15)
     @Disabled // not supported
     @DisplayName("Generate restriction class.")
-    public void generateRestrictionClass() throws Exception {
+    public void generateRestrictionClass() {
         String[] inputFiles = { simpleClassesDir + "restrictionClass.owl"};
         assertDoesNotThrow(() -> generateFromRDMXMLToJava(inputFiles,"restrictionClass"));
     }
@@ -212,7 +212,7 @@ public class FileGeneratorTests {
     @Order(16)
     @Disabled // not supported
     @DisplayName("Check generated files from restrictionClass.owl.")
-    public void checkRestrictionClassFiles() throws Exception {
+    public void checkRestrictionClassFiles() {
         List<String> listOfEntityClasses = Arrays.asList("Parent","Person");
         List<String> listOfInterfaces = Arrays.asList("OntoEntity");
         File folderEntities = new File(outputDir+ "restrictionClass/entities/");
@@ -415,7 +415,6 @@ public class FileGeneratorTests {
 
 
     @Test
-    @Disabled
     @Order(100)
     @DisplayName("Generate from family1.owl.")
     public void generateFamilyOntology() throws Exception {
@@ -425,11 +424,10 @@ public class FileGeneratorTests {
 
     @Test
     @Order(101)
-    @Disabled
     @DisplayName("Check generated files from family1.owl.")
     public void checkFamilyOntologyFiles() throws Exception {
         List<String> listOfEntityClasses = Arrays.asList("Parent","Cat","Child","Dog","Person","Human","Men","Woman");
-        List<String> listOfInterfaces = Arrays.asList("PersonHumanInt","OntoEntity");
+        List<String> listOfInterfaces = Arrays.asList("EquivalencePersonHuman","OntoEntity");
         File folderEntities = new File(outputDir+ "family1/entities/");
         File folderSerialization = new File(outputDir+ "family1/serialization/");
 
@@ -446,7 +444,6 @@ public class FileGeneratorTests {
 
     @Test
     @Order(102)
-    @Disabled
     @DisplayName("Generate from collections.owl.")
     void generateCollectionsOntology() throws Exception {
         String[] inputFiles = { inputDir + "collections.owl"};
@@ -455,11 +452,10 @@ public class FileGeneratorTests {
 
     @Test
     @Order(103)
-    @Disabled
     @DisplayName("Check generated files from collections.owl.")
     public void checkCollectionOntologyFiles() throws Exception {
         List<String> listOfEntityClasses = Arrays.asList("Class1","Class2","Class3","Class4","Class5","Class6","Class7","Class8","Class9","Complement","Complement2","EquivalentCollection","IntersectionOfCollection","SubclassCollection","UnionOfCollection");
-        List<String> listOfInterfaces = Arrays.asList("Class1Int","Class2Int","Class5Int","Class6Int","EquivalentCollectionClass3Class4Int","OntoEntity");
+        List<String> listOfInterfaces = Arrays.asList("Class1Int","Class2Int","Class5Int","Class6Int","EquivalenceEquivalentCollectionClass3Class4","OntoEntity");
         File folderEntities = new File(outputDir+ "collections/entities/");
         File folderSerialization = new File(outputDir+ "collections/serialization/");
 

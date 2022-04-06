@@ -2,6 +2,7 @@ package unitTests;
 
 import ontology.tool.mapper.ModelManager;
 import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -15,6 +16,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ModelManagerTests extends ModelSetUp {
+
+    @BeforeAll
+    public static void setUp() {
+        model = new TreeModel();
+        ModelSetUp.setUp();
+    }
 
     @Test
     @Order(1)

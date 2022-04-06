@@ -25,6 +25,8 @@ public abstract class ClassRepresentation extends DefaultClassRepresentation{
     private DefaultClassRepresentation complementOf;
     private int sameNameIndex = 0;
 
+    private List<DefaultClassRepresentation> disjointWith = new ArrayList<>();
+
     public ClassRepresentation(String namespace, String name,CLASS_TYPE type){
         super(namespace,name,type);
     }
@@ -131,5 +133,17 @@ public abstract class ClassRepresentation extends DefaultClassRepresentation{
 
     public List<RestrictionRepresentation> getRestrictions(){
         return restrictions;
+    }
+
+    public void addDisjointWith(DefaultClassRepresentation disjointWith){
+        this.disjointWith.add(disjointWith);
+    }
+
+    public List<DefaultClassRepresentation> getDisjointWith(){
+        return disjointWith;
+    }
+
+    public boolean isDisjointWith(){
+        return !disjointWith.isEmpty();
     }
 }

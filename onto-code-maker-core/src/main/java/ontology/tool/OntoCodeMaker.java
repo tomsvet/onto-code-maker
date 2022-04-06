@@ -76,9 +76,9 @@ public class OntoCodeMaker {
 
         if(inputFiles.length == 1) {
             //todo change for logger
-            System.out.println("The code for your ontology is successfully generated.");
+            System.out.println("The code for your ontology has been successfully generated.");
         }else if(inputFiles.length > 1){
-            System.out.println("The code for your ontologies is successfully generated.");
+            System.out.println("The code for your ontologies has been successfully generated.");
 
         }
     }
