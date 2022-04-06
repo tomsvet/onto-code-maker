@@ -24,13 +24,10 @@ public class OntoCodeMakerCLI {
                                 .outputDir(parser.getDestination())
                                 .packageName(parser.getPackageName())
                                 .build();
-        maker.generateCodeFromOntology();
-
-        if(parser.getInputFiles().length == 1) {
-            System.out.println("The code for your ontology is successfully generated.");
-        }else if(parser.getInputFiles().length > 1){
-            System.out.println("The code for your ontologies is successfully generated.");
-
+        try {
+            maker.generateCodeFromOntology();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
