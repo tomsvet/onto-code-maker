@@ -42,13 +42,13 @@ The mapping from OWL to Python follows the following table.
 
 ## Installation
 
-###Building 
+### Building 
 
 OntoCodeMaker source code may be downloaded/cloned from git [repository](https://github.com/tomsvet/onto-code-maker).
 OntoCodeMaker may be build from the sources by maven. 
 
 
-###Running
+### Running
 
 OntoCodeMaker is distributed as platform-independent runnable jar archive. 
 Jar archive is available in the [Releases](https://github.com/tomsvet/onto-code-maker/releases).
