@@ -53,11 +53,11 @@ OntoCodeMaker may be build from the sources by maven.
 OntoCodeMaker is distributed as platform-independent runnable jar archive. 
 Jar archive is available in the [Releases](https://github.com/tomsvet/onto-code-maker/releases).
 Run following command to generate source code.
-```shell
+``` shell
 java -jar OntoCodeMaker.jar [options...] <input-file> [<input-file> ...]
 ```
 List of available parametres:
-```shell
+``` 
  OntoCodeMaker [options...] <input-file> [<input-file> ...]
   <input-file>                  The input file to read from (one or more)
   -d,--destination <destination>  Define the destination of generated source
@@ -77,7 +77,7 @@ List of available parametres:
 ## Usage
 Example usage:
 
-```shell
+``` shell
 java -jar onto-code-maker.jar ontology.owl -d /ta -f RDF/XML -l java -p org.example.package
 ```
 
