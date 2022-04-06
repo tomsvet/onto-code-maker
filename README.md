@@ -41,20 +41,23 @@ Restrictions, disjoints are only comments.
 The mapping from OWL to Python follows the following table.
 
 ## Installation
-####Building 
+
+###Building 
+
 OntoCodeMaker source code may be downloaded/cloned from git [repository](https://github.com/tomsvet/onto-code-maker).
 OntoCodeMaker may be build from the sources by maven. 
 
 
-####Running
+###Running
+
 OntoCodeMaker is distributed as platform-independent runnable jar archive. 
 Jar archive is available in the [Releases](https://github.com/tomsvet/onto-code-maker/releases).
 Run following command to generate source code.
-```bash
+```shell
 java -jar OntoCodeMaker.jar [options...] <input-file> [<input-file> ...]
 ```
 List of available parametres:
-```bash
+```shell
  OntoCodeMaker [options...] <input-file> [<input-file> ...]
   <input-file>                  The input file to read from (one or more)
   -d,--destination <destination>  Define the destination of generated source
@@ -62,7 +65,8 @@ List of available parametres:
                                   Default dir is actual dir.
   -f,--format <format>            Syntax type of the input file. If absent it
                                   will try to guess.
-                                  Supported formats: RDF/XML, Turtle, N-Triples, N-Quads, JSON-LD, TriG and TriX.
+                                  Supported formats: RDF/XML, Turtle, N-Triples, N-Quads, JSON-LD,
+                                  TriG and TriX.
   -h,--help                       Print help message.
   -l,--language <language>        Define the language of final source code.
                                   Default language is Java.
@@ -71,10 +75,10 @@ List of available parametres:
                                   Default package is empty.
 ```
 ## Usage
-```bash
+Example usage:
+
+```shell
 java -jar onto-code-maker.jar ontology.owl -d /ta -f RDF/XML -l java -p org.example.package
 ```
-
-Example usage:
 
 ## License
