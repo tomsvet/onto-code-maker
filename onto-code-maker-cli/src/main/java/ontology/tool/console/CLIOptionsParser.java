@@ -139,7 +139,8 @@ public class CLIOptionsParser {
 
         Option format = Option.builder("f")
                 .longOpt(FORMAT_OPTION_NAME)
-                .desc("Syntax type of the input file. If absent it will try to guess.")
+                .desc("Syntax type of the input file. If absent it will try to guess.\n" +
+                        "Supported formats: RDF/XML, Turtle, N-Triples, N-Quads, JSON-LD, TriG and TriX.")
                 .hasArg(true).numberOfArgs(1)
                 .argName(FORMAT_OPTION_NAME)
                 .required(false)
@@ -148,7 +149,8 @@ public class CLIOptionsParser {
         Option language = Option.builder("l")
                 .longOpt("language")
                 .desc("Define the language of final source code.\n" +
-                        "Default language is Java.")
+                        "Default language is Java. \n" +
+                        "All supported languages: java,python.")
                 .hasArg(true).numberOfArgs(1)
                 .argName(LANGUAGE_OPTION_NAME)
                 .required(false)
