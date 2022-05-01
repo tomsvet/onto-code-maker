@@ -1,16 +1,14 @@
 package ontology.tool;
 
 import ontology.tool.generator.OntologyGeneratorFactory;
-import ontology.tool.generator.representations.AbstractClassRepresentation;
-import ontology.tool.generator.representations.ClassRepresentation;
-import ontology.tool.generator.representations.NormalClassRepresentation;
+import ontology.tool.generator.representations.*;
 import ontology.tool.generator.OntologyGenerator;
-import ontology.tool.generator.representations.OntologyRepresentation;
 import ontology.tool.mapper.OntologyMapper;
 import ontology.tool.parser.OntologyParser;
 import org.eclipse.rdf4j.model.Model;
 
 import java.io.FileNotFoundException;
+import java.util.Collection;
 import java.util.List;
 
 public class OntoCodeMaker {
@@ -46,13 +44,10 @@ public class OntoCodeMaker {
 
         OntologyMapper mapper = new OntologyMapper(modelOfTriples);
         List<OntologyRepresentation> ontologies = mapper.getOWLOntologies();
-        for(OntologyRepresentation ontology:ontologies){
-            mapper.mapOntologyInformations(ontology);
-        }
 
         mapper.mapping();
-        List<ClassRepresentation> classes = mapper.getMappedClasses();
-
+        Collection<ClassRepresentation> classes = mapper.getCollectionOfMappedClasses();
+        Collection<PropertyRepresentation> properties = mapper.getCollectionOfMappedProperties();
         OntologyGeneratorFactory factory = new OntologyGeneratorFactory();
         if(language == null || language.isEmpty()){
             language = "java";
@@ -62,6 +57,7 @@ public class OntoCodeMaker {
             throw new Exception("The language " + language + " is not supported. Supported languages are defined in the help message.");
         }
         generator.addClasses(classes);
+        generator.addProperties(properties);
 
         generator.setOntologies(ontologies);
         if(outputDir!= null && !outputDir.isEmpty()){

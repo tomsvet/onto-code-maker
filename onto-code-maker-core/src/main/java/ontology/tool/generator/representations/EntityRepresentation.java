@@ -7,7 +7,7 @@ import org.eclipse.rdf4j.model.util.Values;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EntityRepresentation {
+public abstract class EntityRepresentation {
     private String name = "";
     private String namespace = "";
     private List<String> comments = new ArrayList<>();
@@ -69,5 +69,9 @@ public class EntityRepresentation {
 
     public String getCreator() {
         return creator;
+    }
+
+    public Resource getResourceValue() {
+        return Values.iri(getFullName());
     }
 }

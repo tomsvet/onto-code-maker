@@ -113,8 +113,6 @@ public abstract class ClassRepresentation extends DefaultClassRepresentation{
         return complementOf != null;
     }
 
-    abstract public Resource getResourceValue();
-
     public int getSameNameIndex(){
         return sameNameIndex;
     }

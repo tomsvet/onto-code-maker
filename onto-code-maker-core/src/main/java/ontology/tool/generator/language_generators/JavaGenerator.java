@@ -53,7 +53,7 @@ public class JavaGenerator extends OntologyGenerator {
 
     public  List<VocabularyConstant> createVocabularyConstants(){
 
-        List<VocabularyConstant> properties = new ArrayList<>();
+        List<VocabularyConstant> propertiesConstants = new ArrayList<>();
         int index = 0;
         // ontology constants
         for(OntologyRepresentation ontology:ontologies) {
@@ -62,7 +62,7 @@ public class JavaGenerator extends OntologyGenerator {
             ontCon.setValue( ontology.getStringIRI());
             ontCon.setConstantOf("ontology");
             ontCon.setObjectName(ontology.getName());
-            properties.add(ontCon);
+            propertiesConstants.add(ontCon);
             index++;
         }
 
@@ -75,20 +75,21 @@ public class JavaGenerator extends OntologyGenerator {
                 propC.setValue(genClass.getStringIRI());
                 propC.setConstantOf("class");
                 propC.setObjectName(genClass.getName());
-                properties.add(propC);
-            }
-
-            for(PropertyRepresentation property: generatedClass.getProperties()){
-                VocabularyConstant propP = new VocabularyConstant();
-                propP.setName( property.getConstantName());
-                propP.setValue(property.getStringIRI());
-                propP.setConstantOf("property");
-                propP.setObjectName(property.getName());
-                properties.add(propP);
+                propertiesConstants.add(propC);
             }
 
         }
-        return properties;
+
+        for(PropertyRepresentation property: properties){
+            VocabularyConstant propP = new VocabularyConstant();
+            propP.setName( property.getConstantName());
+            propP.setValue(property.getStringIRI());
+            propP.setConstantOf("property");
+            propP.setObjectName(property.getName());
+            propertiesConstants.add(propP);
+        }
+
+        return propertiesConstants;
     }
 
     public Map<String, Object> getMainEntityData(){

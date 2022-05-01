@@ -54,7 +54,7 @@ abstract public class OntologyGenerator {
     
     protected List<OntologyRepresentation> ontologies = new ArrayList<>();
     protected List<ClassRepresentation> classes = new ArrayList<>();
-    //protected List<ClassRepresentation> entityClasses = new ArrayList<>();
+    protected List<PropertyRepresentation> properties = new ArrayList<>();
 
     protected String outputDir = DEFAULT_OUTPUT_DIR + "/";
     protected String packageName = "";
@@ -115,9 +115,14 @@ abstract public class OntologyGenerator {
         return classRep.getSuperClasses().parallelStream().filter(superClass -> superClass instanceof AbstractClassRepresentation && !superClass.isHasInterface()).map(foundClass -> (AbstractClassRepresentation)foundClass).collect(Collectors.toList());
     }
 
-    public void addClasses( List<ClassRepresentation> classes){
+    public void addClasses( Collection<ClassRepresentation> classes){
         this.classes.addAll(classes);
     }
+
+    public void addProperties( Collection<PropertyRepresentation> properties){
+        this.properties.addAll(properties);
+    }
+
 
    /* public void addEntityClasses( List<ClassRepresentation> classes){
         this.entityClasses.addAll(classes);

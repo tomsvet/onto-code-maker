@@ -28,28 +28,28 @@ public abstract class DefaultClassRepresentation extends EntityRepresentation{
         }
     }
 
-    private ClassRepresentation.CLASS_TYPE type;
+    private ClassRepresentation.CLASS_TYPE classType;
 
     private List<ClassRepresentation> subClasses = new ArrayList<>();
     private List<ClassRepresentation> superClasses = new ArrayList<>();
 
     public DefaultClassRepresentation(String namespace, String name,CLASS_TYPE type){
         super(namespace,name);
-        this.type = type;
+        this.classType = type;
     }
 
     public DefaultClassRepresentation(String name,CLASS_TYPE type){
         super(name);
-        this.type = type;
+        this.classType = type;
     }
 
     public DefaultClassRepresentation(CLASS_TYPE type){
         super();
-        this.type = type;
+        this.classType = type;
     }
 
     public CLASS_TYPE getClassType(){
-        return type;
+        return classType;
     }
 
     public void addSubClasses(ClassRepresentation subClasses) {

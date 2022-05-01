@@ -99,7 +99,7 @@ public class PropertyRepresentation extends EntityRepresentation {
         return rangeClass;
     }
 
-    public String getConstantName(){return getClassName().toUpperCase() + "_" + this.getName().toUpperCase()  + PROPERTY_CONSTANT_SUFFIX;}
+    public String getConstantName(){return  this.getName().toUpperCase()  + PROPERTY_CONSTANT_SUFFIX;}
 
     public String getClassName(){
         return className;

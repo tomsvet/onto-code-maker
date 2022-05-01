@@ -17,19 +17,11 @@ public class NormalClassRepresentation extends ClassRepresentation{
 
     public String getConstantName(){return this.getName().toUpperCase()  + CLASS_CONSTANT_SUFFIX;}
 
-    public IRI getValueIRI(){
-        return Values.iri(super.getNamespace() + super.getName());
-    }
-
     public String getStringIRI(){
         return super.getNamespace() + super.getName();
     }
 
     public String getSerializationClassName(){return this.getName() + SERIALIZATION_FILE_NAME_SUFFIX;}
-
-    public Resource getResourceValue(){
-        return Values.iri(super.getNamespace() + super.getName());
-    }
 
     public String getDatatypeValue(){
         if(isHasInterface()){

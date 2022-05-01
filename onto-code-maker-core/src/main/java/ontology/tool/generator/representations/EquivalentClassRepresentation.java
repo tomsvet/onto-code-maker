@@ -2,6 +2,7 @@ package ontology.tool.generator.representations;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static ontology.tool.generator.OntologyGenerator.ENTITY_EQUIVALENCE_PREFIX;
 
@@ -47,8 +48,9 @@ public class EquivalentClassRepresentation extends DefaultClassRepresentation{
 
     public void setClassNameWithConcatEquivalentClasses(){
         String equivalentName = ENTITY_EQUIVALENCE_PREFIX;
-        for(DefaultClassRepresentation eqClassRep: equivalentClasses) {
-            equivalentName = equivalentName.concat(eqClassRep.getName());
+        List<String> sortedNames = equivalentClasses.stream().map(r -> r.getName()).sorted().collect(Collectors.toList());
+        for(String eqClassName: sortedNames) {
+            equivalentName = equivalentName.concat(eqClassName);
         }
         this.setName(equivalentName);
     }

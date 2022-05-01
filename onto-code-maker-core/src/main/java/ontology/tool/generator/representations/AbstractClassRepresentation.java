@@ -4,6 +4,9 @@ import ontology.tool.generator.OntologyGenerator;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Values;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static ontology.tool.generator.OntologyGenerator.ENTITY_ABSTRACTCLASS_SUFFIX;
 
 public class AbstractClassRepresentation extends ClassRepresentation {
@@ -68,16 +71,18 @@ public class AbstractClassRepresentation extends ClassRepresentation {
 
     private void setClassNameWithConcatUnionClasses(){
         String unionName = "UnionOf";
-        for(DefaultClassRepresentation eqClassRep: getUnionOf()) {
-            unionName = unionName.concat(eqClassRep.getName());
+        List<String> sortedNames = getUnionOf().stream().map(r -> r.getName()).sorted().collect(Collectors.toList());
+        for(String eqClassName: sortedNames) {
+            unionName = unionName.concat(eqClassName);
         }
         this.setName(unionName);
     }
 
     private void setClassNameWithConcatIntersectionClasses(){
         String intersectionName = "IntersectionOf";
-        for(DefaultClassRepresentation eqClassRep: getIntersectionOf()) {
-            intersectionName = intersectionName.concat(eqClassRep.getName());
+        List<String> sortedNames = getIntersectionOf().stream().map(r -> r.getName()).sorted().collect(Collectors.toList());
+        for(String eqClassName: sortedNames) {
+            intersectionName = intersectionName.concat(eqClassName);
         }
         this.setName(intersectionName + ENTITY_ABSTRACTCLASS_SUFFIX);
     }
