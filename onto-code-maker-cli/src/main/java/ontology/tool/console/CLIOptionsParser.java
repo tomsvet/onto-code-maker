@@ -2,7 +2,12 @@ package ontology.tool.console;
 
 import org.apache.commons.cli.*;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * CLIOptionsParser.java
@@ -102,6 +107,12 @@ public class CLIOptionsParser {
                 throw new ParseException("Missing input file(s).");
             }
 
+            for(String inputFileName :inputFiles){
+                Path file = Paths.get(inputFileName);
+                if (!Files.exists(file)){
+                    throw new FileNotFoundException("File " + inputFileName +" is not exist.");
+                }
+            }
 
             if (line.hasOption(FORMAT_OPTION_NAME)) {
                 setFormat(line.getOptionValue(FORMAT_OPTION_NAME));
@@ -119,7 +130,7 @@ public class CLIOptionsParser {
                 setPackageName(line.getOptionValue(PACKAGE_OPTION_NAME));
             }
 
-        } catch (ParseException e) {
+        } catch (ParseException | FileNotFoundException e) {
             System.err.println(e.getMessage());
             return false;
         }
