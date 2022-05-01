@@ -51,7 +51,7 @@ public class FileGeneratorTests {
         assertNotNull(entityFiles,"Dir is not created.");
         assertEquals(listOfEntityClasses.size() + listOfInterfaces.size(), entityFiles.length, "Different number of files as expected.");
         for(File file : entityFiles) {
-            assertTrue(listOfEntityClasses.contains(file.getName().replace(".java","")) || listOfInterfaces.contains(file.getName().replace(".java","")) || file.getName().startsWith("Equivalence") ,"File "+file.getName()+" is not expecting.");
+            assertTrue(listOfEntityClasses.contains(file.getName().replace(".java","")) || listOfInterfaces.contains(file.getName().replace(".java","")) ,"File "+file.getName()+" is not expecting.");
         }
         File[] serializationFiles = folderSerialization.listFiles();
         assertEquals(listOfEntityClasses.size() +1, serializationFiles.length, "Different number of files as expected in serialization file.");
@@ -132,7 +132,7 @@ public class FileGeneratorTests {
     @DisplayName("Check generated files from equivalentClass.owl.")
     public void checkEquivalentClassFiles() {
         List<String> listOfEntityClasses = Arrays.asList("Human","Person");
-        List<String> listOfInterfaces = Arrays.asList("EquivalencePersonHuman","OntoEntity");
+        List<String> listOfInterfaces = Arrays.asList("EquivalenceHumanPerson","OntoEntity");
         File folderEntities = new File(outputDir+ "equivalentClass/entities/");
         File folderSerialization = new File(outputDir+ "equivalentClass/serialization/");
 
@@ -192,7 +192,7 @@ public class FileGeneratorTests {
     @DisplayName("Check generated files from moreEquivalentClasses.owl.")
     public void checkMoreEquivalentClassesFiles() throws Exception {
         List<String> listOfEntityClasses = Arrays.asList("Human","Human2","Person","Person2");
-        List<String> listOfInterfaces = Arrays.asList("EquivalencePerson2HumanPersonHuman2","OntoEntity");
+        List<String> listOfInterfaces = Arrays.asList("EquivalenceHumanHuman2PersonPerson2","OntoEntity");
         File folderEntities = new File(outputDir+ "moreEquivalentClasses/entities/");
         File folderSerialization = new File(outputDir+ "moreEquivalentClasses/serialization/");
 
@@ -254,7 +254,7 @@ public class FileGeneratorTests {
     @DisplayName("Check generated files from eqUnionOfClass.owl.")
     public void checkEQUnionOfClassFiles() throws Exception {
         List<String> listOfEntityClasses = Arrays.asList("Parent","Person","Father","Mother");
-        List<String> listOfInterfaces = Arrays.asList("OntoEntity","UnionOfMotherFather","EquivalenceParentUnionOfMotherFather");
+        List<String> listOfInterfaces = Arrays.asList("OntoEntity","UnionOfFatherMother","EquivalenceParentUnionOfFatherMother");
         File folderEntities = new File(outputDir+ "eqUnionOfClass/entities/");
         File folderSerialization = new File(outputDir+ "eqUnionOfClass/serialization/");
 
@@ -275,7 +275,7 @@ public class FileGeneratorTests {
     @DisplayName("Check generated files from eqIntersectionOfClass.owl.")
     public void checkEQIntersectionOfClassFiles() throws Exception {
         List<String> listOfEntityClasses = Arrays.asList("Parent","Person","Father","Men");
-        List<String> listOfInterfaces = Arrays.asList("OntoEntity","MenInt","ParentInt","IntersectionOfParentMen","EquivalenceIntersectionOfParentMenFather");
+        List<String> listOfInterfaces = Arrays.asList("OntoEntity","MenInt","ParentInt","IntersectionOfMenParent","EquivalenceFatherIntersectionOfMenParent");
         File folderEntities = new File(outputDir+ EQ_INTERSECTIONOF+ "/entities/");
         File folderSerialization = new File(outputDir+ EQ_INTERSECTIONOF +"/serialization/");
 
@@ -296,7 +296,7 @@ public class FileGeneratorTests {
     @DisplayName("Check generated files from eqIntersectionOfClass.owl.")
     public void checkEQComplementOfClassFiles() throws Exception {
         List<String> listOfEntityClasses = Arrays.asList("Parent","Person","ChildlessPerson");
-        List<String> listOfInterfaces = Arrays.asList("OntoEntity","ComplementOfParent","EquivalenceComplementOfParentChildlessPerson");
+        List<String> listOfInterfaces = Arrays.asList("OntoEntity","ComplementOfParent","EquivalenceChildlessPersonComplementOfParent");
         File folderEntities = new File(outputDir+ EQ_COMPLEMNETOF+ "/entities/");
         File folderSerialization = new File(outputDir+ EQ_COMPLEMNETOF +"/serialization/");
 
@@ -316,7 +316,7 @@ public class FileGeneratorTests {
     @DisplayName("Check generated files from eqUnionOfRestrictions.owl.")
     public void checkEQUnionOfRestrictionsFiles() throws Exception {
         List<String> listOfEntityClasses = Arrays.asList("Parent","Person");
-        List<String> listOfInterfaces = Arrays.asList("OntoEntity","UnionOfRestrHasChildRestrHasAge","EquivalenceParentUnionOfRestrHasChildRestrHasAge");
+        List<String> listOfInterfaces = Arrays.asList("OntoEntity","UnionOfRestrHasAgeRestrHasChild","EquivalenceParentUnionOfRestrHasAgeRestrHasChild");
         File folderEntities = new File(outputDir+ "eqUnionOfRestrictions/entities/");
         File folderSerialization = new File(outputDir+ "eqUnionOfRestrictions/serialization/");
 
@@ -337,7 +337,7 @@ public class FileGeneratorTests {
     @DisplayName("Check generated files from eqUnionOfRestrictionAndClass.owl.")
     public void checkEQUnionOfRestrictionANdCLassFiles() throws Exception {
         List<String> listOfEntityClasses = Arrays.asList("Parent","Person","ClassTest1");
-        List<String> listOfInterfaces = Arrays.asList("OntoEntity","UnionOfRestrHasChildClassTest1","EquivalenceUnionOfRestrHasChildClassTest1Parent");
+        List<String> listOfInterfaces = Arrays.asList("OntoEntity","UnionOfClassTest1RestrHasChild","EquivalenceParentUnionOfClassTest1RestrHasChild");
         File folderEntities = new File(outputDir+ "eqUnionOfRestrictionAndClass/entities/");
         File folderSerialization = new File(outputDir+ "eqUnionOfRestrictionAndClass/serialization/");
 
@@ -357,7 +357,7 @@ public class FileGeneratorTests {
     @DisplayName("Check generated files from eqUnionOfClassAndUnion.owl.")
     public void checkEQUnionOfClassAndUnionFiles() throws Exception {
         List<String> listOfEntityClasses = Arrays.asList("Parent","Person","ClassTest1","UnionClass1","UnionClass2");
-        List<String> listOfInterfaces = Arrays.asList("OntoEntity","UnionOfUnionClass1UnionClass2","EquivalenceParentIntersectionOfClassTest1UnionOfUnionClass1UnionClass2","IntersectionOfClassTest1UnionOfUnionClass1UnionClass2","ClassTest1Int");
+        List<String> listOfInterfaces = Arrays.asList("OntoEntity","UnionOfUnionClass1UnionClass2","EquivalenceIntersectionOfClassTest1UnionOfUnionClass1UnionClass2Parent","IntersectionOfClassTest1UnionOfUnionClass1UnionClass2","ClassTest1Int");
         File folderEntities = new File(outputDir+ "eqUnionOfClassAndUnion/entities/");
         File folderSerialization = new File(outputDir+ "eqUnionOfClassAndUnion/serialization/");
 
@@ -379,7 +379,7 @@ public class FileGeneratorTests {
     @DisplayName("Check generated files from eqIntersectionOfClassAndUnionOfRestriction.owl.")
     public void checkEQIntersectionOfClassAndUnionOfRestrictionFiles() throws Exception {
         List<String> listOfEntityClasses = Arrays.asList("Parent","Person","ClassTest1","UnionClass1","UnionClass2");
-        List<String> listOfInterfaces = Arrays.asList("OntoEntity","UnionOfUnionClass1RestrHasChild","ClassTest1Int","IntersectionOfClassTest1UnionOfUnionClass1RestrHasChild","EquivalenceParentIntersectionOfClassTest1UnionOfUnionClass1RestrHasChild");
+        List<String> listOfInterfaces = Arrays.asList("OntoEntity","UnionOfRestrHasChildUnionClass1","ClassTest1Int","IntersectionOfClassTest1UnionOfRestrHasChildUnionClass1","EquivalenceIntersectionOfClassTest1UnionOfRestrHasChildUnionClass1Parent");
         File folderEntities = new File(outputDir+ "eqIntersectionOfClassAndUnionOfRestriction/entities/");
         File folderSerialization = new File(outputDir+ "eqIntersectionOfClassAndUnionOfRestriction/serialization/");
 
@@ -400,7 +400,7 @@ public class FileGeneratorTests {
     @DisplayName("Check generated files from eqIntersectionOfClassAndUnionOfRestriction.owl.")
     public void checkSubclassOfClassesFiles() throws Exception {
         List<String> listOfEntityClasses = Arrays.asList("Parent","Person","Father","Mother");
-        List<String> listOfInterfaces = Arrays.asList("OntoEntity","UnionOfMotherFather");
+        List<String> listOfInterfaces = Arrays.asList("OntoEntity","UnionOfFatherMother");
         File folderEntities = new File(outputDir+ "subUnionOfClasses/entities/");
         File folderSerialization = new File(outputDir+ "subUnionOfClasses/serialization/");
 
@@ -418,18 +418,18 @@ public class FileGeneratorTests {
     @Order(100)
     @DisplayName("Generate from family1.owl.")
     public void generateFamilyOntology() throws Exception {
-        String[] inputFiles = { inputDir + "family1.owl"};
-        generateFromRDMXMLToJava(inputFiles,"family1");
+        String[] inputFiles = { inputDir + "family.owl"};
+        generateFromRDMXMLToJava(inputFiles,"family");
     }
 
     @Test
     @Order(101)
-    @DisplayName("Check generated files from family1.owl.")
+    @DisplayName("Check generated files from family.owl.")
     public void checkFamilyOntologyFiles() throws Exception {
-        List<String> listOfEntityClasses = Arrays.asList("Parent","Cat","Child","Dog","Person","Human","Men","Woman");
-        List<String> listOfInterfaces = Arrays.asList("EquivalencePersonHuman","OntoEntity");
-        File folderEntities = new File(outputDir+ "family1/entities/");
-        File folderSerialization = new File(outputDir+ "family1/serialization/");
+        List<String> listOfEntityClasses = Arrays.asList("Parent","Cat","Child","Dog","Person","Human","Men","Woman","ChildlessPerson","Doggy","Father","Mother","Pet");
+        List<String> listOfInterfaces = Arrays.asList("ParentInt","HumanInt","WomanInt","UnionOfCatDog","EquivalenceHumanPerson","OntoEntity","ComplementOfParent","EquivalenceChildlessPersonComplementOfParent","EquivalenceIntersectionOfParentWomanMother","EquivalencePetUnionOfCatDog","IntersectionOfParentWoman");
+        File folderEntities = new File(outputDir+ "family/entities/");
+        File folderSerialization = new File(outputDir+ "family/serialization/");
 
         File[] entityFiles = folderEntities.listFiles();
         assertEquals(listOfEntityClasses.size() + listOfInterfaces.size(), entityFiles.length, "Different number of files as expected.");
@@ -455,7 +455,7 @@ public class FileGeneratorTests {
     @DisplayName("Check generated files from collections.owl.")
     public void checkCollectionOntologyFiles() throws Exception {
         List<String> listOfEntityClasses = Arrays.asList("Class1","Class2","Class3","Class4","Class5","Class6","Class7","Class8","Class9","Complement","Complement2","EquivalentCollection","IntersectionOfCollection","SubclassCollection","UnionOfCollection");
-        List<String> listOfInterfaces = Arrays.asList("Class1Int","Class2Int","Class5Int","Class6Int","EquivalenceEquivalentCollectionClass3Class4","OntoEntity");
+        List<String> listOfInterfaces = Arrays.asList("Class1Int","Class2Int","Class5Int","Class6Int","EquivalenceClass3Class4EquivalentCollection","OntoEntity");
         File folderEntities = new File(outputDir+ "collections/entities/");
         File folderSerialization = new File(outputDir+ "collections/serialization/");
 

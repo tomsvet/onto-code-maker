@@ -1,0 +1,14 @@
+<rdf:RDF 
+       xmlns:owl="http://www.w3.org/2002/07/owl#"
+       xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+       xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+      <owl:Ontology rdf:about="http://example.com/ontology/family.owl#Family">
+        <owl:priorVersion>
+           <owl:Ontology rdf:about="http://www.w3.org/TR/2003/WD-owl-guide20030331/wine"/>
+        </owl:priorVersion>
+        <owl:imports rdf:resource="http://www.w3.org/TR/2003/CR-owl-guide20030818/food"/>
+
+
+
+
+</rdf:RDF>
