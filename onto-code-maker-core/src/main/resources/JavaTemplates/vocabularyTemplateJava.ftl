@@ -11,7 +11,7 @@ public class ${className} {
     /**
     *   A constant representing the ${property.constantOf} ${property.objectName}
     **/
-    <#if property.isPrivate ==true>private<#else>public</#if> static IRI ${property.name} <#if property.isValue() == true> = Values.iri("${property.getValue()}")</#if>;
+    <#if property.isPrivate ==true>private<#else>public</#if> static final IRI ${property.name} <#if property.isValue() == true> = Values.iri("${property.getValue()}")</#if>;
 
 </#list>
 }
