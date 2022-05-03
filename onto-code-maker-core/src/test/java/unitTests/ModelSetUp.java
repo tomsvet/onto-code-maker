@@ -9,8 +9,17 @@ import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 
+/***
+ *  ModelSetUp.java
+ *
+ *  Class defining some constant values for testing and doing base model setup
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 public class ModelSetUp {
     static String ex = "http://www.ontocodemaker.org/Family#";
     static Model model = new TreeModel();

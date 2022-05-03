@@ -1,8 +1,7 @@
 package unitTests;
 
-import ontology.tool.generator.representations.*;
+import ontology.tool.mapper.representations.*;
 import ontology.tool.mapper.OntologyMapper;
-import ontology.tool.parser.OntologyParser;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.util.Values;
@@ -14,21 +13,27 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.Order;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static ontology.tool.generator.OntologyGenerator.ENTITY_EQUIVALENCE_PREFIX;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ *  MapperTests.java
+ *
+ *  Unit tests for OntologyMapper class.
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class MapperTests extends ModelSetUp {
 
@@ -36,55 +41,8 @@ public class MapperTests extends ModelSetUp {
     BNode secondBnode = Values.bnode("12345");
     BNode thirdBnode = Values.bnode("1234533");
 
-   /*static IRI testOnt = Values.iri(ex, "testOntology.owl");
-   static IRI hasAge = Values.iri(ex, "hasAge");
-   static IRI hasAgeDatatype = Values.iri("http://www.w3.org/2001/XMLSchema#nonNegativeInteger");
-   static IRI hasDog = Values.iri(ex, "hasDog");
-   static IRI classDog = Values.iri(ex, "Dog");*/
-
-   /* @BeforeEach
-    void init() throws FileNotFoundException {
-        model = new TreeModel();
-        ModelSetUp.setUp();
-
-        model.add(testOnt,RDF.TYPE,OWL.ONTOLOGY);
-
-        model.add(classDog, RDF.TYPE, OWL.CLASS);
-
-        //datatype property
-        model.add(hasAge,RDF.TYPE, OWL.DATATYPEPROPERTY);
-        model.add(hasAge, RDFS.DOMAIN,classHuman);
-        model.add(hasAge,RDFS.RANGE,hasAgeDatatype);
-
-        //object property
-        model.add(hasDog,RDF.TYPE, OWL.OBJECTPROPERTY);
-        model.add(hasDog, RDFS.DOMAIN,classHuman);
-        model.add(hasDog,RDFS.RANGE,classDog);
-
-        String[] inputFiles = {"src/main/test/resources/inputs/family.owl"};
-        OntologyParser ontoParser = new OntologyParser();
-        model.addAll(ontoParser.parseOntology(inputFiles, RDFFormat.RDFXML.getName()));
-    }*/
-
     @BeforeAll
     public static void setUp() {
-        //model reset
-        /*model = new TreeModel();
-        ModelSetUp.setUp();
-
-        model.add(testOnt,RDF.TYPE,OWL.ONTOLOGY);
-
-        model.add(classDog, RDF.TYPE, OWL.CLASS);
-
-        //datatype property
-        model.add(hasAge,RDF.TYPE, OWL.DATATYPEPROPERTY);
-        model.add(hasAge, RDFS.DOMAIN,classHuman);
-        model.add(hasAge,RDFS.RANGE,hasAgeDatatype);
-
-        //object property
-        model.add(hasDog,RDF.TYPE, OWL.OBJECTPROPERTY);
-        model.add(hasDog, RDFS.DOMAIN,classHuman);
-        model.add(hasDog,RDFS.RANGE,classDog);*/
         String filename = "src/test/resources/inputs/family.owl";
         Path file = Paths.get(filename);
         try {
@@ -126,14 +84,11 @@ public class MapperTests extends ModelSetUp {
         List<OntologyRepresentation> ontologies = mapper.getOWLOntologies();
         assertEquals( ontologies.size(),1,
                 "Number of ontologies is not correct ");
-        //assertEquals(ontologies.get(0).getImports().size(),1,"Number of imports is not 1.");
-        //assertEquals(ontologies.get(0).getImports().get(0),testOntImport.stringValue(),"Import is not correct.");
         assertEquals( ontologies.get(0).getPriorVersion(),testOntPrior.stringValue(), "Ontology prior is not correct. Prior is:" + ontologies.get(0).getPriorVersion());
         assertEquals(ontologies.get(0).getComments().size(),1,"Number of comments is not 1.");
         assertEquals(ontologies.get(0).getLabels().size(),1,"Number of labels is not 1.");
         assertEquals(ontologies.get(0).getLabels().get(0),"Family","Label value is not correct.");
     }
-
 
     @Test
     @Order(3)
@@ -144,9 +99,6 @@ public class MapperTests extends ModelSetUp {
         assertEquals(16,  mapper.getMappedClasses().size(),
                 "Number of mapped class is different than expected.");
     }
-
-
-
 
     @Test
     @Order(4)
@@ -209,14 +161,7 @@ public class MapperTests extends ModelSetUp {
 
         OntologyMapper mapper = new OntologyMapper(model);
         mapper.mapClasses();
-        /*List<ClassRepresentation> mappedClasses = mapper.getMappedClasses();
-        for(ClassRepresentation mappedClass:mappedClasses){
-            try {
-                mapper.mapEquivalentClasses(mappedClass);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }*/
+
         ClassRepresentation testedClass = mapper.getMappedClasses().get(classPerson);
         mapper.mapEquivalentClasses(testedClass);
 
@@ -243,8 +188,6 @@ public class MapperTests extends ModelSetUp {
         assertEquals(4,testedClass3.getEquivalentClass().getEquivalentClasses().size(),
                 "ClassHuman2: number of equivalent classes doesn't equal.");
     }
-
-
 
 
     @Test
@@ -285,8 +228,6 @@ public class MapperTests extends ModelSetUp {
 
         assertEquals(testedClass.getCreator(),"Tomas","The creator does not equal.");
     }
-
-
 
     @Test
     @Order(10)
@@ -375,10 +316,6 @@ public class MapperTests extends ModelSetUp {
 
         ClassRepresentation testedClassParent = mapper.getMappedClasses().get(classParent);
         assertEquals(testedClassParent,complementAbstractClass.getComplementOf(),"Complement classes doesn't equal.");
-        //assertEquals(complementAbstractClass,complementAbstractClass.getComplementOf(),"Number of complement classes doesn't equal.");
-
-       // assertTrue(testedClassParent.getSuperClasses().contains(intersectionAbstractClass),"Intersection does not have set superclasses .");
-
     }
 
     @Test
@@ -483,13 +420,11 @@ public class MapperTests extends ModelSetUp {
         ClassRepresentation testedClassWoman = mapper.getMappedClasses().get(classWoman);
         assertTrue(intersectionAbstractClass.getIntersectionOf().contains(testedClassParent),"Intersection abstract class does not contain Parent class.");
         assertTrue(intersectionAbstractClass.getSuperClasses().contains(testedClassParent),"Intersection does not have set subclasses .");
-        //assertFalse(testedClassParent.getSubClasses().contains(intersectionAbstractClass),"Intersection have set subclasses .");
         assertEquals(1,testedClassParent.getSubClasses().size(),"Intersection have set superclasses .");
 
 
         assertTrue(intersectionAbstractClass.getIntersectionOf().contains(testedClassWoman),"Intersection abstract class does not contain Woman class.");
         assertTrue(intersectionAbstractClass.getSuperClasses().contains(testedClassWoman),"Intersection does not have set subclasses .");
-        //assertFalse(testedClassWoman.getSubClasses().contains(intersectionAbstractClass),"Intersection have set superclasses .");
         assertEquals(1,testedClassWoman.getSubClasses().size(),"Intersection have set superclasses .");
 
     }
@@ -750,19 +685,7 @@ public class MapperTests extends ModelSetUp {
         }
 
         ClassRepresentation testedClass = mapper.getMappedClasses().get(classDoggy);
-        ClassRepresentation testedClassHuman = mapper.getMappedClasses().get(classHuman);
-        PropertyRepresentation hasDogProperty = mapper.getMappedProperties().get(hasDog);
 
-
-       /* assertNotNull(testedClass.getEquivalentClass());
-        assertEquals(2,testedClass.getEquivalentClass().getEquivalentClasses().size(),
-                "Number of equivalent classes doesn't equal.");
-        Optional<ClassRepresentation> abs = testedClass.getEquivalentClass().getEquivalentClasses().stream().filter(c -> c.getClassType().equals(DefaultClassRepresentation.CLASS_TYPE.ABSTRACT)).findFirst();
-        assertTrue(abs.isPresent());
-        ClassRepresentation restrictionAbstractClass = abs.get();*/
-
-        //assertTrue(testedClass.getEquivalentClass().getEquivalentClasses().contains());
-        //assertEquals(1,testedClass.getEquivalentClass().getRestrictions().size(),"Restriction was not set correct");
         RestrictionRepresentation restriction = testedClass.getRestrictions().get(0);
         assertEquals(hasDog,restriction.getOnProperty(),"Restriction onProperty was not set correct");
         assertEquals(RestrictionRepresentation.RESTRICTION_IN_TYPE.EQUIVALENT,restriction.getRestrictionIn(),"Restriction in was not set correct");
@@ -798,7 +721,7 @@ public class MapperTests extends ModelSetUp {
     @Test
     @Order(31)
     @DisplayName("31.Test map Equivalent Datatype Property")
-    void testMapEquivalentDataTypeProperty() throws Exception {
+    void testMapEquivalentDataTypeProperty() {
         IRI age = Values.iri(ex,"age");
         model.add(age,RDF.TYPE,OWL.DATATYPEPROPERTY);
         model.add(age,OWL.EQUIVALENTPROPERTY,hasAge);
@@ -875,7 +798,7 @@ public class MapperTests extends ModelSetUp {
     @Test
     @Order(34)
     @DisplayName("34.Simple test map Functional DatatypeProperty")
-    void testMapFunctionalDataTypeProperty() throws Exception {
+    void testMapFunctionalDataTypeProperty() {
 
         OntologyMapper mapper = new OntologyMapper(model);
         mapper.mapClasses();
@@ -989,7 +912,7 @@ public class MapperTests extends ModelSetUp {
     @Test
     @Order(39)
     @DisplayName("39. Simple test map SubDataTypeProperty")
-    void testMapSubDataTypeProperty() throws Exception {
+    void testMapSubDataTypeProperty() {
 
         OntologyMapper mapper = new OntologyMapper(model);
         mapper.mapClasses();
@@ -1036,9 +959,110 @@ public class MapperTests extends ModelSetUp {
     }
 
 
+    @Test
+    @Order(41)
+    @DisplayName("41.Test property equivalent of equivalent ")
+    void testMapEquivalentOfEquivalentProp(){
+        //setup collection Of subclasses
+        IRI hasDogEq2 = Values.iri(ex, "hasDogEq2");
+        TreeModel newModel = new TreeModel();
+        newModel.addAll(model);
+        newModel.add(hasDogEq2,RDF.TYPE, OWL.OBJECTPROPERTY);
+        newModel.add(hasDogEq2,OWL.EQUIVALENTPROPERTY, hasDogEq);
+
+        OntologyMapper mapper = new OntologyMapper(newModel);
+        try {
+            mapper.mapping();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        PropertyRepresentation testedProperty = mapper.getMappedProperties().get(hasDogEq2);
+        ClassRepresentation testedClassHuman = mapper.getMappedClasses().get(classHuman);
+        assertNotNull(testedProperty,"Double equivalent property does not exist.");
+        assertTrue(testedClassHuman.getProperties().contains(testedProperty),"Class does not contain double equivalent property");
+        PropertyRepresentation testedPropertyHasDog = mapper.getMappedProperties().get(hasDog);
+        PropertyRepresentation testedPropertyHasDogEQ = mapper.getMappedProperties().get(hasDogEq);
+
+        assertTrue(testedProperty.getEquivalentProperties().contains(testedPropertyHasDog),"Property does not contain hasDoq equivalence");
+        assertTrue(testedProperty.getEquivalentProperties().contains(testedPropertyHasDogEQ),"Property does not contain hasDoqEq equivalence");
+
+        assertTrue(testedPropertyHasDog.getEquivalentProperties().contains(testedProperty),"Property does not contain hasDoq equivalence");
+        assertTrue(testedPropertyHasDog.getEquivalentProperties().contains(testedPropertyHasDogEQ),"Property does not contain hasDoqEq equivalence");
+
+        assertTrue(testedPropertyHasDogEQ.getEquivalentProperties().contains(testedProperty),"Property does not contain hasDoq equivalence");
+        assertTrue(testedPropertyHasDogEQ.getEquivalentProperties().contains(testedPropertyHasDog),"Property does not contain hasDoqEq equivalence");
+
+    }
+
+    @Test
+    @Order(42)
+    @DisplayName("42.Test property subproperty of equivalent ")
+    void testMapSubpropertyOfEquivalentProp(){
+        //setup collection Of subclasses
+        IRI hasDogSub = Values.iri(ex, "hasDogSub");
+        TreeModel newModel = new TreeModel();
+        newModel.addAll(model);
+        newModel.add(hasDogSub,RDF.TYPE, OWL.OBJECTPROPERTY);
+        newModel.add(hasDogSub,RDFS.SUBPROPERTYOF, hasDogEq);
+
+        OntologyMapper mapper = new OntologyMapper(newModel);
+        try {
+            mapper.mapping();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        PropertyRepresentation testedProperty = mapper.getMappedProperties().get(hasDogSub);
+        ClassRepresentation testedClassHuman = mapper.getMappedClasses().get(classHuman);
+        assertNotNull(testedProperty,"Subproperty property does not exist.");
+        assertTrue(testedClassHuman.getProperties().contains(testedProperty),"Class does not contain double subproperty property");
+        PropertyRepresentation testedPropertyHasDog = mapper.getMappedProperties().get(hasDog);
+        PropertyRepresentation testedPropertyHasDogEQ = mapper.getMappedProperties().get(hasDogEq);
+
+        assertFalse(testedProperty.getSuperProperties().contains(testedPropertyHasDog),"Property  contain hasDoq equivalence");
+        assertTrue(testedProperty.getSuperProperties().contains(testedPropertyHasDogEQ),"Property does not contain hasDoqEq equivalence");
+        assertFalse(testedProperty.getEquivalentProperties().contains(testedPropertyHasDogEQ),"Property does not contain hasDoqEq equivalence");
+        assertFalse(testedProperty.getEquivalentProperties().contains(testedPropertyHasDog),"Property does not contain hasDoqEq equivalence");
+
+        assertEquals(testedClassHuman.getName(),testedProperty.getClassName(),"Property");
+        assertFalse(testedPropertyHasDog.getSubProperties().contains(testedProperty),"Property does not contain hasDoq equivalence");
+        assertFalse(testedPropertyHasDog.getEquivalentProperties().contains(testedProperty),"Property does not contain hasDoq equivalence");
+
+        assertTrue(testedPropertyHasDogEQ.getSubProperties().contains(testedProperty),"Property does not contain hasDoq equivalence");
+
+    }
 
 
-    //todo specialitky ako ekvivalencia s subclasss atd
+    @Test
+    @Order(43)
+    @DisplayName("43.Test property subproperty of subproperty ")
+    void testMapSubpropertyOfSubproperty(){
+        //setup collection Of subclasses
+        IRI hasSpouse2 = Values.iri(ex, "hasSpouse2");
+        TreeModel newModel = new TreeModel();
+        newModel.addAll(model);
+        newModel.add(hasSpouse2,RDF.TYPE, OWL.OBJECTPROPERTY);
+        newModel.add(hasSpouse2,RDFS.SUBPROPERTYOF, hasSpouse);
 
+        OntologyMapper mapper = new OntologyMapper(newModel);
+        try {
+            mapper.mapping();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        PropertyRepresentation testedProperty = mapper.getMappedProperties().get(hasSpouse2);
+        ClassRepresentation testedClassMen = mapper.getMappedClasses().get(classMen);
+        assertNotNull(testedProperty,"Subproperty property does not exist.");
+        assertTrue(testedClassMen.getProperties().contains(testedProperty),"Class does not contain double subproperty property");
+        PropertyRepresentation testedPropertyHasSpouse = mapper.getMappedProperties().get(hasSpouse);
+        PropertyRepresentation testedPropertyHasWife = mapper.getMappedProperties().get(hasWife);
+
+        assertFalse(testedProperty.getSuperProperties().contains(testedPropertyHasWife),"Property  contain hasDoq equivalence");
+        assertTrue(testedProperty.getSuperProperties().contains(testedPropertyHasSpouse),"Property does not contain hasDoqEq equivalence");
+        assertEquals(testedClassMen.getName(),testedProperty.getClassName(),"Property");
+        assertTrue(testedPropertyHasSpouse.getSubProperties().contains(testedProperty),"Property does not contain hasDoq equivalence");
+
+        assertFalse(testedPropertyHasWife.getSubProperties().contains(testedProperty),"Property does not contain hasDoq equivalence");
+
+    }
 }
 

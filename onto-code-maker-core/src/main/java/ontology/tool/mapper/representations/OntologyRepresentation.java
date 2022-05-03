@@ -1,4 +1,4 @@
-package ontology.tool.generator.representations;
+package ontology.tool.mapper.representations;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.util.Values;
@@ -6,6 +6,16 @@ import org.eclipse.rdf4j.model.util.Values;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *  OntologyRepresentation.java
+ *
+ *  Representation of Ontology in inner model.
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 public class OntologyRepresentation extends EntityRepresentation {
 
     private String priorVersion;

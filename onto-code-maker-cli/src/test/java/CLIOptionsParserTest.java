@@ -9,7 +9,15 @@ import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-
+/**
+ * CLIOptionsParserTest.java
+ * Command line parsing tests
+ *
+ * @author Tomas Svetlik
+ *  2022
+ *
+ * OntoCodeMaker
+ */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class CLIOptionsParserTest {
     public static String INPUT_FILE_DIR = "src/test/resources/";

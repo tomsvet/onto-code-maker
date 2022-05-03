@@ -40,7 +40,7 @@ public class ${classFileName?cap_first}{
 <#if typeOfFactory == "Serialization">
     public SerializationModel getSerializationInstance(OntoEntity entity){
         <#list serializationClasses as serialization>
-            if (entity instanceof ${serialization.name?cap_first}){
+            if (entity.getClass() == ${serialization.name?cap_first}.class){
                 return new ${serialization.getSerializationClassName()?cap_first}();
             }
         </#list>

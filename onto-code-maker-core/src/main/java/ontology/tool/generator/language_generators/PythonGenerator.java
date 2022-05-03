@@ -1,14 +1,13 @@
 package ontology.tool.generator.language_generators;
 
+import freemarker.template.Template;
 import ontology.tool.generator.OntologyGenerator;
 import ontology.tool.generator.VocabularyConstant;
-import ontology.tool.generator.representations.*;
+import ontology.tool.mapper.representations.*;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class PythonGenerator extends OntologyGenerator {
 
@@ -21,7 +20,7 @@ public class PythonGenerator extends OntologyGenerator {
         FACTORY_TEMPLATE_NAME = "/PythonTemplates/factoryTemplatePython.ftl";
         FILE_EXTENSION = ".py";
 
-        dataTypes.put(XSD.ANYURI,"java.net.URL");
+       /* dataTypes.put(XSD.ANYURI,"java.net.URL");
         dataTypes.put(XSD.BOOLEAN,"boolean");
         dataTypes.put(XSD.BYTE,"byte");
         dataTypes.put(XSD.DATE,"java.util.Date");
@@ -37,7 +36,7 @@ public class PythonGenerator extends OntologyGenerator {
         dataTypes.put(XSD.LONG,"long");
         dataTypes.put(XSD.SHORT,"short");
         dataTypes.put(XSD.TIME,"java.time.LocalTime");
-        dataTypes.put(XSD.NON_NEGATIVE_INTEGER,"int");
+        dataTypes.put(XSD.NON_NEGATIVE_INTEGER,"int");*/
         //dataTypes.put(XSD.UNSIGNED_INT,"long");
     }
     public PythonGenerator() {
@@ -54,10 +53,9 @@ public class PythonGenerator extends OntologyGenerator {
         return data;
     }
 
-    @Override
-    public List<VocabularyConstant> createVocabularyConstants() {
-        List<VocabularyConstant> properties = new ArrayList<>();
+    public  List<VocabularyConstant> createVocabularyConstants(){
 
+        List<VocabularyConstant> propertiesConstants = new ArrayList<>();
         int index = 0;
         // ontology constants
         for(OntologyRepresentation ontology:ontologies) {
@@ -66,7 +64,7 @@ public class PythonGenerator extends OntologyGenerator {
             ontCon.setValue( ontology.getStringIRI());
             ontCon.setConstantOf("ontology");
             ontCon.setObjectName(ontology.getName());
-            properties.add(ontCon);
+            propertiesConstants.add(ontCon);
             index++;
         }
 
@@ -79,88 +77,21 @@ public class PythonGenerator extends OntologyGenerator {
                 propC.setValue(genClass.getStringIRI());
                 propC.setConstantOf("class");
                 propC.setObjectName(genClass.getName());
-                properties.add(propC);
-            }
-
-            //properties constants
-            for(PropertyRepresentation property: generatedClass.getProperties()){
-                VocabularyConstant propP = new VocabularyConstant();
-                propP.setName( property.getConstantName());
-                propP.setValue(property.getStringIRI());
-                propP.setConstantOf("property");
-                propP.setObjectName(property.getName());
-                properties.add(propP);
+                propertiesConstants.add(propC);
             }
 
         }
-        return properties;
-    }
 
-    @Override
-    public Map<String, Object> getEntityData(NormalClassRepresentation classRep) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("className",classRep.getName());
-        data.put("classRep",classRep);
-        data.put("isClass",true);
-        data.put("isMainClass",false);
-        data.put("isExtended",true);
-        if( classRep.getEquivalentClass() != null){
-            data.put("extendClass", classRep.getEquivalentClass().getName() + ENTITY_INTERFACE_SUFFIX);
-        }else {
-
-            if (classRep.isHasInterface()) {
-                data.put("extendClass", classRep.getName() + ENTITY_INTERFACE_SUFFIX);
-            } else {
-                if (classRep.hasOneSuperClass()) {
-                    data.put("extendClass", classRep.getSuperClasses().get(0).getName());
-                } else if (!classRep.hasSuperClass()) {
-                    data.put("extendClass", CLASS_ENTITY_FILE_NAME);
-                }
-            }
+        for(PropertyRepresentation property: properties){
+            VocabularyConstant propP = new VocabularyConstant();
+            propP.setName( property.getConstantName());
+            propP.setValue(property.getStringIRI());
+            propP.setConstantOf("property");
+            propP.setObjectName(property.getName());
+            propertiesConstants.add(propP);
         }
 
-        data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
-        //data.put("properties",new ArrayList<>()); //classRep.
-        data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
-        data.put("imports",new ArrayList<>());
-        return data;
-    }
-
-    @Override
-    public Map<String, Object> getInterfaceEntityData(ClassRepresentation classRep) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("className",classRep.getName() + ENTITY_INTERFACE_SUFFIX);
-        data.put("isClass",false);
-        data.put("isMainClass",false);
-        data.put("isExtended",true);
-        if (classRep.hasSuperClass()) {
-            data.put("classRep",classRep);
-        } else {
-            data.put("extendClass",CLASS_ENTITY_FILE_NAME);
-        }
-        data.put("imports",new ArrayList<>());
-        return data;
-    }
-
-    @Override
-    public Map<String, Object> getEquivalentClassEntityData(String interfaceName, ClassRepresentation classRep) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("className",interfaceName + ENTITY_INTERFACE_SUFFIX);
-        data.put("isClass",false);
-        data.put("isMainClass",false);
-        data.put("isExtended",true);
-        if (classRep.hasSuperClass()) {
-            data.put("classRep",classRep);
-        } else {
-            data.put("extendClass",CLASS_ENTITY_FILE_NAME);
-        }
-        data.put("imports",new ArrayList<>());
-        return data;
-    }
-
-    @Override
-    public Map<String, Object> getAbstractClassEntityData(AbstractClassRepresentation classRep) {
-        return null;
+        return propertiesConstants;
     }
 
     @Override
@@ -169,9 +100,113 @@ public class PythonGenerator extends OntologyGenerator {
         data.put("className",CLASS_ENTITY_FILE_NAME);
         data.put("isMainClass",true);
         data.put("isClass",false);
-        data.put("isExtended",false);
+        data.put("isAbstractClass",false);
         //data.put("package",this.getPackageName() + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
+        //data.put("imports",new ArrayList<>());
+        return data;
+    }
+
+    @Override
+    public Map<String, Object> getEntityData(NormalClassRepresentation classRep) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("className",classRep.getName());
+        data.put("classRep",classRep);
+        data.put("isClass",true);
+        data.put("isAbstractClass",false);
+        data.put("isMainClass",false);
+        data.put("isExtends",false);
+        ArrayList<String> extendClasses =new ArrayList<>();
+        if( classRep.getEquivalentClass() != null){
+            extendClasses.add(classRep.getEquivalentClass().getName());
+        }
+        if (classRep.hasOneSuperClass()) {
+            ClassRepresentation superClass = classRep.getSuperClasses().get(0);
+            extendClasses.add(superClass.getName());
+        } else if (!classRep.hasSuperClass()) {
+            if(extendClasses.isEmpty()){
+                extendClasses.add(CLASS_ENTITY_FILE_NAME);
+            }
+        } else {
+            extendClasses.addAll(classRep.getSuperClasses().stream().map(c->c.getName()).collect(Collectors.toList()));
+        }
+
+        if(!extendClasses.isEmpty()){
+            data.put("isExtends",true);
+            data.put("extendClasses",extendClasses);
+        }
+
+        data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
+        //data.put("properties",new ArrayList<>()); //classRep.
+        data.put("rawPackage","./");
+        return data;
+    }
+
+    @Override
+    public void generateInterfaceClass(Template templateFile, String entitiesOutputFile, ClassRepresentation generatedClass) {
+    }
+
+    public Map<String, Object> getInterfaceEntityData(ClassRepresentation classRep) {
+    return null;
+    }
+
+    @Override
+    public Map<String, Object> getEquivalentClassEntityData(String className, ClassRepresentation classRep) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("className",className);
+        data.put("classRep",classRep);
+        data.put("isAbstractClass",true);
+        data.put("isClass",false);
+        data.put("isMainClass",false);
+        data.put("isExtends",true);
+        if (classRep.getEquivalentClass().hasSuperClass()) {
+            data.put("extendClasses",classRep.getEquivalentClass().getSuperClasses());
+        } else {
+            data.put("extendClasses",new ArrayList<>(Collections.singletonList(CLASS_ENTITY_FILE_NAME)));
+        }
         data.put("imports",new ArrayList<>());
+        data.put("rawPackage","./");
+        data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
+        return data;
+    }
+
+    @Override
+    public Map<String, Object> getAbstractClassEntityData(AbstractClassRepresentation classRep) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("className",classRep.getName());
+        data.put("classRep",classRep);
+        data.put("isClass",true);
+        data.put("isAbstractClass",true);
+        data.put("isMainClass",false);
+        data.put("isExtends",false);
+        ArrayList<String> extendClasses =new ArrayList<>();
+        if( classRep.getEquivalentClass() != null){
+            extendClasses.add(classRep.getEquivalentClass().getName());
+        }
+        if (classRep.hasOneSuperClass()) {
+            ClassRepresentation superClass = classRep.getSuperClasses().get(0);
+            extendClasses.add(superClass.getName());
+        } else if (!classRep.hasSuperClass()) {
+            if(extendClasses.isEmpty()){
+                extendClasses.add(CLASS_ENTITY_FILE_NAME);
+            }
+        } else {
+            extendClasses.addAll(classRep.getSuperClasses().stream().map(c->c.getName()).collect(Collectors.toList()));
+        }
+
+        if(!extendClasses.isEmpty()){
+            data.put("isExtends",true);
+            data.put("extendClasses",extendClasses);
+        }
+
+
+        if(!extendClasses.isEmpty()){
+            data.put("isExtends",true);
+            data.put("extendClasses",extendClasses);
+        }
+
+        data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
+        //data.put("properties",new ArrayList<>()); //classRep.
+        data.put("rawPackage","./");
         return data;
     }
 
@@ -184,6 +219,7 @@ public class PythonGenerator extends OntologyGenerator {
         data.put("serializationModelName",SERIALIZATION_MODEL_FILE_NAME);
         //data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_SERIALIZATION);
         data.put("imports",new ArrayList<>());
+        data.put("rawPackage","./");
         return data;
     }
 
@@ -200,11 +236,17 @@ public class PythonGenerator extends OntologyGenerator {
     @Override
     public Map<String, Object> getOntologyFactoryData(List<OntologyRepresentation> ontologies,String fileName, List<NormalClassRepresentation> classes) {
         Map<String, Object> data = new HashMap<>();
+        data.put("ontologies",ontologies);
         data.put("classFileName",fileName);
         data.put("serializationClasses",classes);
-        data.put("package",this.packageName);
+        data.put("serializationFactory",SERIALIZATION_FACTORY_FILE_NAME);
+        data.put("typeOfFactory","Ontology");
+        data.put("serializationPackage", DIR_NAME_SERIALIZATION);
+        data.put("entityPackage",  DIR_NAME_ENTITIES);
+        data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
+
+        //data.put("package",this.packageName);
         data.put("entityClassName",CLASS_ENTITY_FILE_NAME);
-        data.put("imports",new ArrayList<>());
         return data;
     }
 
@@ -213,10 +255,11 @@ public class PythonGenerator extends OntologyGenerator {
         data.put("classFileName",SERIALIZATION_FACTORY_FILE_NAME);
         data.put("serializationClasses",classes);
         data.put("typeOfFactory","Serialization");
-        data.put("package",this.packageName);
         data.put("entityClassName",CLASS_ENTITY_FILE_NAME);
-        data.put("serializationPackage", this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_SERIALIZATION);
-        data.put("entityPackage", this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
+        data.put("serializationPackage",  DIR_NAME_SERIALIZATION);
+        data.put("entityPackage",  DIR_NAME_ENTITIES);
+        data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
+        data.put("ontologies",new ArrayList<>());
         return data;
     }
 }

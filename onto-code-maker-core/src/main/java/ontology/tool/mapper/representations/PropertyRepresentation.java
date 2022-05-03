@@ -1,4 +1,4 @@
-package ontology.tool.generator.representations;
+package ontology.tool.mapper.representations;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
@@ -7,10 +7,19 @@ import org.eclipse.rdf4j.model.util.Values;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *  PropertyRepresentation.java
+ *
+ *  Representation of Property in inner model.
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 public class PropertyRepresentation extends EntityRepresentation {
 
     public static String  PROPERTY_CONSTANT_SUFFIX= "_PROPERTY_IRI";
-
 
     private String className;
     private Boolean isPrivate = true;
@@ -67,6 +76,7 @@ public class PropertyRepresentation extends EntityRepresentation {
         this.rangeDatatype = rangeDatatype;
     }
 
+    // used in templates
     public String getRangeDatatype() {
         return rangeDatatype;
     }
@@ -133,10 +143,12 @@ public class PropertyRepresentation extends EntityRepresentation {
         return subProperties;
     }
 
+    // used in templates
     public boolean isSubProperty(){
         return !superProperties.isEmpty();
     }
 
+    // used in templates
     public boolean isSuperProperty(){
         return !subProperties.isEmpty();
     }
@@ -164,8 +176,6 @@ public class PropertyRepresentation extends EntityRepresentation {
     public boolean hasEquivalentProperties(){
         return !equivalentProperties.isEmpty();
     }
-
-
 
     public void setInverseFunctionalOf(PropertyRepresentation property){
         this.inverseFunctionalOf = property;

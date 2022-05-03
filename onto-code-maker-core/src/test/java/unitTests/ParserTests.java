@@ -1,24 +1,23 @@
 package unitTests;
 
 import ontology.tool.parser.OntologyParser;
-import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.Rio;
 import org.junit.jupiter.api.*;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import static org.junit.jupiter.api.Assertions.*;
 
+/***
+ *  ParserTests.java
+ *
+ *  Unit tests for OntologyParser class.
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ParserTests {
     OntologyParser ontoParser = new OntologyParser();
-
 
     @Test
     @Order(1)
@@ -134,5 +133,4 @@ public class ParserTests {
         String[] inputFiles = {"src/test/resources/inputs/formats/wrongSyntax.owl"};
         assertThrows(Exception.class,() -> ontoParser.parseOntology(inputFiles, RDFFormat.RDFXML.getName()));
     }
-
 }

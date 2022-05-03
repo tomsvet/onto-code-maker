@@ -1,6 +1,5 @@
-package ontology.tool.generator.representations;
+package ontology.tool.mapper.representations;
 
-import ontology.tool.generator.OntologyGenerator;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Values;
 
@@ -8,7 +7,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static ontology.tool.generator.OntologyGenerator.ENTITY_ABSTRACTCLASS_SUFFIX;
+import static ontology.tool.generator.OntologyGenerator.ENTITY_INTERFACE_SUFFIX;
 
+/**
+ *  AbstractClassRepresentation.java
+ *
+ *  Represenation of Abstract class in inner model.
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 public class AbstractClassRepresentation extends ClassRepresentation {
     private String bnodeId;
 
@@ -43,7 +53,7 @@ public class AbstractClassRepresentation extends ClassRepresentation {
     }
 
     public boolean isGenerated(){
-        return isGenerated;
+        return this.isGenerated;
     }
 
     public void setIsGenerated(boolean isGenerate){
@@ -103,4 +113,5 @@ public class AbstractClassRepresentation extends ClassRepresentation {
     public boolean isEmptyClass(){
         return !(this.isUnionOf() || this.isIntersectionOf() || this.isComplementOf() || this.getEquivalentClass() != null || this.hasSubClass());
     }
+
 }

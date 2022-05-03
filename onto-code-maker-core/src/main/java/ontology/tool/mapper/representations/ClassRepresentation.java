@@ -1,9 +1,9 @@
-package ontology.tool.generator.representations;
-
-import org.eclipse.rdf4j.model.Resource;
+package ontology.tool.mapper.representations;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static ontology.tool.generator.OntologyGenerator.ENTITY_INTERFACE_SUFFIX;
 
 public abstract class ClassRepresentation extends DefaultClassRepresentation{
 
@@ -143,5 +143,13 @@ public abstract class ClassRepresentation extends DefaultClassRepresentation{
 
     public boolean isDisjointWith(){
         return !disjointWith.isEmpty();
+    }
+
+    public String getDatatypeValue(){
+        if(isHasInterface()){
+            return getName() + ENTITY_INTERFACE_SUFFIX;
+        }else{
+            return getName();
+        }
     }
 }

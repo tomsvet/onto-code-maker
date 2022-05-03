@@ -1,4 +1,4 @@
-package ontology.tool.generator.representations;
+package ontology.tool.mapper.representations;
 
 import java.util.ArrayList;
 import java.util.List;

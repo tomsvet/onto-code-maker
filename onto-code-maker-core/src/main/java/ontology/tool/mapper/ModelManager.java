@@ -4,22 +4,22 @@ import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.RDFCollections;
 import org.eclipse.rdf4j.model.util.Values;
-import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /***
- *  OntoCodeMaker
- *
  *  ModelManager.java
- *  A class for retrieving data from the model.
  *
- *  @autor: tsvetlik (xsvetl05)
- *  @since: 1.0
+ *  A class for retrieving data from the model.
+ *  This class allow some methods to retrieve data from RDF model.
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
  **/
 public class ModelManager {
     private Model model;

@@ -3,11 +3,8 @@ package ontology.tool.parser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
-import org.junit.platform.commons.logging.LoggerFactory;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,10 +12,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * OntologyParser.java
+ * Class for parsing ontology from input file
+ *
+ * @author Tomas Svetlik
+ *  2022
+ *
+ * OntoCodeMaker
+ */
 public class OntologyParser {
 
     private static final Logger logger = LogManager.getLogger(OntologyParser.class);
 
+    /**
+     * Parsing class
+     * @param inputFiles list of input files
+     * @param formatName format name value
+     * @return RDF model
+     *
+     */
     public Model parseOntology(String[] inputFiles, String formatName) throws Exception {
 
         logger.trace("Starting parser");
@@ -65,6 +78,11 @@ public class OntologyParser {
         return model;
     }
 
+    /**
+     * Method which change formatName to supported RDFFormat value
+     * @param formatName input format name value
+     * @return RDFFormat value or null if formatName is not supported
+     */
     private RDFFormat getRDFFormat(String formatName) {
         if(formatName == null ){
             return null;

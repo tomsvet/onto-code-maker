@@ -1,6 +1,6 @@
 package ontology.tool.mapper;
 
-import ontology.tool.generator.representations.*;
+import ontology.tool.mapper.representations.*;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.*;
@@ -163,7 +163,7 @@ public class OntologyMapper {
                     classRep.getProperties().removeAll(existAbstract.getProperties());
                     classRep.getProperties().addAll(existAbstract.getProperties());
                     existAbstract.setToRemove(true);
-                    ontologyClasses.remove(existAbstract);
+                    ontologyClasses.remove(existAbstract.getResourceValue());
                 }
             }
         }
@@ -580,13 +580,17 @@ public class OntologyMapper {
      */
 
     private ClassRepresentation getDomainClass(PropertyRepresentation property){
-        IRI propertyDomain = modelManager.getFirstIRIObject(RDFS.DOMAIN,property.getValueIRI());
+        Resource propertyDomain = modelManager.getFirstResource(RDFS.DOMAIN,property.getValueIRI());
         ClassRepresentation domainClass = ontologyClasses.get(propertyDomain);
         return domainClass;
     }
 
-    private void mapDomain(PropertyRepresentation property){
+    private void mapDomain(PropertyRepresentation property) {
         ClassRepresentation domainClass = getDomainClass(property);
+        mapDomain(domainClass,property);
+    }
+
+    private void mapDomain(ClassRepresentation domainClass,PropertyRepresentation property){
         if(domainClass != null) {
             if(domainClass.getEquivalentClass() != null) {
                 for (ClassRepresentation eqClasses : domainClass.getEquivalentClass().getEquivalentClasses()) {
@@ -690,6 +694,21 @@ public class OntologyMapper {
         }
     }
 
+    public void mapPropertyRelationShips2(){
+        Collection<PropertyRepresentation> propertiesValues = new ArrayList<>();
+        propertiesValues.addAll(properties.values().stream().filter(p->! p.getClassName().isEmpty()).collect(Collectors.toList()));
+        for(PropertyRepresentation property: propertiesValues){
+            ClassRepresentation domainClass = getDomainClass(property);
+
+            mapEquivalentProperties(domainClass,property);
+            mapPropertyHierarchy(domainClass,property);
+            if(property.getType().equals(PropertyRepresentation.PROPERTY_TYPE.OBJECT)){
+                mapInverseProperties(domainClass,property);
+                mapInverseFunctionalProperties(domainClass,property);
+            }
+        }
+    }
+
 
     public void mapProperties(ClassRepresentation classRep) throws Exception {
         List<Resource> classesResources = getAllEquivalentResources(classRep);
@@ -771,9 +790,10 @@ public class OntologyMapper {
         PropertyRepresentation inverseProperty = new PropertyRepresentation(inversePropertyIRI.getNamespace(), inversePropertyIRI.getLocalName());
         inverseProperty.setRangeResource(classRep.getResourceValue());
         inverseProperty.setRangeClass(classRep);
-        inverseProperty.setClassName(property.getRangeClass().getName());
+        //inverseProperty.setClassName(property.getRangeClass().getName());
         inverseProperty.setType(property.getType());
-        property.getRangeClass().addProperties(inverseProperty);
+        //property.getRangeClass().addProperties(inverseProperty);
+        mapDomain(property.getRangeClass(),inverseProperty);
         properties.put(inversePropertyIRI,inverseProperty);
         return inverseProperty;
     }
@@ -794,9 +814,10 @@ public class OntologyMapper {
             PropertyRepresentation inverseProperty =properties.get(inversePropertyIRI);
             inverseProperty.setRangeResource(classRep.getResourceValue());
             inverseProperty.setRangeClass(classRep);
-            inverseProperty.setClassName(property.getRangeClass().getName());
+            //inverseProperty.setClassName(property.getRangeClass().getName());
             inverseProperty.setType(property.getType());
-            property.getRangeClass().addProperties(inverseProperty);
+            //property.getRangeClass().addProperties(inverseProperty);
+            mapDomain(property.getRangeClass(),inverseProperty);
             inverseProperty.setInverseOf(property);
             property.addInverseTo(inverseProperty);
         }
@@ -830,6 +851,28 @@ public class OntologyMapper {
         return finalList;
     }
 
+    private PropertyRepresentation findDomainInEqOrSub(PropertyRepresentation property){
+        boolean eq = true;
+        IRI propertyIRI = modelManager.getFirstIRIObject(OWL.EQUIVALENTPROPERTY, property.getResourceValue());
+        if(propertyIRI == null){
+            propertyIRI = modelManager.getFirstIRIObject(RDFS.SUBPROPERTYOF, property.getResourceValue());
+            eq=false;
+        }
+
+        if(propertyIRI != null){
+            PropertyRepresentation propertyN = properties.get(propertyIRI);
+            if(getDomainClass(propertyN) == null){
+                PropertyRepresentation prop = findDomainInEqOrSub(propertyN);
+               /* if(eq){
+                    mainProperty.addEquivalentProperty(prop);
+                }*/
+                return prop;
+            }else{
+                return propertyN;
+            }
+        }
+        return null;
+    }
 
     public void mapEquivalentProperties(ClassRepresentation classRep, PropertyRepresentation property){
         Set<Resource> equivalentProperties = modelManager.getAllSubjects(OWL.EQUIVALENTPROPERTY, property.getResourceValue());
@@ -843,17 +886,26 @@ public class OntologyMapper {
         for(Value equivalentProperty:finalEqList){
             if(equivalentProperty.isIRI()) {
                 PropertyRepresentation eqProperty = properties.get(equivalentProperty);
-                //todo if null
-                eqProperty.setRangeResource(property.getRangeResource());
-                eqProperty.setRangeClass(property.getRangeClass());
-                eqProperty.setType(property.getType());
+                PropertyRepresentation mainProp = property;
+                if(classRep == null){
+                    classRep = getDomainClass(eqProperty);
+                    if(classRep == null){
+                        mainProp = findDomainInEqOrSub(property);
+                        classRep = getDomainClass(mainProp);
+                    }
+                }
+
+                eqProperty.setRangeResource(mainProp.getRangeResource());
+                eqProperty.setRangeClass(mainProp.getRangeClass());
+                eqProperty.setType(mainProp.getType());
                 //eqProperty.setValue(property.getValue());
-                eqProperty.setClassName(property.getClassName());
+                eqProperty.setClassName(mainProp.getClassName());
                 eqProperty.setIsEquivalentTo(property);// todo collection equivalent properties
                 eqProperty.addEquivalentProperty(property);
                 property.addEquivalentProperty(eqProperty);
-                if(classRep == null){
-                    classRep = getDomainClass(eqProperty);
+                if(!property.equals(mainProp)){
+                    eqProperty.addEquivalentProperty(mainProp);
+                    mainProp.addEquivalentProperty(eqProperty);
                 }
                 classRep.addProperties(eqProperty);
                 /*if (eqProperty.getType().equals(PropertyRepresentation.PROPERTY_TYPE.OBJECT)) {
@@ -879,14 +931,21 @@ public class OntologyMapper {
                 if(subProperty == null){
                     return;
                 }
-                subProperty.setRangeResource(property.getRangeResource());
-                subProperty.setRangeClass(property.getRangeClass());
-                subProperty.setType(property.getType());
+                PropertyRepresentation mainProp = property;
+                if(classRep == null){
+                    mainProp = findDomainInEqOrSub(property);
+                    classRep = getDomainClass(mainProp);
+                }
+                subProperty.setRangeResource(mainProp.getRangeResource());
+                subProperty.setRangeClass(mainProp.getRangeClass());
+                subProperty.setType(mainProp.getType());
                 //subProperty.setValue(property.getValue());
-                subProperty.setClassName(property.getClassName());
+                //subProperty.setClassName(property.getClassName());
                 property.addSubProperty(subProperty);
                 subProperty.addSuperProperty(property);
-                classRep.addProperties(subProperty);
+                //classRep.addProperties(subProperty);
+                mapDomain(classRep,subProperty);
+
             }
         }
     }
@@ -897,8 +956,6 @@ public class OntologyMapper {
      * These methods map special ontologies properties
      *
      */
-
-
 
     public void mapImports(OntologyRepresentation ontology){
         Set<IRI> imports = modelManager.getAllIRIObjects(IMPORTS_IRIS,ontology.getValueIRI());

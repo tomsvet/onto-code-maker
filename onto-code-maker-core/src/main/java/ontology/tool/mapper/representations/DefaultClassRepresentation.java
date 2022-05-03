@@ -1,7 +1,4 @@
-package ontology.tool.generator.representations;
-
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.util.Values;
+package ontology.tool.mapper.representations;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -3,16 +3,14 @@ package ontology.tool.generator;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import ontology.tool.generator.representations.*;
+import ontology.tool.mapper.representations.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 abstract public class OntologyGenerator {
@@ -167,6 +165,7 @@ abstract public class OntologyGenerator {
     public void generateCode() {
         createDir(this.outputDir);
 
+        setUpInterfaces();
         generateStringVersionOfTypes();
 
         try {
@@ -196,7 +195,8 @@ abstract public class OntologyGenerator {
 
     public void generateStringVersionOfTypes(){
         for(ClassRepresentation classRep:classes){
-            for(PropertyRepresentation property :classRep.getProperties()){
+            ArrayList<PropertyRepresentation> props = new ArrayList<>(classRep.getProperties());
+            for(PropertyRepresentation property :props){
                 if(property.getType().equals(PropertyRepresentation.PROPERTY_TYPE.DATATYPE)){
                     if(property.getRangeResource() != null){
                         String dataType = dataTypes.get(property.getRangeResource());
@@ -211,12 +211,13 @@ abstract public class OntologyGenerator {
                 }else if(property.getType().equals(PropertyRepresentation.PROPERTY_TYPE.OBJECT)){
                     if(property.getRangeClass() != null && property.getRangeResource() != null){
                         //String name = property.getRangeResource().isIRI()? ((IRI)property.getRangeResource()).getLocalName():((BNode)property.getRangeResource()).getID();
-                        if(property.getRangeClass().isHasInterface()){
-                            property.setRangeDatatype(property.getRangeClass().getName() + ENTITY_INTERFACE_SUFFIX);
-                        }else{
-                            property.setRangeDatatype(property.getRangeClass().getName());
-                        }
-
+                        property.setRangeDatatype(property.getRangeClass().getDatatypeValue());
+                    }else{
+                        //if range is not set, remove it
+                        classRep.getProperties().remove(property);
+                        properties.remove(property);
+                        //property.setRangeClass(new NormalClassRepresentation("",CLASS_ENTITY_FILE_NAME));
+                        //property.setRangeDatatype(CLASS_ENTITY_FILE_NAME);
                     }
                 }
 
@@ -275,7 +276,7 @@ abstract public class OntologyGenerator {
                 boolean result1 = false;
                 if (!resultList.isEmpty()) {
                     result1 = true;
-                    generatedClass.getSuperClasses().parallelStream().forEach(superClass-> superClass.setHasInterface(true));
+                    generatedClass.getSuperClasses().parallelStream().filter(superClass-> !(superClass instanceof AbstractClassRepresentation && superClass.isUnionOf())).forEach(superClass-> superClass.setHasInterface(true));
                     /*List<ClassRepresentation> res = resultList.parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 2 || classRep.getSuperClasses().get(0).getClassType() == classRep.getSuperClasses().get(1).getClassType()).collect(Collectors.toList());
                     if (res.size() == resultList.size()) {
                         result1 = true;
@@ -300,8 +301,6 @@ abstract public class OntologyGenerator {
 
 
     public void generateClasses() throws IOException {
-
-        setUpInterfaces();
 
         Template templateFile = getTemplate(TEMPLATE_TYPE.CLASS);
         if(templateFile == null){

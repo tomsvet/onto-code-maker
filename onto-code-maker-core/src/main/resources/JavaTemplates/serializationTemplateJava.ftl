@@ -271,8 +271,6 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
             }
         }
 
-                <@innerAllInstances classRep=classRep/>
-
         return allInstances;
     }
 
@@ -389,26 +387,6 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
          </#if>
     </#if>
 </#list>
-</#macro>
-
-<#macro innerAllInstances classRep>
-<#list classRep.getSubClasses() as subClass>
-         <#if subClass.getClassType().getName() == "Normal">
-        allInstances.addAll( new ${subClass.getSerializationClassName()}().getAllInstancesFromModel(model,nestingLevel));
-         <#else>
-         <#if subClass.isUnionOf() == true>
-              <#list subClass.getUnionOf() as unionClass>
-                    //todo
-              </#list>
-         <#elseif subClass.isIntersectionOf() == true>
-            <#list subClass.getIntersectionOf() as intersectionClass>
-
-                       </#list>
-          <#elseif subClass.isComplementOf() == true>
-              <@innerAllInstances  classRep=subClass.getComplementOf()/>
-          </#if>
-          </#if>
-   </#list>
 </#macro>
 
 <#macro innerAbstractUpdate classRep>

@@ -15,6 +15,16 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/***
+ *  ModelManagerTests.java
+ *
+ *  Unit tests for ModelManager class.
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ModelManagerTests extends ModelSetUp {
     static BNode firstBnode = Values.bnode("1234");

@@ -1,8 +1,6 @@
-package ontology.tool.generator.representations;
+package ontology.tool.mapper.representations;
 
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.vocabulary.OWL;
 
 public class RestrictionRepresentation extends DefaultClassRepresentation {
 
