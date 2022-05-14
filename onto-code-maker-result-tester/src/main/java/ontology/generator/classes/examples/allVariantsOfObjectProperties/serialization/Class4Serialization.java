@@ -56,9 +56,6 @@ public class Class4Serialization extends SerializationModel<Class4Int>{
             }
         }
 
-
-
-
         return allInstances;
     }
 
@@ -84,7 +81,7 @@ public class Class4Serialization extends SerializationModel<Class4Int>{
         }
 
         Model statements = model.filter(class4.getIri(),null,null);
-        statements.removeIf(event -> !event.getPredicate().equals(RDF.TYPE));
+        statements.removeIf(x -> !x.getPredicate().equals(RDF.TYPE));
 
     }
 

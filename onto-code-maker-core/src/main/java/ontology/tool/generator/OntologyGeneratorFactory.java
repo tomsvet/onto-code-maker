@@ -3,6 +3,16 @@ package ontology.tool.generator;
 import ontology.tool.generator.language_generators.JavaGenerator;
 import ontology.tool.generator.language_generators.PythonGenerator;
 
+/**
+ *  OntologyGeneratorFactory.java
+ *
+ *  Factory to choose correct generator
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 public class OntologyGeneratorFactory {
 
     public OntologyGenerator getOntologyGenerator(String generator){

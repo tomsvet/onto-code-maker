@@ -8,35 +8,43 @@ import org.eclipse.rdf4j.model.vocabulary.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
+/**
+ * OntologyMapper.java
+ * Class for mapping ontology in RDF model to inner model represented with classes in folder representations/
+ *
+ * @author Tomas Svetlik
+ *  2022
+ *
+ * OntoCodeMaker
+ */
 public class OntologyMapper {
     private ModelManager modelManager;
 
-    //List<ClassRepresentation> mappedClasses;
-    List<IRI> PRIORVERSION_IRIS = new ArrayList<>(Collections.singletonList(OWL.PRIORVERSION));
-    List<IRI> IMPORTS_IRIS = new ArrayList<>(Collections.singletonList(OWL.IMPORTS));
-    List<IRI> CLASS_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(RDFS.CLASS,OWL.CLASS));
-    List<IRI> COMMENT_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(RDFS.COMMENT, DCTERMS.DESCRIPTION,
+    public static final List<IRI> PRIORVERSION_IRIS = new ArrayList<>(Collections.singletonList(OWL.PRIORVERSION));
+    public static final List<IRI> IMPORTS_IRIS = new ArrayList<>(Collections.singletonList(OWL.IMPORTS));
+    public static final List<IRI> CLASS_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(RDFS.CLASS,OWL.CLASS));
+    public static final List<IRI> COMMENT_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(RDFS.COMMENT, DCTERMS.DESCRIPTION,
             SKOS.DEFINITION, DC.DESCRIPTION));
-    List<IRI> LABEL_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(RDFS.LABEL, DCTERMS.TITLE, DC.TITLE, SKOS.PREF_LABEL, SKOS.ALT_LABEL,SKOS.HIDDEN_LABEL));
-    List<IRI> CREATOR_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(DC.CREATOR,DCTERMS.CREATOR));
-    List<IRI> SUBCLASS_PREDICATE_IRIS = new ArrayList<>(Collections.singletonList(RDFS.SUBCLASSOF));
-    List<IRI> EQUIVALENT_CLASS_PREDICATE_IRIS = new ArrayList<>(Collections.singletonList(OWL.EQUIVALENTCLASS));
-    IRI SUBPROPERTY_PREDICATE_IRIS = RDFS.SUBPROPERTYOF;
-    List<IRI> RESTRICTION_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(OWL.CARDINALITY,OWL.MAXCARDINALITY,OWL.MAXQUALIFIEDCARDINALITY,OWL.MINCARDINALITY,OWL.MINQUALIFIEDCARDINALITY,OWL.QUALIFIEDCARDINALITY,OWL.ALLVALUESFROM,OWL.HASVALUE,OWL.SOMEVALUESFROM,OWL.TARGETVALUE));
+    public static final List<IRI> LABEL_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(RDFS.LABEL, DCTERMS.TITLE, DC.TITLE, SKOS.PREF_LABEL, SKOS.ALT_LABEL,SKOS.HIDDEN_LABEL));
+    public static final List<IRI> CREATOR_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(DC.CREATOR,DCTERMS.CREATOR));
+    public static final List<IRI> SUBCLASS_PREDICATE_IRIS = new ArrayList<>(Collections.singletonList(RDFS.SUBCLASSOF));
+    public static final List<IRI> EQUIVALENT_CLASS_PREDICATE_IRIS = new ArrayList<>(Collections.singletonList(OWL.EQUIVALENTCLASS));
+    public static final IRI SUBPROPERTY_PREDICATE_IRIS = RDFS.SUBPROPERTYOF;
+    public static final List<IRI> RESTRICTION_PREDICATE_IRIS = new ArrayList<>(Arrays.asList(OWL.CARDINALITY,OWL.MAXCARDINALITY,OWL.MAXQUALIFIEDCARDINALITY,OWL.MINCARDINALITY,OWL.MINQUALIFIEDCARDINALITY,OWL.QUALIFIEDCARDINALITY,OWL.ALLVALUESFROM,OWL.HASVALUE,OWL.SOMEVALUESFROM,OWL.TARGETVALUE));
 
-    //List<ClassRepresentation> ontologyClasses = new ArrayList<>();
     private HashMap<Resource, ClassRepresentation> ontologyClasses = new HashMap<>();
-    //List<AbstractClassRepresentation> abstractClassesMapping = new ArrayList<>();
-    List<EquivalentClassRepresentation> equivalentClassesMapping = new ArrayList<>();
-
     private HashMap<IRI, PropertyRepresentation> properties = new HashMap<>();
 
-
+    private List<EquivalentClassRepresentation> equivalentClassesMapping = new ArrayList<>();
 
     public OntologyMapper(Model model){
         this.modelManager = new ModelManager(model);
     }
+
+    /***
+     * Getters
+     *
+     */
 
     public Collection<ClassRepresentation> getCollectionOfMappedClasses(){
         return ontologyClasses.values();
@@ -54,36 +62,20 @@ public class OntologyMapper {
         return ontologyClasses;
     }
 
-    /*public List<AbstractClassRepresentation> getMappedAbstractClasses(){
-        return abstractClassesMapping;
-    }
-
-    public List<NormalClassRepresentation> getAllMappedClasses(){
-        List<NormalClassRepresentation> allClasses = new ArrayList<>();
-        allClasses.addAll(ontologyClasses);
-        allClasses.addAll(abstractClassesMapping);
-        return allClasses;
-    }*/
-
-    /*public ClassRepresentation getMappedClass(Resource classResource){
-        //Optional<ClassRepresentation> res = ontologyClasses.stream().filter(classRep -> !classRep.isSameName()? classRep.getResourceValue().equals(classResource): classRep.getResourceValue().equals(Values.iri(classResource.stringValue() + classRep.getSameNameIndex()))).findFirst();
-        return ontologyClasses.get(classResource);
-    }*/
-
-    /*public AbstractClassRepresentation getMappedAbstractClassesMapping(Resource classId){
-        Optional<AbstractClassRepresentation> res = abstractClassesMapping.stream().filter(classRep -> classRep.getResourceValue().equals(classId)).findFirst();
-        return res.orElse(null);
-    }*/
-
-    public boolean isMappedClass(Value classValue){
-        Optional<ClassRepresentation> res = getCollectionOfMappedClasses().stream().filter(classRep -> classRep.getResourceValue().equals(classValue)).findFirst();
-        return res.isPresent();
-    }
-
     public List<AbstractClassRepresentation> getAbstractClassReps(){
         return getCollectionOfMappedClasses().parallelStream().filter(classRep -> classRep instanceof AbstractClassRepresentation).map(foundClass -> (AbstractClassRepresentation)foundClass).collect(Collectors.toList());
     }
 
+    private List<IRI> getAllPropertiesIRIs(ClassRepresentation classRep){
+        return classRep.getProperties().stream().map(PropertyRepresentation::getValueIRI).collect(Collectors.toList());
+    }
+
+    /**
+     * Base method of this class
+     * This class call all mapping methods
+     *
+     *
+     */
     public void mapping() throws Exception {
 
         mapClasses();
@@ -103,15 +95,13 @@ public class OntologyMapper {
             mapCreator(classRep);
         }
 
-
+        //map class properties
         mapDataTypeProperties();
         mapObjectProperties();
 
         mapPropertyRelationShips();
 
-
-
-        // then can map class properties
+        //set names of united classes
         for(ClassRepresentation classRep:getCollectionOfMappedClasses()){
             if(classRep.getClassType().equals(DefaultClassRepresentation.CLASS_TYPE.ABSTRACT)){
                 ((AbstractClassRepresentation)classRep).setAbstractClassName();
@@ -119,31 +109,14 @@ public class OntologyMapper {
             if(classRep.getEquivalentClass() != null){
                 classRep.getEquivalentClass().setClassNameWithConcatEquivalentClasses();
             }
-            //findOutInterfaceClassValueOfClass(classRep);
-
-            /*mapComments(classRep);
-            mapLabels(classRep);
-            mapCreator(classRep);
-            mapProperties(classRep);*/
         }
 
+        removeDuplicateAbstractClasses();
 
-        //change duplicate names
-       /* for(ClassRepresentation classRep:ontologyClasses){
-            boolean isDuplicateName = true;
-            int i = 0;
-            String name = classRep.getName();
-            while(isDuplicateName){
-                if(getMappedClassesWithSameName(classRep) == null){
-                    isDuplicateName = false;
-                }else{
-                    classRep.setName(name + i);
-                    i++;
-                }
-            }
-        }*/
+    }
 
-        //remove duplicate abstract classes
+
+    private void removeDuplicateAbstractClasses(){
         for(AbstractClassRepresentation classRep:getAbstractClassReps()){
             if(!classRep.isToRemove()) {
                 AbstractClassRepresentation existAbstract = getSameAbstractClassReps(classRep, classRep.getName());
@@ -152,13 +125,11 @@ public class OntologyMapper {
                     classRep.getSuperClasses().addAll(existAbstract.getSuperClasses());
                     for(ClassRepresentation superClass:existAbstract.getSuperClasses()){
                         superClass.getSubClasses().remove(existAbstract);
-                        //superClass.addSubClasses(classRep);
                     }
                     classRep.getSubClasses().removeAll(existAbstract.getSubClasses());
                     classRep.getSubClasses().addAll(existAbstract.getSubClasses());
                     for(ClassRepresentation subClass:existAbstract.getSubClasses()){
                         subClass.getSuperClasses().remove(existAbstract);
-                        //subClass.addSuperClasses(classRep);
                     }
                     classRep.getProperties().removeAll(existAbstract.getProperties());
                     classRep.getProperties().addAll(existAbstract.getProperties());
@@ -167,16 +138,12 @@ public class OntologyMapper {
                 }
             }
         }
-
-
-
     }
 
-    public ClassRepresentation getMappedClassesWithSameName(String className){
+    private ClassRepresentation getMappedClassesWithSameName(String className){
         Optional<ClassRepresentation> duplicateClassRep = ontologyClasses.values().parallelStream().filter(x -> x.getName().equals(className)).findFirst();
-        return duplicateClassRep.isPresent()?duplicateClassRep.get():null;
+        return duplicateClassRep.orElse(null);
     }
-
 
     private void checkAndChangeDuplicateName(ClassRepresentation classRep){
         boolean isDuplicateName = true;
@@ -218,18 +185,11 @@ public class OntologyMapper {
         return allClasses;
     }
 
-    /*public void mapAbstractClassHierarchy(AbstractClassRepresentation classRep){
-        Set<Value> superClasses = modelManager.getAllObjects(SUBCLASS_PREDICATE_IRIS,classRep.getResourceValue());
-        for(Value superClassValue: superClasses) {
-            if (superClassValue.isIRI()) {
-
-            }else if(superClassValue.isBNode()){
-
-            }
-        }
-        //todo
-    }*/
-
+    /**
+     * Method to map subclass relationship from model
+     * @param classRep class representation
+     *
+     */
     public void mapClassHierarchy(ClassRepresentation classRep) throws Exception {
 
         Set<Value> superClasses = modelManager.getAllObjects(SUBCLASS_PREDICATE_IRIS,classRep.getResourceValue());
@@ -251,7 +211,6 @@ public class OntologyMapper {
         }
         for(Value superClassValue: finalSuperList){
             if(superClassValue.isResource()) {
-                //Resource superClassResource = (Resource) superClassValue;
                 ClassRepresentation superClassRep = ontologyClasses.get(((Resource) superClassValue));
 
                 if (superClassRep != null) {
@@ -261,22 +220,12 @@ public class OntologyMapper {
                         classRep.getEquivalentClass().addSuperClasses(superClassRep);
                     }
                 } else {
-                    //todo test this error
                     throw new Exception("Class " + superClassValue.stringValue() + " doesn't exist in the ontology.");
                 }
             }
         }
     }
 
-    public Set<Value> mergeClassRepresenationLists(Set<Value> one,Set<Resource> two){
-        Set<Value> finalList = new HashSet<>(one);
-        for (Value x : two){
-            if (!finalList.contains(x)){
-                finalList.add(x);
-            }
-        }
-        return finalList;
-    }
 
     public List<ClassRepresentation> getEquivalentClasses(ClassRepresentation classRep, List<ClassRepresentation> actualEquivalentClasses) throws Exception {
 
@@ -319,7 +268,11 @@ public class OntologyMapper {
         return actualEquivalentClasses;
     }
 
-
+    /**
+     * Method to map equivalent class relationship from model
+     * @param classRep class representation
+     *
+     */
     public void mapEquivalentClasses(ClassRepresentation classRep) throws Exception {
         Optional<EquivalentClassRepresentation> ret = equivalentClassesMapping.parallelStream().filter(eq -> eq.getEquivalentClasses().contains(classRep)).findFirst();
         if(ret.isEmpty()){
@@ -343,6 +296,11 @@ public class OntologyMapper {
         }
     }
 
+    /**
+     * Method to map Disjointwith element from RDF model
+     * @param classRep class representation
+     *
+     */
     public void mapDisjointWith(ClassRepresentation classRep) throws Exception {
         Set<Value> disjointWithValues = modelManager.getAllObjects(OWL.DISJOINTWITH,classRep.getResourceValue());
         Set<Value> finalDisjointList = new HashSet<>(disjointWithValues);
@@ -376,6 +334,13 @@ public class OntologyMapper {
 
     }
 
+    /**
+     * Method to check restriction if exist map it
+     * @param classRep class representation
+     * @param unionValue RDF4J Value of graph node
+     * @param type  type of Restriction in (f.e. union, intersection .. )
+     * @return if restriction exist true else false
+     */
     public boolean checkAndMapRestriction(ClassRepresentation classRep, Value unionValue, RestrictionRepresentation.RESTRICTION_IN_TYPE type){
         BNode unionBnode = (BNode) unionValue;
         if(modelManager.existStatementWithIRI(unionBnode,RDF.TYPE,OWL.RESTRICTION)){
@@ -387,25 +352,21 @@ public class OntologyMapper {
             restRep.setValue(restrictionType.getObject().stringValue());
             restRep.setRestrictionIn(type);
             if(type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.UNIONOF)){
-               // restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.UNIONOF);
                 classRep.addRestriction(restRep);
                 classRep.addUnionOf(restRep);
                 ((AbstractClassRepresentation) classRep).setCreateOf(AbstractClassRepresentation.ABSTRACT_CREATE_OF.UNIONOF);
                 ((AbstractClassRepresentation) classRep).setAbstractClassName();
             }else if(type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.INTERSECTIONOF)){
-               // restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.INTERSECTIONOF);
                 classRep.addRestriction(restRep);
                 ((AbstractClassRepresentation) classRep).setCreateOf(AbstractClassRepresentation.ABSTRACT_CREATE_OF.INTERSECTIONOF);
                 ((AbstractClassRepresentation) classRep).setAbstractClassName();
                 classRep.addIntersectionOf(restRep);
             }else if(type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.COMPLEMENT)){
-                //restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.COMPLEMENT);
                 classRep.addRestriction(restRep);
                 classRep.setComplementOf(restRep);
                 ((AbstractClassRepresentation) classRep).setCreateOf(AbstractClassRepresentation.ABSTRACT_CREATE_OF.COMPLEMENT);
                 ((AbstractClassRepresentation) classRep).setAbstractClassName();
             }else if(type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.EQUIVALENT)){
-                //restRep.setRestrictionIn(RestrictionRepresentation.RESTRICTION_IN_TYPE.EQUIVALENT);
                 classRep.addRestriction(restRep);
             }else if(type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.DISJOINTWITH) || type.equals(RestrictionRepresentation.RESTRICTION_IN_TYPE.SUBCLASS)){
                 classRep.addRestriction(restRep);
@@ -417,6 +378,11 @@ public class OntologyMapper {
         return  false;
     }
 
+    /**
+     * Method to map Union of element from RDF model
+     * @param classRep class representation
+     *
+     */
     public void mapUnionOfClasses(ClassRepresentation classRep) throws Exception {
         Resource unionNode = modelManager.getFirstResource(OWL.UNIONOF,classRep.getResourceValue());
         if(unionNode == null){
@@ -448,7 +414,11 @@ public class OntologyMapper {
             }
         }
     }
-    
+
+    /**
+     * Method to map definition IntersectionOf from RDF model
+     * @param classRep class representation
+     */
     public void mapIntersectionOfClass(ClassRepresentation classRep) throws Exception {
         Resource intersectionNode = modelManager.getFirstResource(OWL.INTERSECTIONOF,classRep.getResourceValue());
         if(intersectionNode == null){
@@ -457,7 +427,7 @@ public class OntologyMapper {
         Set<Value> intersectionOfClasses = modelManager.getRDFCollection(intersectionNode);
         for (Value intersectionValue : intersectionOfClasses)
         {
-            if (intersectionValue.isResource()) {
+            if (intersectionValue.isResource()) { ;
                 ClassRepresentation childClass = ontologyClasses.get((Resource) intersectionValue);
 
                 if (childClass != null) {
@@ -481,11 +451,22 @@ public class OntologyMapper {
         }
     }
 
+    /**
+     * Method to return abstract class which is same(same name) as input abstract class
+     * @param actualClassRep abstract class representation
+     * @param name  class name
+     * @return same abstract class
+     */
     public AbstractClassRepresentation getSameAbstractClassReps(AbstractClassRepresentation actualClassRep,String name ){
-        Optional<ClassRepresentation> retVal = getCollectionOfMappedClasses().parallelStream().filter(classRep -> classRep instanceof AbstractClassRepresentation && !classRep.equals(actualClassRep)&& classRep.getName().equals(name)).findFirst();//.map(foundClass -> (AbstractClassRepresentation)foundClass).collect(Collectors.toList());
-        return retVal.isPresent()? (AbstractClassRepresentation)retVal.get():null;
+        Optional<ClassRepresentation> retVal = getCollectionOfMappedClasses().parallelStream().filter(classRep -> classRep instanceof AbstractClassRepresentation && !classRep.equals(actualClassRep)&& classRep.getName().equals(name)).findFirst();
+        return (AbstractClassRepresentation) retVal.orElse(null);
     }
 
+    /**
+     * Method to map definition ComplementOf from RDF model
+     * @param classRep class representation
+     *
+     */
     public void mapComplementOfClass(ClassRepresentation classRep) throws Exception {
         Resource complementResource = modelManager.getFirstResource(OWL.COMPLEMENTOF,classRep.getResourceValue());
         if(complementResource == null){
@@ -514,6 +495,10 @@ public class OntologyMapper {
         }
     }
 
+    /**
+     * Method to map entity comment element from RDF model
+     * @param entityRep entity representation
+     */
     public void mapComments(EntityRepresentation entityRep){
         Set<Literal> allComments = modelManager.getAllLiteralObjects(COMMENT_PREDICATE_IRIS,entityRep.getResourceValue());
         for(Literal comment : allComments){
@@ -521,6 +506,10 @@ public class OntologyMapper {
         }
     }
 
+    /**
+     * Method to map entity label element from RDF model
+     * @param entityRep entity representation
+     */
     public void mapLabels(EntityRepresentation entityRep){
         Set<Literal> allLabels = modelManager.getAllLiteralObjects(LABEL_PREDICATE_IRIS,entityRep.getResourceValue());
         for(Literal comment : allLabels){
@@ -528,6 +517,10 @@ public class OntologyMapper {
         }
     }
 
+    /**
+     * Method to map entity creator element from RDF model
+     * @param entityRep entity representation
+     */
     public void mapCreator(EntityRepresentation entityRep){
         Literal creator = modelManager.getFirstLiteralObject(CREATOR_PREDICATE_IRIS, entityRep.getResourceValue());
         if ( creator!= null ){
@@ -535,54 +528,27 @@ public class OntologyMapper {
         }
     }
 
+    /**
+     * Method to return all Resource values from equivalent classes of class
+     * @param classRep class representation
+     * @return all resource values of equivalent classes
+     */
     public List<Resource> getAllEquivalentResources(ClassRepresentation classRep){
         return classRep.getEquivalentClass()!= null?classRep.getEquivalentClass().getEquivalentClasses().stream().map( eqClass -> eqClass.getResourceValue()).collect(Collectors.toList()) : new ArrayList<>(Arrays.asList(classRep.getResourceValue()));
     }
 
-    public void findOutInterfaceClassValueOfClass(ClassRepresentation generatedClass){
-        if(!(generatedClass instanceof AbstractClassRepresentation && generatedClass.isUnionOf())) {
-            if (generatedClass.hasSubClass() && !generatedClass.isHasInterface()) {
-                //If SubClasses Have More Super Classes
-                // this is needed when subclasses of generated Class  have more than one superclass because it need extends more classes (in java only interfaces)
-                List<ClassRepresentation> resultList = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 1).collect(Collectors.toList());
-                boolean result1 = false;
-                if (!resultList.isEmpty()) {
-                    result1 = true;
-                    generatedClass.getSuperClasses().parallelStream().forEach(superClass-> superClass.setHasInterface(true));
-                    /*List<ClassRepresentation> res = resultList.parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 2 || classRep.getSuperClasses().get(0).getClassType() == classRep.getSuperClasses().get(1).getClassType()).collect(Collectors.toList());
-                    if (res.size() == resultList.size()) {
-                        result1 = true;
-                    }*/
-                }
-
-                // if subclass is interface
-                if(!result1){
-                    List<ClassRepresentation> resultList2 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.isHasInterface()).collect(Collectors.toList());
-                    result1 = !resultList2.isEmpty();
-                }
-
-                // if subclasses have equivalent class
-                Optional<ClassRepresentation> result2 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getEquivalentClass() != null).findFirst();
-
-                //Optional<ClassRepresentation> result3 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getSuperClasses().size() == 2 && classRep.getSuperClasses().get(0).getClassType() != classRep.getSuperClasses().get(1).getClassType()).findFirst();
-
-                generatedClass.setHasInterface(result1 || result2.isPresent());
-            }
-        }
-    }
 
 
     /**
      * These methods map properties
      *
-     * @param property
-     * @return
+     *
+     *
      */
 
     private ClassRepresentation getDomainClass(PropertyRepresentation property){
         Resource propertyDomain = modelManager.getFirstResource(RDFS.DOMAIN,property.getValueIRI());
-        ClassRepresentation domainClass = ontologyClasses.get(propertyDomain);
-        return domainClass;
+        return ontologyClasses.get(propertyDomain);
     }
 
     private void mapDomain(PropertyRepresentation property) {
@@ -592,19 +558,23 @@ public class OntologyMapper {
 
     private void mapDomain(ClassRepresentation domainClass,PropertyRepresentation property){
         if(domainClass != null) {
-            if(domainClass.getEquivalentClass() != null) {
+            /*if(domainClass.getEquivalentClass() != null) {
                 for (ClassRepresentation eqClasses : domainClass.getEquivalentClass().getEquivalentClasses()) {
                     eqClasses.addProperties(property);
                 }
             }else{
                 domainClass.addProperties(property);
-            }
+            }*/
+            domainClass.addProperties(property);
             property.setClassName(domainClass.getName());
         }
     }
 
+    /**
+     * Method to map all Datatype properties from class
+     *
+     */
     public void mapDataTypeProperties(){
-        //List<PropertyRepresentation> allDatatypeProperties =  new ArrayList<>();
         Set<IRI> datatypeProperties = modelManager.getAllIRISubjects(RDF.TYPE, OWL.DATATYPEPROPERTY);
         for(IRI propertyIRI : datatypeProperties){
             PropertyRepresentation property = new PropertyRepresentation(propertyIRI.getNamespace(), propertyIRI.getLocalName());
@@ -614,10 +584,6 @@ public class OntologyMapper {
             property.setRangeResource(propertyRange);
 
             mapFunctionalProperties(property);
-            //mapEquivalentProperties(property);
-            //mapPropertyHierarchy(property);
-
-            //datatypes properties cannot be inverse and inversefunctional
 
             mapComments(property);
             mapCreator(property);
@@ -626,6 +592,10 @@ public class OntologyMapper {
         }
     }
 
+    /**
+     * Method to map all Object properties from class
+     *
+     */
     public void mapObjectProperties() throws Exception {
         Set<IRI> objectProperties = modelManager.getAllIRISubjects(RDF.TYPE, OWL.OBJECTPROPERTY);
         for(IRI propertyIRI : objectProperties){
@@ -635,21 +605,12 @@ public class OntologyMapper {
             Resource propertyRange = modelManager.getFirstResource(RDFS.RANGE, propertyIRI);
             if (propertyRange != null) {
                 property.setRangeResource(propertyRange);
-                if (propertyRange.isIRI()) {
 
-                }
                 //together all classes
                 ClassRepresentation rangeClass = ontologyClasses.get(propertyRange);
                 if (rangeClass == null) {
                     if (propertyRange.isBNode()) {
                         throw new Exception("Range must be class. Unionof,Intersection or complement is supported only in abstract class.");
-                        //it is abstract node but it is not defined as class
-                            /*BNode classBNode = (BNode) range;
-                            AbstractClassRepresentation abstractClassRep = new AbstractClassRepresentation(classBNode.getID());
-                            mapUnionOfClasses(abstractClassRep);
-                            mapIntersectionOfClass(abstractClassRep);
-                            mapComplementOfClass(abstractClassRep);
-                            rangeClass = abstractClassRep;*/
                     } else {
                         throw new Exception("Class " + propertyRange.stringValue() + " doesn't exist in the ontology.");
                     }
@@ -658,28 +619,22 @@ public class OntologyMapper {
                 property.setRangeClass(rangeClass);
             }
 
-
             mapFunctionalProperties(property);
 
             mapComments(property);
             mapCreator(property);
             mapLabels(property);
 
-            /*mapInverseProperties(classRep,property);
-
-            mapEquivalentProperties(classRep,property);
-
-            mapPropertyHierarchy(classRep,property);
-
-            mapInverseFunctionalProperties(classRep,property);*/
-
             properties.put(propertyIRI,property);
         }
     }
 
+    /**
+     * Method to map all property relationships and special definitions
+     *
+     */
     public void mapPropertyRelationShips(){
-        Collection<PropertyRepresentation> propertiesValues = new ArrayList<>();
-        propertiesValues.addAll(properties.values());
+        Collection<PropertyRepresentation> propertiesValues = new ArrayList<>(properties.values());
         for(PropertyRepresentation property: propertiesValues){
             ClassRepresentation domainClass = getDomainClass(property);
 
@@ -694,87 +649,10 @@ public class OntologyMapper {
         }
     }
 
-    public void mapPropertyRelationShips2(){
-        Collection<PropertyRepresentation> propertiesValues = new ArrayList<>();
-        propertiesValues.addAll(properties.values().stream().filter(p->! p.getClassName().isEmpty()).collect(Collectors.toList()));
-        for(PropertyRepresentation property: propertiesValues){
-            ClassRepresentation domainClass = getDomainClass(property);
-
-            mapEquivalentProperties(domainClass,property);
-            mapPropertyHierarchy(domainClass,property);
-            if(property.getType().equals(PropertyRepresentation.PROPERTY_TYPE.OBJECT)){
-                mapInverseProperties(domainClass,property);
-                mapInverseFunctionalProperties(domainClass,property);
-            }
-        }
-    }
-
-
-    public void mapProperties(ClassRepresentation classRep) throws Exception {
-        List<Resource> classesResources = getAllEquivalentResources(classRep);
-        //todo test this classesResources.addAll(modelManager.getSubjectOfCollectionValue(OWL.UNIONOF,classesResources));
-        Set<IRI> properties = modelManager.getAllIRISubjects(RDFS.DOMAIN,classesResources);
-        for(IRI propertyIRI : properties){
-            if(modelManager.existStatementWithIRI(propertyIRI,RDF.TYPE, OWL.DATATYPEPROPERTY)){
-                PropertyRepresentation property = new PropertyRepresentation(propertyIRI.getNamespace(), propertyIRI.getLocalName());
-                property.setClassName(classRep.getName());
-                property.setType(PropertyRepresentation.PROPERTY_TYPE.DATATYPE);
-                IRI range = modelManager.getFirstIRIObject(RDFS.RANGE, propertyIRI);
-                property.setRangeResource(range);
-                //property.setIsFunctional(true);
-                classRep.addProperties(property);
-
-                mapFunctionalProperties(property);
-                mapEquivalentProperties(classRep,property);
-                mapPropertyHierarchy(classRep,property);
-
-                //datatypes properties cannot be inverse and inversefunctional
-
-            }else if(modelManager.existStatementWithIRI(propertyIRI,RDF.TYPE, OWL.OBJECTPROPERTY)) {
-                PropertyRepresentation property = new PropertyRepresentation(propertyIRI.getNamespace(), propertyIRI.getLocalName());
-                property.setClassName(classRep.getName());
-                property.setType(PropertyRepresentation.PROPERTY_TYPE.OBJECT);
-                Resource range = modelManager.getFirstResource(RDFS.RANGE, propertyIRI);
-                if (range == null) {
-                    //ignore property without range
-                   continue;
-                }
-                property.setRangeResource(range);
-                //together all classes
-                ClassRepresentation rangeClass = ontologyClasses.get(range);
-                if (rangeClass == null) {
-                    if(range.isBNode()){
-                        throw new Exception("Range must be class. Unionof,Intersection or complement is supported only in abstract class.");
-                        //it is abstract node but it is not defined as class
-                        /*BNode classBNode = (BNode) range;
-                        AbstractClassRepresentation abstractClassRep = new AbstractClassRepresentation(classBNode.getID());
-                        mapUnionOfClasses(abstractClassRep);
-                        mapIntersectionOfClass(abstractClassRep);
-                        mapComplementOfClass(abstractClassRep);
-                        rangeClass = abstractClassRep;*/
-                    }else {
-                        throw new Exception("Class " + range.stringValue() + " doesn't exist in the ontology.");
-                    }
-
-                }
-                property.setRangeClass(rangeClass);
-                classRep.addProperties(property);
-
-                mapInverseProperties(classRep,property);
-
-                mapFunctionalProperties(property);
-
-                mapEquivalentProperties(classRep,property);
-
-                mapPropertyHierarchy(classRep,property);
-
-                mapInverseFunctionalProperties(classRep,property);
-            }
-        }
-
-
-    }
-
+    /**
+     * Method to map functional property relationship
+     * @param property property representation
+     */
     public void mapFunctionalProperties(PropertyRepresentation property){
         boolean isFunctionalProperty = modelManager.existStatementWithIRI(property.getValueIRI(),RDF.TYPE,OWL.FUNCTIONALPROPERTY);
         if(isFunctionalProperty) {
@@ -782,6 +660,13 @@ public class OntologyMapper {
         }
     }
 
+    /**
+     * This method create Inverse Property from base property
+     * @param classRep domain class representation
+     * @param property property representation
+     * @param inversePropertyIRI IRI of inverse class
+     * @return inverse property representation
+     */
     public PropertyRepresentation createInverseProperty(ClassRepresentation classRep, PropertyRepresentation property, IRI inversePropertyIRI ){
         List<IRI> setIRIs = getAllPropertiesIRIs(property.getRangeClass());
         if (setIRIs.contains(inversePropertyIRI)){
@@ -790,14 +675,17 @@ public class OntologyMapper {
         PropertyRepresentation inverseProperty = new PropertyRepresentation(inversePropertyIRI.getNamespace(), inversePropertyIRI.getLocalName());
         inverseProperty.setRangeResource(classRep.getResourceValue());
         inverseProperty.setRangeClass(classRep);
-        //inverseProperty.setClassName(property.getRangeClass().getName());
         inverseProperty.setType(property.getType());
-        //property.getRangeClass().addProperties(inverseProperty);
         mapDomain(property.getRangeClass(),inverseProperty);
         properties.put(inversePropertyIRI,inverseProperty);
         return inverseProperty;
     }
 
+    /**
+     * Method to map inverse functional property relationship
+     * @param classRep domain class representation
+     * @param property property representation
+     */
     public void mapInverseFunctionalProperties(ClassRepresentation classRep, PropertyRepresentation property){
         boolean isInverseFunctionalProperty = modelManager.existStatementWithIRI(property.getValueIRI(),RDF.TYPE,OWL.INVERSEFUNCTIONALPROPERTY);
         if(isInverseFunctionalProperty) {
@@ -808,31 +696,29 @@ public class OntologyMapper {
         }
     }
 
+    /**
+     * Method to map inverse property relationship
+     * @param classRep domain class representation
+     * @param property property representation
+     */
     public void mapInverseProperties(ClassRepresentation classRep, PropertyRepresentation property){
         Set<IRI> inverseIRIProperties = modelManager.getAllIRISubjects(OWL.INVERSEOF, property.getValueIRI());
         for(IRI inversePropertyIRI :inverseIRIProperties){
             PropertyRepresentation inverseProperty =properties.get(inversePropertyIRI);
             inverseProperty.setRangeResource(classRep.getResourceValue());
             inverseProperty.setRangeClass(classRep);
-            //inverseProperty.setClassName(property.getRangeClass().getName());
             inverseProperty.setType(property.getType());
-            //property.getRangeClass().addProperties(inverseProperty);
             mapDomain(property.getRangeClass(),inverseProperty);
             inverseProperty.setInverseOf(property);
             property.addInverseTo(inverseProperty);
         }
     }
 
-    /*public PropertyRepresentation createSameProperty(PropertyRepresentation property,IRI newPropertyIRI) {
-        PropertyRepresentation newPropertyRep = new PropertyRepresentation(newPropertyIRI.getNamespace(), newPropertyIRI.getLocalName());
-        newPropertyRep.setRangeResource(property.getRangeResource());
-        newPropertyRep.setRangeClass(property.getRangeClass());
-        newPropertyRep.setType(property.getType());
-        newPropertyRep.setValue(property.getValue());
-        newPropertyRep.setClassName(property.getClassName());
-        return newPropertyRep;
-    }*/
-
+    /**
+     * This method check whether values are collection and add all collection values to the return list
+     * @param collectionOfValues collection of input values
+     * @return list of final values
+     */
     private Set<Value> analyseCollectionsFromValues(Set<Value> collectionOfValues){
         Set<Value> finalList = new HashSet<>(collectionOfValues);
         for(Value value: collectionOfValues){
@@ -847,26 +733,24 @@ public class OntologyMapper {
                 }
             }
         }
-
         return finalList;
     }
 
+    /**
+     * this method is to find inner equivalent and subproperty properties
+     * @param property property representation
+     * @return found property
+     */
     private PropertyRepresentation findDomainInEqOrSub(PropertyRepresentation property){
-        boolean eq = true;
         IRI propertyIRI = modelManager.getFirstIRIObject(OWL.EQUIVALENTPROPERTY, property.getResourceValue());
         if(propertyIRI == null){
             propertyIRI = modelManager.getFirstIRIObject(RDFS.SUBPROPERTYOF, property.getResourceValue());
-            eq=false;
         }
 
         if(propertyIRI != null){
             PropertyRepresentation propertyN = properties.get(propertyIRI);
             if(getDomainClass(propertyN) == null){
-                PropertyRepresentation prop = findDomainInEqOrSub(propertyN);
-               /* if(eq){
-                    mainProperty.addEquivalentProperty(prop);
-                }*/
-                return prop;
+                return findDomainInEqOrSub(propertyN);
             }else{
                 return propertyN;
             }
@@ -874,14 +758,18 @@ public class OntologyMapper {
         return null;
     }
 
+    /**
+     * Method to map equivalent property relationship
+     * @param classRep domain class representation
+     * @param property property representation
+     */
     public void mapEquivalentProperties(ClassRepresentation classRep, PropertyRepresentation property){
         Set<Resource> equivalentProperties = modelManager.getAllSubjects(OWL.EQUIVALENTPROPERTY, property.getResourceValue());
-        //todo is this needed here ?
         modelManager.getSubjectOfValue(OWL.EQUIVALENTPROPERTY, property.getResourceValue());
 
         //to find equivalent collections
         Set<Value> eqPropertyValues = new HashSet<>(equivalentProperties);
-        Set<Value> finalEqList =analyseCollectionsFromValues(eqPropertyValues);
+        Set<Value> finalEqList = analyseCollectionsFromValues(eqPropertyValues);
 
         for(Value equivalentProperty:finalEqList){
             if(equivalentProperty.isIRI()) {
@@ -891,6 +779,9 @@ public class OntologyMapper {
                     classRep = getDomainClass(eqProperty);
                     if(classRep == null){
                         mainProp = findDomainInEqOrSub(property);
+                        if(mainProp == null) {
+                            continue;
+                        }
                         classRep = getDomainClass(mainProp);
                     }
                 }
@@ -898,9 +789,8 @@ public class OntologyMapper {
                 eqProperty.setRangeResource(mainProp.getRangeResource());
                 eqProperty.setRangeClass(mainProp.getRangeClass());
                 eqProperty.setType(mainProp.getType());
-                //eqProperty.setValue(property.getValue());
                 eqProperty.setClassName(mainProp.getClassName());
-                eqProperty.setIsEquivalentTo(property);// todo collection equivalent properties
+                eqProperty.setIsEquivalentTo(property);
                 eqProperty.addEquivalentProperty(property);
                 property.addEquivalentProperty(eqProperty);
                 if(!property.equals(mainProp)){
@@ -908,18 +798,15 @@ public class OntologyMapper {
                     mainProp.addEquivalentProperty(eqProperty);
                 }
                 classRep.addProperties(eqProperty);
-                /*if (eqProperty.getType().equals(PropertyRepresentation.PROPERTY_TYPE.OBJECT)) {
-                    mapInverseProperties(classRep, eqProperty);
-                    mapInverseFunctionalProperties(classRep, eqProperty);
-                }*/
             }
         }
     }
 
-    public List<IRI> getAllPropertiesIRIs(ClassRepresentation classRep){
-        return classRep.getProperties().stream().map(PropertyRepresentation::getValueIRI).collect(Collectors.toList());
-    }
-
+    /**
+     * Method to map subproperty relationship
+     * @param classRep domain class representation
+     * @param property property representation
+     */
     public void mapPropertyHierarchy(ClassRepresentation classRep, PropertyRepresentation property){
         Set<IRI> subProperties = modelManager.getAllIRISubjects(SUBPROPERTY_PREDICATE_IRIS,property.getValueIRI());
         Set<Value> finalSuperList = new HashSet<>(subProperties);
@@ -934,16 +821,17 @@ public class OntologyMapper {
                 PropertyRepresentation mainProp = property;
                 if(classRep == null){
                     mainProp = findDomainInEqOrSub(property);
+                    if(mainProp == null) {
+                        continue;
+                    }
                     classRep = getDomainClass(mainProp);
+
                 }
                 subProperty.setRangeResource(mainProp.getRangeResource());
                 subProperty.setRangeClass(mainProp.getRangeClass());
                 subProperty.setType(mainProp.getType());
-                //subProperty.setValue(property.getValue());
-                //subProperty.setClassName(property.getClassName());
                 property.addSubProperty(subProperty);
                 subProperty.addSuperProperty(property);
-                //classRep.addProperties(subProperty);
                 mapDomain(classRep,subProperty);
 
             }
@@ -953,7 +841,7 @@ public class OntologyMapper {
 
 
     /**
-     * These methods map special ontologies properties
+     * These methods map special ontologies properties: imports, priorversion
      *
      */
 
@@ -976,14 +864,10 @@ public class OntologyMapper {
         mapPriorVersion(ontology);
     }
 
-    public OntologyRepresentation getOWLOntology(){
-        IRI owlOntologyIRI = modelManager.getFirstIRISubject(RDF.TYPE,OWL.ONTOLOGY);
-        if(owlOntologyIRI != null) {
-            return new OntologyRepresentation(owlOntologyIRI.getNamespace(), owlOntologyIRI.getLocalName());
-        }
-        return null;
-    }
-
+    /**
+     * method to map all ontologies from rdf model
+     * @return list of ontology representations
+     */
     public List<OntologyRepresentation> getOWLOntologies(){
         Set<IRI> owlOntologyIRIs = modelManager.getAllIRISubjects(RDF.TYPE,OWL.ONTOLOGY);
         List<OntologyRepresentation> ontologies = new ArrayList<>();
@@ -997,9 +881,7 @@ public class OntologyMapper {
             mapCreator(onto);
             mapLabels(onto);
             ontologies.add(onto);
-
         }
         return ontologies;
     }
-
 }

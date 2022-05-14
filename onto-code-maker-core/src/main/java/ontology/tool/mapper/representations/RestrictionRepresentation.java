@@ -2,6 +2,16 @@ package ontology.tool.mapper.representations;
 
 import org.eclipse.rdf4j.model.IRI;
 
+/**
+ *  RestrictionRepresentation.java
+ *
+ *  Representation of restriction in inner model.
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 public class RestrictionRepresentation extends DefaultClassRepresentation {
 
     private RESTRICTION_IN_TYPE restrictionIn;

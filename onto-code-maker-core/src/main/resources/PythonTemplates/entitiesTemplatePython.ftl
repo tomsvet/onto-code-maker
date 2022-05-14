@@ -6,10 +6,10 @@
         # The property is equivalent to ${property.getIsEquivalentTo().name}
 </#if>
 <#list property.comments as comment>
-    #  ${comment}
+        #  ${comment}
 </#list>
 <#list property.labels as label>
-    #  ${label}
+        #  ${label}
 </#list>
 </#macro>
 <#macro settingProperty property valueName>
@@ -35,11 +35,11 @@
 </#if>
 <#if property.isEquivalentTo??>
     <#if property.isEquivalentTo.isFunctional() == true>
-     if not (self.${property.isEquivalentTo.name?uncap_first} is None) or not self.${property.isEquivalentTo.name?uncap_first} == ${valueName}:
-         self.${property.isEquivalentTo.name?uncap_first} = ${valueName}
+    if not (self.${property.isEquivalentTo.name?uncap_first} is None) or not self.${property.isEquivalentTo.name?uncap_first} == ${valueName}:
+        self.${property.isEquivalentTo.name?uncap_first} = ${valueName}
     <#else>
-    if not ${valueName} in self.${property.isEquivalentTo.name?uncap_first}:
-        self.${property.isEquivalentTo.name?uncap_first}.add(${valueName});
+    if not self.${valueName} in self.${property.isEquivalentTo.name?uncap_first}:
+        self.${property.isEquivalentTo.name?uncap_first}.add(${valueName})
     </#if>
 </#if>
 <#list property.equivalentProperties as eqProp>
@@ -47,8 +47,8 @@
     if not (self.${eqProp.name?uncap_first} is None) or not self.${eqProp.name?uncap_first} == ${valueName}:
         self.${eqProp.name?uncap_first} = ${valueName}
     <#else>
-    if not ${valueName} in self.${eqProp.name?uncap_first}:
-        self.${eqProp.name?uncap_first}.add(${valueName});
+        if not self.${valueName} in self.${eqProp.name?uncap_first}:
+            self.${eqProp.name?uncap_first}.add(${valueName})
     </#if>
 </#list>
 </#macro>
@@ -58,17 +58,20 @@ ${ captured?replace("\\n|\\r", "", "rm") }
 </#macro>
 from rdflib import URIRef
 <#if isMainClass == false>
-from ${rawPackage} import ${vocabularyFileName}
+from ${vocabularyFileName} import ${vocabularyFileName}
 </#if>
+<#if isExtends == true > <#list extendClasses as extendClass>
+from .${extendClass} import ${extendClass}
+</#list></#if>
 
 
 ##
 #  <@compress_single_line>
 <#if classRep?? && isMainClass == false>This is the class representing the ${classRep.name}(${classRep.getFullName()}) class from ontology<#elseif isMainClass == true>This is a base class for all the generated entities.
 <#elseif isEquivalent ??> This is interface representing equivalence of classes <#list classRep.getEquivalentClass().equivalentClasses as eqClass> ${eqClass.getName()}<#sep>,</#list>
-<#elseif classRep.isUnionOf() == true> This is an interface that represents union of <#list classRep.getUnionOf() as union> ${union.getName()}<#sep>,</#list>.
-<#elseif classRep.isIntersectionOf() == true> This is an abstract class that represents intersection of <#list classRep.getIntersectionOf() as inter> ${inter.getName()}<#sep>, </#list>.
-<#elseif classRep.isComplementOf() == true> This is an abstract class that represents complement of ${classRep.getComplementOf().getName()}.
+<#elseif classRep.isUnionOf() == true> This is an interface that represents union of <#list classRep.getUnionOf() as union> ${union.getName()}<#sep>,</#list>
+<#elseif classRep.isIntersectionOf() == true> This is an abstract class that represents intersection of <#list classRep.getIntersectionOf() as inter> ${inter.getName()}<#sep>, </#list>
+<#elseif classRep.isComplementOf() == true> This is an abstract class that represents complement of ${classRep.getComplementOf().getName()}
 <#elseif isInterface == true> This is interface for class ${className} </#if>
 </@compress_single_line>
 <#if classRep??>
@@ -89,13 +92,13 @@ from ${rawPackage} import ${vocabularyFileName}
 #  Author of class ${classRep.creator}
     </#if>
 </#if>
-<#if classRep??>
+<#if isAbstractClass==false && classRep??>
     <#assign disjointSize =  classRep.getDisjointWith()?size>
     <#if disjointSize gt 0>
 #   This class is disjoint with classes:
         <#list classRep.getDisjointWith() as disjointWith>
 #        ${disjointWith.getName()}(${disjointWith.getFullName()})
-        </#list>.
+        </#list>
 #
     </#if>
     <#assign restSize =  classRep.restrictions?size>
@@ -126,10 +129,6 @@ class ${className}
 </#if>:
 </@compress_single_line>
 
-<#if isClass == true && isAbstractClass == false>
-    CLASS_IRI = ${vocabularyFileName}.${classRep.getConstantName()}
-</#if>
-
 <#if isMainClass == true >
     def __init__(self,iri):
         self.iri = iri
@@ -138,20 +137,33 @@ class ${className}
         return self.iri
 <#else>
 
-<#if isClass == true>
+<#if isMainClass == false>
+ <#if  isAbstractClass==false>
+    CLASS_IRI = ${vocabularyFileName}.${classRep.getConstantName()}
+</#if>
     def __init__(self,iri):
-        super().__init__()
-        <#list classRep.properties as property>
-        #Property ${property.getStringIRI()}
+        <#if isExtends == true && extendClasses?size = 1>
+        super().__init__(iri)
+        <#else>
+     <#list extendClasses as extendClass>
+        ${extendClass}.__init__(iri)
+     </#list>
+        </#if>
+
+        <#if !classRep.getEquivalentClass()?? ||  isAbstractClass==true>
+            <#list classRep.properties as property>
+        # Property ${property.getStringIRI()} ${classRep.properties?size}
         <@variableComment property=property/>
-        self.${property.name} <#if property.isValue() == true> = ${property.getValue()}<#else> = set() </#if>
-        </#list>
-        <@superVariables classRep=classRep/>
+        self.${property.name} <#if property.isValue() == true> = ${property.getValue()}<#else> = <#if property.isFunctional() == true>None<#else>set()</#if> </#if>
 
+            </#list>
+        </#if>
+    <#if isAbstractClass == false>
+    def getClassIRI(self):
+        return ${className}.CLASS_IRI
+    </#if>
 
-    def getClassIRI():
-        return CLASS_IRI
-
+<#if !classRep.getEquivalentClass()?? ||  isAbstractClass==true>
 <#list classRep.properties as property>
     <#if ! property.isEquivalentTo ??>
 
@@ -168,10 +180,10 @@ class ${className}
     </#if>
     </#if>
 
-    def get${property.name?cap_first}():
+    def get${property.name?cap_first}(self):
         return self.${property.name}
 </#list>
-    <@setterAndGetters classRep=classRep />
+</#if>
 </#if>
 
 </#if>
@@ -208,7 +220,7 @@ class ${className}
                 </#if>
             </#if>
 
-    def get${property.name?cap_first}():
+    def get${property.name?cap_first}(self):
         return self.${property.name}
 
         </#list>

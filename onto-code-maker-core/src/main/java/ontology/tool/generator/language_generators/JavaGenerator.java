@@ -7,7 +7,16 @@ import org.eclipse.rdf4j.model.vocabulary.XSD;
 
 import java.util.*;
 
-
+/**
+ *  JavaGenerator.java
+ *
+ *  Class to model data for templates generating Java code
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 public class JavaGenerator extends OntologyGenerator {
 
     public static final String GENERATOR_LANGUAGE_JAVA = "java";
@@ -202,10 +211,6 @@ public class JavaGenerator extends OntologyGenerator {
                     implementClasses.add(CLASS_ENTITY_FILE_NAME);
                 } else {
                     implementClasses.addAll(getAllSuperClassInterfaceNames(classRep));
-                    /*List<AbstractClassRepresentation> absClasses = getAbstractClassWithoutInterfaceFromSuperClass(classRep);
-                    if (absClasses.size() == 1) {
-                        extendClasses.add(absClasses.get(0).getName());
-                    }*/
                 }
             }
         }
@@ -256,10 +261,6 @@ public class JavaGenerator extends OntologyGenerator {
                 }
             } else {
                 implementClasses.addAll(getAllSuperClassInterfaceNames(classRep));
-                /*List<AbstractClassRepresentation> absClasses = getAbstractClassWithoutInterfaceFromSuperClass(classRep);
-                if(absClasses.size() == 1){
-                    extendClasses.add(absClasses.get(0).getName());
-                }*/
             }
         }
         if(!implementClasses.isEmpty()){

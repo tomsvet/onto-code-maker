@@ -6,11 +6,19 @@ import java.util.stream.Collectors;
 
 import static ontology.tool.generator.OntologyGenerator.ENTITY_EQUIVALENCE_PREFIX;
 
+/**
+ *  EquivalentClassRepresentation.java
+ *
+ *  Representation of equivalent classes in inner model.
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 public class EquivalentClassRepresentation extends DefaultClassRepresentation{
 
     private List<ClassRepresentation> equivalentClasses = new ArrayList<>();
-
-   // private List<RestrictionRepresentation> equivalentRestrictionClasses = new ArrayList<>();
 
     private boolean isGenerate = false;
 
@@ -29,18 +37,6 @@ public class EquivalentClassRepresentation extends DefaultClassRepresentation{
     public void addEquivalentClasses(List<ClassRepresentation> equivalentClasses){
         this.equivalentClasses.addAll(equivalentClasses);
     }
-
-   /* public List<RestrictionRepresentation> getEquivalentRestrictionClasses(){
-        return equivalentRestrictionClasses;
-    }
-
-    public void addEquivalentRestrictionClass(RestrictionRepresentation equivalentRestrictionClasses){
-        this.equivalentRestrictionClasses.add(equivalentRestrictionClasses);
-    }
-
-    public void addEquivalentRestrictionClasses(List<RestrictionRepresentation> equivalentRestrictionClasses){
-        this.equivalentRestrictionClasses.addAll(equivalentRestrictionClasses);
-    }*/
 
     public List<ClassRepresentation> getEquivalentClasses(){
         return equivalentClasses;

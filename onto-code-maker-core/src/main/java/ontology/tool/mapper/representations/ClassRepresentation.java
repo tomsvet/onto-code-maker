@@ -5,6 +5,16 @@ import java.util.List;
 
 import static ontology.tool.generator.OntologyGenerator.ENTITY_INTERFACE_SUFFIX;
 
+/**
+ *  ClassRepresentation.java
+ *
+ *  Represenation of all classes in inner model.
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 public abstract class ClassRepresentation extends DefaultClassRepresentation{
 
 
@@ -41,6 +51,13 @@ public abstract class ClassRepresentation extends DefaultClassRepresentation{
 
     public void addProperties(PropertyRepresentation property){
         this.properties.add(property);
+        if(equivalentClass != null){
+            for (ClassRepresentation eqClasses : equivalentClass.getEquivalentClasses()) {
+                if(!eqClasses.getProperties().contains(property)) {
+                    eqClasses.addProperties(property);
+                }
+            }
+        }
     }
 
     public List<PropertyRepresentation> getProperties() {

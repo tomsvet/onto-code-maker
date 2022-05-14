@@ -14,6 +14,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 
 import java.time.LocalTime;
 import ontology.generator.classes.examples.allVariantsOfDatatypeProperties.Vocabulary;
+import ontology.generator.classes.examples.allVariantsOfDatatypeProperties.entities.Class1;
 
 public class Class1Serialization extends SerializationModel<Class1>{
 
@@ -25,41 +26,45 @@ public class Class1Serialization extends SerializationModel<Class1>{
     }
 
     protected void addPropertiesToModel(Model model,  Class1 class1) {
+        if(class1.getHasIntFunctionalProp() != null){
+            model.add(class1.getIri(),Vocabulary.HASINTFUNCTIONALPROP_PROPERTY_IRI,Values.literal(class1.getHasIntFunctionalProp()));
+        }
+
         List<Object> hasIntInverseFunctionalPropPom = new ArrayList<>();
         hasIntInverseFunctionalPropPom.addAll(class1.getHasIntInverseFunctionalProp());
-        setLiteralsRDFCollection(model,class1.getIri(),Vocabulary.CLASS1_HASINTINVERSEFUNCTIONALPROP_PROPERTY_IRI,hasIntInverseFunctionalPropPom);
+        setLiteralsRDFCollection(model,class1.getIri(),Vocabulary.HASINTINVERSEFUNCTIONALPROP_PROPERTY_IRI,hasIntInverseFunctionalPropPom);
 
         List<Object> hasIntPom = new ArrayList<>();
         hasIntPom.addAll(class1.getHasInt());
         hasIntPom.removeAll(class1.getHasIntSubproperty());
-        setLiteralsRDFCollection(model,class1.getIri(),Vocabulary.CLASS1_HASINT_PROPERTY_IRI,hasIntPom);
+        setLiteralsRDFCollection(model,class1.getIri(),Vocabulary.HASINT_PROPERTY_IRI,hasIntPom);
 
-
-        List<Object> hasIntSubpropertyPom = new ArrayList<>();
-        hasIntSubpropertyPom.addAll(class1.getHasIntSubproperty());
-        setLiteralsRDFCollection(model,class1.getIri(),Vocabulary.CLASS1_HASINTSUBPROPERTY_PROPERTY_IRI,hasIntSubpropertyPom);
-
-        if(class1.getHasIntFunctionalProp() != null){
-            model.add(class1.getIri(),Vocabulary.CLASS1_HASINTFUNCTIONALPROP_PROPERTY_IRI,Values.literal(class1.getHasIntFunctionalProp()));
+        if(class1.getHasIntFunctionalProp2() != null){
+            model.add(class1.getIri(),Vocabulary.HASINTFUNCTIONALPROP2_PROPERTY_IRI,Values.literal(class1.getHasIntFunctionalProp2()));
         }
 
 
         List<Object> hasIntSubPropertyOfFunctionalPom = new ArrayList<>();
         hasIntSubPropertyOfFunctionalPom.addAll(class1.getHasIntSubPropertyOfFunctional());
-        setLiteralsRDFCollection(model,class1.getIri(),Vocabulary.CLASS1_HASINTSUBPROPERTYOFFUNCTIONAL_PROPERTY_IRI,hasIntSubPropertyOfFunctionalPom);
+        setLiteralsRDFCollection(model,class1.getIri(),Vocabulary.HASINTSUBPROPERTYOFFUNCTIONAL_PROPERTY_IRI,hasIntSubPropertyOfFunctionalPom);
 
-        if(class1.getHasIntFunctionalProp2() != null){
-            model.add(class1.getIri(),Vocabulary.CLASS1_HASINTFUNCTIONALPROP2_PROPERTY_IRI,Values.literal(class1.getHasIntFunctionalProp2()));
-        }
+
+        List<Object> hasIntSubpropertyPom = new ArrayList<>();
+        hasIntSubpropertyPom.addAll(class1.getHasIntSubproperty());
+        setLiteralsRDFCollection(model,class1.getIri(),Vocabulary.HASINTSUBPROPERTY_PROPERTY_IRI,hasIntSubpropertyPom);
 
 
         if(class1.getDomainIsAbstractUnionFunctional() != null){
-            model.add(class1.getIri(),Vocabulary.UNIONOFCLASS2CLASS1ABSTRACT_DOMAINISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,Values.literal(class1.getDomainIsAbstractUnionFunctional()));
+            model.add(class1.getIri(),Vocabulary.DOMAINISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,Values.literal(class1.getDomainIsAbstractUnionFunctional()));
         }
     }
 
     protected void setProperties(Model model,Class1 class1,int nestingLevel) throws Exception{
-        Set<Value> hasIntInverseFunctionalProp = super.getAllObjects(model,Vocabulary.CLASS1_HASINTINVERSEFUNCTIONALPROP_PROPERTY_IRI,class1.getIri());
+        Literal hasIntFunctionalProp = super.getFirstLiteralObject(model,Vocabulary.HASINTFUNCTIONALPROP_PROPERTY_IRI,class1.getIri());
+        if ( hasIntFunctionalProp != null ){
+            class1.setHasIntFunctionalProp(Integer.valueOf(hasIntFunctionalProp.intValue()) );
+        }
+        Set<Value> hasIntInverseFunctionalProp = super.getAllObjects(model,Vocabulary.HASINTINVERSEFUNCTIONALPROP_PROPERTY_IRI,class1.getIri());
         for(Value propValue:hasIntInverseFunctionalProp){
             if(propValue.isLiteral()) {
                 Literal literalValue = (Literal) propValue;
@@ -76,9 +81,9 @@ public class Class1Serialization extends SerializationModel<Class1>{
             }
         }
 
-        Set<Value> hasInt = super.getAllObjects(model,Vocabulary.CLASS1_HASINT_PROPERTY_IRI,class1.getIri());
+        Set<Value> hasInt = super.getAllObjects(model,Vocabulary.HASINT_PROPERTY_IRI,class1.getIri());
         // check equivalent hasIntEquivalent
-        hasInt.addAll(super.getAllObjects(model,Vocabulary.CLASS1_HASINTEQUIVALENT_PROPERTY_IRI,class1.getIri()));
+        hasInt.addAll(super.getAllObjects(model,Vocabulary.HASINTEQUIVALENT_PROPERTY_IRI,class1.getIri()));
         for(Value propValue:hasInt){
             if(propValue.isLiteral()) {
                 Literal literalValue = (Literal) propValue;
@@ -95,28 +100,11 @@ public class Class1Serialization extends SerializationModel<Class1>{
             }
         }
 
-        Set<Value> hasIntSubproperty = super.getAllObjects(model,Vocabulary.CLASS1_HASINTSUBPROPERTY_PROPERTY_IRI,class1.getIri());
-        for(Value propValue:hasIntSubproperty){
-            if(propValue.isLiteral()) {
-                Literal literalValue = (Literal) propValue;
-                class1.addHasIntSubproperty(Integer.valueOf(literalValue.intValue()) );
-            }else if(propValue.isBNode()){
-                List<Value> listOfValues = super.getRDFCollection(model,(BNode)propValue);
-                for(Value value:listOfValues){
-                    Literal literalValue = (Literal) value;
-                    if(value.isLiteral()){
-                        class1.addHasIntSubproperty(Integer.valueOf(literalValue.intValue()) );
-
-                    }
-                }
-            }
+        Literal hasIntFunctionalProp2 = super.getFirstLiteralObject(model,Vocabulary.HASINTFUNCTIONALPROP2_PROPERTY_IRI,class1.getIri());
+        if ( hasIntFunctionalProp2 != null ){
+            class1.setHasIntFunctionalProp2(Integer.valueOf(hasIntFunctionalProp2.intValue()) );
         }
-
-        Literal hasIntFunctionalProp = super.getFirstLiteralObject(model,Vocabulary.CLASS1_HASINTFUNCTIONALPROP_PROPERTY_IRI,class1.getIri());
-        if ( hasIntFunctionalProp != null ){
-            class1.setHasIntFunctionalProp(Integer.valueOf(hasIntFunctionalProp.intValue()) );
-        }
-        Set<Value> hasIntSubPropertyOfFunctional = super.getAllObjects(model,Vocabulary.CLASS1_HASINTSUBPROPERTYOFFUNCTIONAL_PROPERTY_IRI,class1.getIri());
+        Set<Value> hasIntSubPropertyOfFunctional = super.getAllObjects(model,Vocabulary.HASINTSUBPROPERTYOFFUNCTIONAL_PROPERTY_IRI,class1.getIri());
         for(Value propValue:hasIntSubPropertyOfFunctional){
             if(propValue.isLiteral()) {
                 Literal literalValue = (Literal) propValue;
@@ -133,12 +121,25 @@ public class Class1Serialization extends SerializationModel<Class1>{
             }
         }
 
-        Literal hasIntFunctionalProp2 = super.getFirstLiteralObject(model,Vocabulary.CLASS1_HASINTFUNCTIONALPROP2_PROPERTY_IRI,class1.getIri());
-        if ( hasIntFunctionalProp2 != null ){
-            class1.setHasIntFunctionalProp2(Integer.valueOf(hasIntFunctionalProp2.intValue()) );
+        Set<Value> hasIntSubproperty = super.getAllObjects(model,Vocabulary.HASINTSUBPROPERTY_PROPERTY_IRI,class1.getIri());
+        for(Value propValue:hasIntSubproperty){
+            if(propValue.isLiteral()) {
+                Literal literalValue = (Literal) propValue;
+                class1.addHasIntSubproperty(Integer.valueOf(literalValue.intValue()) );
+            }else if(propValue.isBNode()){
+                List<Value> listOfValues = super.getRDFCollection(model,(BNode)propValue);
+                for(Value value:listOfValues){
+                    Literal literalValue = (Literal) value;
+                    if(value.isLiteral()){
+                        class1.addHasIntSubproperty(Integer.valueOf(literalValue.intValue()) );
+
+                    }
+                }
+            }
         }
 
-        Literal domainIsAbstractUnionFunctional = super.getFirstLiteralObject(model,Vocabulary.UNIONOFCLASS2CLASS1ABSTRACT_DOMAINISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,class1.getIri());
+
+        Literal domainIsAbstractUnionFunctional = super.getFirstLiteralObject(model,Vocabulary.DOMAINISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,class1.getIri());
         if ( domainIsAbstractUnionFunctional != null ){
             class1.setDomainIsAbstractUnionFunctional(domainIsAbstractUnionFunctional.stringValue() );
         }
@@ -172,7 +173,6 @@ public class Class1Serialization extends SerializationModel<Class1>{
             }
         }
 
-
         return allInstances;
     }
 
@@ -198,7 +198,7 @@ public class Class1Serialization extends SerializationModel<Class1>{
         }
 
         Model statements = model.filter(class1.getIri(),null,null);
-        statements.removeIf(event -> !event.getPredicate().equals(RDF.TYPE));
+        statements.removeIf(x -> !x.getPredicate().equals(RDF.TYPE));
 
         addPropertiesToModel(model,class1);
     }

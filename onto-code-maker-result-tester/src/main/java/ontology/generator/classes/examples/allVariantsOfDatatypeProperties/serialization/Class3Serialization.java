@@ -14,6 +14,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 
 import java.time.LocalTime;
 import ontology.generator.classes.examples.allVariantsOfDatatypeProperties.Vocabulary;
+import ontology.generator.classes.examples.allVariantsOfDatatypeProperties.entities.Class3Int;
 
 public class Class3Serialization extends SerializationModel<Class3Int>{
 
@@ -56,9 +57,6 @@ public class Class3Serialization extends SerializationModel<Class3Int>{
             }
         }
 
-
-
-
         return allInstances;
     }
 
@@ -84,7 +82,7 @@ public class Class3Serialization extends SerializationModel<Class3Int>{
         }
 
         Model statements = model.filter(class3.getIri(),null,null);
-        statements.removeIf(event -> !event.getPredicate().equals(RDF.TYPE));
+        statements.removeIf(x -> !x.getPredicate().equals(RDF.TYPE));
 
     }
 

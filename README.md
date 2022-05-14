@@ -40,6 +40,26 @@ Restrictions, disjoints are only comments.
 
 The mapping from OWL to Python follows the following table.
 
+| OWL entity    | OWL expression            | Python entity  |
+| ------------- | -------------             |------------- |
+| Class         | Class A                   | class A      |
+|               | A subClassOf B            | class A, class B(A) |
+|               | A subClassOf B; C subClassOf B| class B(A,B) |
+|               | A equivalentClass B       | class AB, class A(AB), class B(AB)|
+|               | A intersectionOf B and C  |  class A(B,C)    |
+|               | A unionOf B and C         | class A, class B(A), class C(A) |
+|               | A complementOf B          | B(C), A(C)      |
+| Property A    | domain B                  | property A in the class B |
+|               | range B                   | class B is type property type |
+|               | functional                | cardinality of property A is 1 |
+|               | inverse functional        | in the range class of property A is created functional property with range to class of A|
+|               | equivalentOf B            | B is property with same domain,range as A |
+|               | subPropertyOf B           | B is property with same domain,range as A, all values from A are also in B |
+|               | inverseOf B               | in the range class of property A is created property B |
+
+Restrictions, disjoints are only comments.
+
+
 ## Installation
 
 ###Building 

@@ -25,23 +25,36 @@ public class Class3Serialization extends SerializationModel<Class3>{
     }
 
     protected void addPropertiesToModel(Model model,  Class3 class3) {
+        if(class3.getRangeIsAbstractUnionFunctional() != null ){
+            model.add(class3.getIri(),Vocabulary.RANGEISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,class3.getRangeIsAbstractUnionFunctional().getIri());
+        }
+
         List<OntoEntity> normalProperty2Pom = new ArrayList<>();
         normalProperty2Pom.addAll(class3.getNormalProperty2());
-        setRDFCollection(model,class3.getIri(),Vocabulary.CLASS3_NORMALPROPERTY2_PROPERTY_IRI,normalProperty2Pom);
+        setRDFCollection(model,class3.getIri(),Vocabulary.NORMALPROPERTY2_PROPERTY_IRI,normalProperty2Pom);
 
         List<OntoEntity> normalProperty1Pom = new ArrayList<>();
         normalProperty1Pom.addAll(class3.getNormalProperty1());
-        setRDFCollection(model,class3.getIri(),Vocabulary.CLASS3_NORMALPROPERTY1_PROPERTY_IRI,normalProperty1Pom);
-
-        if(class3.getRangeIsAbstractUnionFunctional() != null ){
-            model.add(class3.getIri(),Vocabulary.CLASS3_RANGEISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,class3.getRangeIsAbstractUnionFunctional().getIri());
-        }
+        setRDFCollection(model,class3.getIri(),Vocabulary.NORMALPROPERTY1_PROPERTY_IRI,normalProperty1Pom);
 
 
     }
 
     protected void setProperties(Model model,Class3 class3,int nestingLevel) throws Exception{
-        Set<Resource> normalProperty2 = super.getAllResourceObjects(model,Vocabulary.CLASS3_NORMALPROPERTY2_PROPERTY_IRI,class3.getIri());
+        IRI rangeIsAbstractUnionFunctional = super.getFirstIriObject(model,Vocabulary.RANGEISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,class3.getIri());
+        if ( rangeIsAbstractUnionFunctional != null ){
+        Class2Int rangeIsAbstractUnionFunctionalInstanceClass2 = new Class2Serialization().getInstanceFromModel(model, rangeIsAbstractUnionFunctional,nestingLevel);
+        if(rangeIsAbstractUnionFunctionalInstanceClass2 != null){
+            class3.setRangeIsAbstractUnionFunctional(rangeIsAbstractUnionFunctionalInstanceClass2);
+             
+        }
+        Class1 rangeIsAbstractUnionFunctionalInstanceClass1 = new Class1Serialization().getInstanceFromModel(model, rangeIsAbstractUnionFunctional,nestingLevel);
+        if(rangeIsAbstractUnionFunctionalInstanceClass1 != null){
+            class3.setRangeIsAbstractUnionFunctional(rangeIsAbstractUnionFunctionalInstanceClass1);
+             
+        }
+        }
+        Set<Resource> normalProperty2 = super.getAllResourceObjects(model,Vocabulary.NORMALPROPERTY2_PROPERTY_IRI,class3.getIri());
         for(Resource propValue:normalProperty2){
             if(propValue.isIRI()) {
                 Class4Int normalProperty2Instance = new Class4Serialization().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
@@ -58,7 +71,7 @@ public class Class3Serialization extends SerializationModel<Class3>{
                  }
             }
         }
-        Set<Resource> normalProperty1 = super.getAllResourceObjects(model,Vocabulary.CLASS3_NORMALPROPERTY1_PROPERTY_IRI,class3.getIri());
+        Set<Resource> normalProperty1 = super.getAllResourceObjects(model,Vocabulary.NORMALPROPERTY1_PROPERTY_IRI,class3.getIri());
         for(Resource propValue:normalProperty1){
             if(propValue.isIRI()) {
                 Class4Int normalProperty1Instance = new Class4Serialization().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
@@ -74,19 +87,6 @@ public class Class3Serialization extends SerializationModel<Class3>{
                     }
                  }
             }
-        }
-        IRI rangeIsAbstractUnionFunctional = super.getFirstIriObject(model,Vocabulary.CLASS3_RANGEISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,class3.getIri());
-        if ( rangeIsAbstractUnionFunctional != null ){
-        Class2Int rangeIsAbstractUnionFunctionalInstanceClass2 = new Class2Serialization().getInstanceFromModel(model, rangeIsAbstractUnionFunctional,nestingLevel);
-        if(rangeIsAbstractUnionFunctionalInstanceClass2 != null){
-            class3.setRangeIsAbstractUnionFunctional(rangeIsAbstractUnionFunctionalInstanceClass2);
-             
-        }
-        Class1 rangeIsAbstractUnionFunctionalInstanceClass1 = new Class1Serialization().getInstanceFromModel(model, rangeIsAbstractUnionFunctional,nestingLevel);
-        if(rangeIsAbstractUnionFunctionalInstanceClass1 != null){
-            class3.setRangeIsAbstractUnionFunctional(rangeIsAbstractUnionFunctionalInstanceClass1);
-             
-        }
         }
 
     }
@@ -119,7 +119,6 @@ public class Class3Serialization extends SerializationModel<Class3>{
             }
         }
 
-
         return allInstances;
     }
 
@@ -145,7 +144,7 @@ public class Class3Serialization extends SerializationModel<Class3>{
         }
 
         Model statements = model.filter(class3.getIri(),null,null);
-        statements.removeIf(event -> !event.getPredicate().equals(RDF.TYPE));
+        statements.removeIf(x -> !x.getPredicate().equals(RDF.TYPE));
 
         addPropertiesToModel(model,class3);
     }

@@ -27,13 +27,16 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FileGeneratorTests {
     public static Model model = new TreeModel();
     public String inputDir = "src/test/resources/inputs/";
-    public static String outputDir = "src/test/resources/generatedOutputs/";
+    public static String outputDir = "onto-code-maker-result-tester/src/test/resources/generatedOutputs/";
     public String simpleClassesDir = inputDir + "classes/";
 
     @BeforeAll
     public static void setUp() throws IOException {
         File folderOutput = new File(outputDir);
-        FileUtils.deleteDirectory(folderOutput);
+        if(folderOutput.exists()){
+            FileUtils.deleteDirectory(folderOutput);
+        }
+
     }
 
     public void generateFromRDMXMLToJava(String[] inputFiles,String testName) throws Exception {

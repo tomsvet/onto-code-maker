@@ -704,18 +704,19 @@ public class MapperTests extends ModelSetUp {
         mapper.mapClasses();
         mapper.mapDataTypeProperties();
 
-        assertEquals(3,mapper.getCollectionOfMappedProperties().size(),
+        int mappedPropSize = mapper.getCollectionOfMappedProperties().size();
+        assertEquals(3,mappedPropSize,
                 "Datatype property was not mapped.");
 
         PropertyRepresentation property = mapper.getMappedProperties().get(hasLuckyNumbers);
-        assertEquals(property.getType(), PropertyRepresentation.PROPERTY_TYPE.DATATYPE,"Property has wrong type.");
-        assertEquals(property.getClassName(),"Human","Property has wrong name.");
-        assertEquals(property.getRangeResource(),hasAgeDatatype,"Property has wrong range value.");
+        assertEquals(property.getType(), PropertyRepresentation.PROPERTY_TYPE.DATATYPE,"Wrong type.");
+        assertEquals(property.getClassName(),"Human","Wrong name.");
+        assertEquals(property.getRangeResource(),hasAgeDatatype,"Wrong range value.");
         assertFalse(property.isFunctional(),"Property is functional.");
 
-        ClassRepresentation testedClass = mapper.getMappedClasses().get(classHuman);
-        PropertyRepresentation result = findProperty(testedClass.getProperties(), hasLuckyNumbers);
-        assertNotNull(result,"Tested class does not have  hasLuckyNumbers property.");
+        ClassRepresentation tc = mapper.getMappedClasses().get(classHuman);
+        PropertyRepresentation result = findProperty(tc.getProperties(), hasLuckyNumbers);
+        assertNotNull(result,"hasLuckyNumbers property not found.");
     }
 
     @Test

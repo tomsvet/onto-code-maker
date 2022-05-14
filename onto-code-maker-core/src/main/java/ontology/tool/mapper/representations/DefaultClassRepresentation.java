@@ -3,6 +3,16 @@ package ontology.tool.mapper.representations;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *  DefaultClassRepresentation.java
+ *
+ *  Represenation of all classes and class elements in inner model.
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 public abstract class DefaultClassRepresentation extends EntityRepresentation{
 
     public enum CLASS_TYPE {

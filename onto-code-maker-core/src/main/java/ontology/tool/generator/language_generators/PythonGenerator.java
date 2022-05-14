@@ -9,6 +9,16 @@ import org.eclipse.rdf4j.model.vocabulary.XSD;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ *  PythonGenerator.java
+ *
+ *  Class to model data for templates generating Python code
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 public class PythonGenerator extends OntologyGenerator {
 
     public static final String GENERATOR_LANGUAGE_PYTHON = "python";
@@ -20,24 +30,6 @@ public class PythonGenerator extends OntologyGenerator {
         FACTORY_TEMPLATE_NAME = "/PythonTemplates/factoryTemplatePython.ftl";
         FILE_EXTENSION = ".py";
 
-       /* dataTypes.put(XSD.ANYURI,"java.net.URL");
-        dataTypes.put(XSD.BOOLEAN,"boolean");
-        dataTypes.put(XSD.BYTE,"byte");
-        dataTypes.put(XSD.DATE,"java.util.Date");
-        dataTypes.put(XSD.DATETIME,"java.util.Date");
-        dataTypes.put(XSD.DATETIMESTAMP,"java.sql.Timestamp");
-        dataTypes.put(XSD.DAYTIMEDURATION,"java.time.Duration");
-        dataTypes.put(XSD.DECIMAL,"float");
-        dataTypes.put(XSD.DOUBLE,"double");
-        dataTypes.put(XSD.DURATION,"java.time.Duration");
-        dataTypes.put(XSD.FLOAT,"float");
-        dataTypes.put(XSD.INT,"int");
-        dataTypes.put(XSD.INTEGER,"java.lang.Integer");
-        dataTypes.put(XSD.LONG,"long");
-        dataTypes.put(XSD.SHORT,"short");
-        dataTypes.put(XSD.TIME,"java.time.LocalTime");
-        dataTypes.put(XSD.NON_NEGATIVE_INTEGER,"int");*/
-        //dataTypes.put(XSD.UNSIGNED_INT,"long");
     }
     public PythonGenerator() {
         super();
@@ -101,8 +93,7 @@ public class PythonGenerator extends OntologyGenerator {
         data.put("isMainClass",true);
         data.put("isClass",false);
         data.put("isAbstractClass",false);
-        //data.put("package",this.getPackageName() + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
-        //data.put("imports",new ArrayList<>());
+        data.put("isExtends",false);
         return data;
     }
 
@@ -136,8 +127,7 @@ public class PythonGenerator extends OntologyGenerator {
         }
 
         data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
-        //data.put("properties",new ArrayList<>()); //classRep.
-        data.put("rawPackage","./");
+        data.put("rawPackage",".");
         return data;
     }
 
@@ -164,7 +154,7 @@ public class PythonGenerator extends OntologyGenerator {
             data.put("extendClasses",new ArrayList<>(Collections.singletonList(CLASS_ENTITY_FILE_NAME)));
         }
         data.put("imports",new ArrayList<>());
-        data.put("rawPackage","./");
+        data.put("rawPackage",".");
         data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
         return data;
     }
@@ -205,21 +195,43 @@ public class PythonGenerator extends OntologyGenerator {
         }
 
         data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
-        //data.put("properties",new ArrayList<>()); //classRep.
-        data.put("rawPackage","./");
+        data.put("rawPackage",".");
         return data;
     }
 
     @Override
     public Map<String, Object> getSerializationData(NormalClassRepresentation classRep) {
+
+        ArrayList<String> serializationClasses =new ArrayList<>();
+        for(PropertyRepresentation property : classRep.getProperties()){
+            if(property.getRangeClass() != null && property.getRangeClass().getClassType().getName() == "Normal"){
+                String serializationClass = ((NormalClassRepresentation) property.getRangeClass()).getSerializationClassName();
+                if(!serializationClasses.contains(serializationClass)){
+                    serializationClasses.add(serializationClass);
+                }
+
+            }
+        }
+        for(ClassRepresentation superClass:classRep.getSuperClasses()){
+            if(superClass.getClassType().getName() == "Normal" && (superClass.getProperties().size()>0 || superClass.getSuperClasses().size() > 0)){
+                String serializationClass = ((NormalClassRepresentation)superClass).getSerializationClassName();
+                if(!serializationClasses.contains(serializationClass)){
+                    serializationClasses.add(serializationClass);
+                }
+            }
+        }
+
         Map<String, Object> data = new HashMap<>();
         data.put("classFileName",classRep.getName() + SERIALIZATION_FILE_NAME_SUFFIX);
         data.put("classRep",classRep);
         data.put("isSerializationModel",false);
         data.put("serializationModelName",SERIALIZATION_MODEL_FILE_NAME);
-        //data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_SERIALIZATION);
-        data.put("imports",new ArrayList<>());
-        data.put("rawPackage","./");
+        data.put("serializationClasses",serializationClasses);
+        data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
+        data.put("entityPackage",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
+        data.put("rawPackage",".");
+        data.put("subClasses",classRep.getSubClasses());
+        data.put("serializationFactory",SERIALIZATION_FACTORY_FILE_NAME);
         return data;
     }
 
@@ -228,8 +240,8 @@ public class PythonGenerator extends OntologyGenerator {
         Map<String, Object> data = new HashMap<>();
         data.put("classFileName",SERIALIZATION_MODEL_FILE_NAME);
         data.put("isSerializationModel",true);
-        //data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_SERIALIZATION);
         data.put("imports",new ArrayList<>());
+        data.put("entityPackage",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
         return data;
     }
 
@@ -245,7 +257,6 @@ public class PythonGenerator extends OntologyGenerator {
         data.put("entityPackage",  DIR_NAME_ENTITIES);
         data.put("vocabularyFileName",VOCABULARY_FILE_NAME);
 
-        //data.put("package",this.packageName);
         data.put("entityClassName",CLASS_ENTITY_FILE_NAME);
         return data;
     }

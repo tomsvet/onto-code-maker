@@ -1,0 +1,208 @@
+<rdf:RDF
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="http://example.com/ontology/allRangeTypesOfDatatypeProperties.owl#RangeTypesOfDatatypePropertiesTest">
+    </owl:Ontology>
+
+
+    <owl:Class rdf:about="http://example.com/Class1">
+    </owl:Class>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasNonNegativeInteger2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasAnyURI2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasBoolean2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasByte2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#byte"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasDate2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasDateTime2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasDateTimeStamp2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTimeStamp"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasDayTimeDuration2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dayTimeDuration"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasDecimal2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasDouble2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#double"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasFloat2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasInt2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasInteger2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasLong2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#long"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasShort2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#short"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasTime2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#time"/>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasString2">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+    <!---
+    Functional
+    -->
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasNonNegativeInteger">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasNonNegativeInteger"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasAnyURI">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasAnyURI"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasBoolean">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasBoolean"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasByte">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#byte"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasByte"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasDate">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasDate"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasDateTime">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasDateTime"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasDateTimeStamp">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTimeStamp"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasDateTimeStamp"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasDayTimeDuration">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dayTimeDuration"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasDayTimeDuration"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasDecimal">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasDecimal"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasDouble">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#double"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasDouble"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasFloat">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasFloat"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasInt">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasInt"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasInteger">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasInteger"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasLong">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#long"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasLong"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasShort">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#short"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasShort"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasTime">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#time"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasTime"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasString">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasString"/>
+
+    <owl:DatatypeProperty rdf:about="http://example.com/hasLanguage">
+        <rdfs:domain rdf:resource="http://example.com/Class1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#language"/>
+    </owl:DatatypeProperty>
+    <owl:FunctionalProperty rdf:about="http://example.com/hasLanguage"/>
+</rdf:RDF>
