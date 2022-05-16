@@ -1,5 +1,15 @@
 package ontology.tool.generator;
 
+/**
+ *  VocabularyConstant.java
+ *
+ *  Representation of element for vocabulary class
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 public class VocabularyConstant {
     private Boolean isPrivate = false;
     private String type;

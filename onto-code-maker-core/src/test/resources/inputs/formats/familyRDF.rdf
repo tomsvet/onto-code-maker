@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:owl="http://www.w3.org/2002/07/owl#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+>
+  <rdf:Description rdf:nodeID="Nf1069ce8eec9435a9709847f80f3f888">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <owl:complementOf rdf:resource="http://www.ontocodemaker.org/Family#Parent"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="N8ef7f1f1b1c94abf98c4723aaf4185e3">
+    <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+    <rdf:first rdf:resource="http://www.ontocodemaker.org/Family#Dog"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#hasWife">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdfs:domain rdf:resource="http://www.ontocodemaker.org/Family#Men"/>
+    <rdfs:range rdf:resource="http://www.ontocodemaker.org/Family#Woman"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#Men">
+    <rdfs:label>Men</rdfs:label>
+    <rdfs:comment>This is men</rdfs:comment>
+    <owl:disjointWith rdf:resource="http://www.ontocodemaker.org/Family#Woman"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <dc:creator>Tomas</dc:creator>
+    <rdfs:subClassOf rdf:resource="http://www.ontocodemaker.org/Family#Human"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="Nab878a5604b848509c891db6b7aaac37">
+    <rdf:first rdf:resource="http://www.ontocodemaker.org/Family#Parent"/>
+    <rdf:rest rdf:nodeID="N4db826b55e4f44f38de699feeb46582e"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#hasLuckyNumbers">
+    <rdfs:comment>These are lucky numbers</rdfs:comment>
+    <rdfs:domain rdf:resource="http://www.ontocodemaker.org/Family#Human"/>
+    <rdfs:label>hasLuckyNumbers</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#hasParent">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="http://www.ontocodemaker.org/Family#Child"/>
+    <rdfs:range rdf:resource="http://www.ontocodemaker.org/Family#Parent"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#hasChild">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
+    <rdfs:domain rdf:resource="http://www.ontocodemaker.org/Family#Parent"/>
+    <rdfs:range rdf:resource="http://www.ontocodemaker.org/Family#Child"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#hasAge">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+    <rdfs:label>hasAge</rdfs:label>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"/>
+    <rdfs:comment>This is hasAge</rdfs:comment>
+    <rdfs:domain rdf:resource="http://www.ontocodemaker.org/Family#Human"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#Human">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:comment>Main Human class</rdfs:comment>
+    <rdfs:label>Human</rdfs:label>
+    <owl:equivalentClass rdf:resource="http://www.ontocodemaker.org/Family#Person"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="N09ab9b555f644f1087a8b5cd5484b635">
+    <rdf:rest rdf:nodeID="N8ef7f1f1b1c94abf98c4723aaf4185e3"/>
+    <rdf:first rdf:resource="http://www.ontocodemaker.org/Family#Cat"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/family.owl#Family">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Ontology"/>
+    <owl:priorVersion rdf:resource="http://www.example.org/2021/priorVersionTest"/>
+    <rdfs:label>Family</rdfs:label>
+    <rdfs:comment>This ontology Was created for testing OntoCodeMaker.</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#Pet">
+    <owl:equivalentClass rdf:nodeID="Ne8912dd30d4849beb0df14704311ea4e"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#hasSpouse">
+    <rdfs:subPropertyOf rdf:resource="http://www.ontocodemaker.org/Family#hasWife"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#Mother">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <owl:equivalentClass rdf:nodeID="Naf79ed7c72344f26b7b6870f934c0452"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="Ne8912dd30d4849beb0df14704311ea4e">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <owl:unionOf rdf:nodeID="N09ab9b555f644f1087a8b5cd5484b635"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#hasDog">
+    <rdfs:label>hasDog</rdfs:label>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:comment>This is hasDog</rdfs:comment>
+    <rdfs:range rdf:resource="http://www.ontocodemaker.org/Family#Dog"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdfs:domain rdf:resource="http://www.ontocodemaker.org/Family#Human"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#hasFather">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:subPropertyOf rdf:resource="http://www.ontocodemaker.org/Family#hasParent"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#age">
+    <rdfs:subPropertyOf rdf:resource="http://www.ontocodemaker.org/Family#hasAge"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="N80fad2442bee48a5bce8da5263fdd422">
+    <owl:someValuesFrom rdf:resource="http://www.ontocodemaker.org/Family#Human"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
+    <owl:onProperty rdf:resource="http://www.ontocodemaker.org/Family#hasDog"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#hasCat">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="http://www.ontocodemaker.org/Family#Human"/>
+    <rdfs:range rdf:resource="http://www.ontocodemaker.org/Family#Cat"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#hasHusband">
+    <owl:inverseOf rdf:resource="http://www.ontocodemaker.org/Family#hasWife"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#hasDogEq">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <owl:equivalentProperty rdf:resource="http://www.ontocodemaker.org/Family#hasDog"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#Doggy">
+    <owl:equivalentClass rdf:nodeID="N80fad2442bee48a5bce8da5263fdd422"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="Naf79ed7c72344f26b7b6870f934c0452">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <owl:intersectionOf rdf:nodeID="Nab878a5604b848509c891db6b7aaac37"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#Child">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#Person">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#Woman">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:subClassOf rdf:resource="http://www.ontocodemaker.org/Family#Human"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#ChildlessPerson">
+    <owl:equivalentClass rdf:nodeID="Nf1069ce8eec9435a9709847f80f3f888"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#Parent">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#Father">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <owl:disjointWith rdf:resource="http://www.ontocodemaker.org/Family#Mother"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#Cat">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.ontocodemaker.org/Family#Dog">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="N4db826b55e4f44f38de699feeb46582e">
+    <rdf:first rdf:resource="http://www.ontocodemaker.org/Family#Woman"/>
+    <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+  </rdf:Description>
+</rdf:RDF>

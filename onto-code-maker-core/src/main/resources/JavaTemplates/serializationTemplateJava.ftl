@@ -55,12 +55,6 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 <#if isInterface ==false>
 import java.time.LocalTime;
 import ${rawPackage}.${vocabularyFileName};
-import ${entityPackage}.${classRep.getDatatypeValue()?cap_first};
-<#list classRep.properties as property>
-<#if property.rangeClass??>
-import ${entityPackage}.${property.rangeClass.getDatatypeValue()};
-</#if>
-</#list>
 <#else>
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -127,15 +121,15 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
         return model.filter(subject, predicate, null).objects();
       }
 
-      public IRI getFirstIRISubject(Model model,IRI predicate, Value object){
-              Set<Resource> subjects = getAllSubjects(model,predicate,object);
-              for(Resource subject : subjects){
-                  if(subject.isIRI()){
-                      return (IRI) subject;
-                  }
-              }
-              return null;
-          }
+    public IRI getFirstIRISubject(Model model,IRI predicate, Value object){
+        Set<Resource> subjects = getAllSubjects(model,predicate,object);
+        for(Resource subject : subjects){
+            if(subject.isIRI()){
+                return (IRI) subject;
+            }
+        }
+        return null;
+    }
 
     public Set<Resource> getAllSubjects(Model model,IRI predicate, Value object){
         return model.filter(null, predicate, object).subjects();
@@ -191,6 +185,7 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
                 model.add(subject, predicate, head);
             }
     }
+
 
     public IRI getSubjectOfCollectionValue(Model model,IRI predicate,Value object){
             if( model.contains(null,predicate,object)){
@@ -270,8 +265,6 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
                 allInstances.add(${classRep.name?uncap_first});
             }
         }
-
-                <@innerAllInstances classRep=classRep/>
 
         return allInstances;
     }
@@ -389,26 +382,6 @@ public <#if isInterface ==true>abstract class ${classFileName}<T> <#else>class $
          </#if>
     </#if>
 </#list>
-</#macro>
-
-<#macro innerAllInstances classRep>
-<#list classRep.getSubClasses() as subClass>
-         <#if subClass.getClassType().getName() == "Normal">
-        allInstances.addAll( new ${subClass.getSerializationClassName()}().getAllInstancesFromModel(model,nestingLevel));
-         <#else>
-         <#if subClass.isUnionOf() == true>
-              <#list subClass.getUnionOf() as unionClass>
-                    //todo
-              </#list>
-         <#elseif subClass.isIntersectionOf() == true>
-            <#list subClass.getIntersectionOf() as intersectionClass>
-
-                       </#list>
-          <#elseif subClass.isComplementOf() == true>
-              <@innerAllInstances  classRep=subClass.getComplementOf()/>
-          </#if>
-          </#if>
-   </#list>
 </#macro>
 
 <#macro innerAbstractUpdate classRep>

@@ -2,20 +2,22 @@ package ontology.tool.console;
 
 import org.apache.commons.cli.*;
 
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * CLIOptionsParser.java
+ * Class for parsing command line arguments
  *
  * @author Tomas Svetlik
  *  2022
- *  Class to parse input arguments
  *
- *
- *
+ * OntoCodeMaker
  */
 public class CLIOptionsParser {
-    private static String ONTOLOGIES = "ontologies";
     private static String FORMAT_OPTION_NAME = "format";
     private static String HELP_OPTION_NAME = "help";
     private static String LANGUAGE_OPTION_NAME = "language";
@@ -38,6 +40,10 @@ public class CLIOptionsParser {
         help=false;
     }
 
+    /**
+     * Setters and Getters
+     *
+     */
 
     public boolean getHelp(){
         return help;
@@ -79,6 +85,11 @@ public class CLIOptionsParser {
         this.packageName = packageName;
     }
 
+    /**
+     * Main class for parsing
+     * @param args command line arguments
+     * @return True value if everything is ok or false
+     */
     public boolean parseCLI(String[] args){
         try {
             if(args.length == 0){
@@ -102,6 +113,12 @@ public class CLIOptionsParser {
                 throw new ParseException("Missing input file(s).");
             }
 
+            for(String inputFileName :inputFiles){
+                Path file = Paths.get(inputFileName);
+                if (!Files.exists(file)){
+                    throw new FileNotFoundException("File " + inputFileName +" is not exist.");
+                }
+            }
 
             if (line.hasOption(FORMAT_OPTION_NAME)) {
                 setFormat(line.getOptionValue(FORMAT_OPTION_NAME));
@@ -119,14 +136,18 @@ public class CLIOptionsParser {
                 setPackageName(line.getOptionValue(PACKAGE_OPTION_NAME));
             }
 
-        } catch (ParseException e) {
+        } catch (ParseException | FileNotFoundException e) {
             System.err.println(e.getMessage());
             return false;
         }
         return true;
     }
 
-    public Options getOptions(){
+    /**
+     * This method create arguments options
+     * @return created Options
+     */
+    private Options getOptions(){
         Options options = new Options();
 
         Option help = Option.builder("h")
@@ -184,7 +205,11 @@ public class CLIOptionsParser {
         return options;
     }
 
-    public void printHelp(Options options){
+    /**
+     * Metho to print help message
+     * @param options - all defined options
+     */
+    private void printHelp(Options options){
         HelpFormatter formatter = new HelpFormatter();
         final PrintWriter writer = new PrintWriter(System.out);
         formatter.printWrapped(writer, 80, 12, "Usage: OntoCodeMaker [options...] <input-file> [<input-file> ...]");

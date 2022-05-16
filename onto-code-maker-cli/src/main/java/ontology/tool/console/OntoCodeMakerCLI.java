@@ -2,7 +2,15 @@ package ontology.tool.console;
 
 import ontology.tool.OntoCodeMaker;
 
-
+/**
+ * OntoCodeMakerCLI.java
+ * Main class for command line interface
+ *
+ * @author Tomas Svetlik
+ *  2022
+ *
+ * OntoCodeMaker
+ */
 public class OntoCodeMakerCLI {
 
     public static void main(String[] args) {

@@ -16,7 +16,7 @@ import ontology.generator.classes.examples.allRangeTypesOfDatatypeProperties.ent
 public class SerialializationFactory{
 
     public SerializationModel getSerializationInstance(OntoEntity entity){
-            if (entity instanceof Class1){
+            if (entity.getClass() == Class1.class){
                 return new Class1Serialization();
             }
         return null;

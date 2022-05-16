@@ -75,15 +75,15 @@ public abstract class SerializationModel<T> {
         return model.filter(subject, predicate, null).objects();
       }
 
-      public IRI getFirstIRISubject(Model model,IRI predicate, Value object){
-              Set<Resource> subjects = getAllSubjects(model,predicate,object);
-              for(Resource subject : subjects){
-                  if(subject.isIRI()){
-                      return (IRI) subject;
-                  }
-              }
-              return null;
-          }
+    public IRI getFirstIRISubject(Model model,IRI predicate, Value object){
+        Set<Resource> subjects = getAllSubjects(model,predicate,object);
+        for(Resource subject : subjects){
+            if(subject.isIRI()){
+                return (IRI) subject;
+            }
+        }
+        return null;
+    }
 
     public Set<Resource> getAllSubjects(Model model,IRI predicate, Value object){
         return model.filter(null, predicate, object).subjects();
@@ -139,6 +139,7 @@ public abstract class SerializationModel<T> {
                 model.add(subject, predicate, head);
             }
     }
+
 
     public IRI getSubjectOfCollectionValue(Model model,IRI predicate,Value object){
             if( model.contains(null,predicate,object)){

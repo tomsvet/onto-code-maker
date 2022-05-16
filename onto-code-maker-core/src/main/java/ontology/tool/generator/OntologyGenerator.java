@@ -3,18 +3,25 @@ package ontology.tool.generator;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import ontology.tool.generator.representations.*;
+import ontology.tool.mapper.representations.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-
+/**
+ *  OntologyGenerator.java
+ *
+ *  Class to generate files with source code
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 abstract public class OntologyGenerator {
 
     enum TEMPLATE_TYPE {
@@ -41,7 +48,6 @@ abstract public class OntologyGenerator {
     protected static String SERIALIZATION_MODEL_FILE_NAME = "SerializationModel";
     public static String SERIALIZATION_FILE_NAME_SUFFIX = "Serialization";
     protected static String CLASS_ENTITY_FILE_NAME = "OntoEntity";
-    //protected static String CLASS_ENTITY_FILE_NAME = CLASS_ENTITY_NAME ;
     public static String ENTITY_INTERFACE_SUFFIX = "Int";
     public static String ENTITY_ABSTRACTCLASS_SUFFIX = "";
     public static String ENTITY_EQUIVALENCE_PREFIX = "Equivalence";
@@ -54,13 +60,10 @@ abstract public class OntologyGenerator {
     
     protected List<OntologyRepresentation> ontologies = new ArrayList<>();
     protected List<ClassRepresentation> classes = new ArrayList<>();
-    //protected List<ClassRepresentation> entityClasses = new ArrayList<>();
+    protected List<PropertyRepresentation> properties = new ArrayList<>();
 
     protected String outputDir = DEFAULT_OUTPUT_DIR + "/";
     protected String packageName = "";
-
-    private List<String> primitiveDataTypes = Arrays.asList("int","long","short","boolean","float");
-
 
     public OntologyGenerator(){
         cfg = new Configuration(Configuration.VERSION_2_3_31);
@@ -93,12 +96,6 @@ abstract public class OntologyGenerator {
         return packageName;
     }
 
-    /*public void addClasses( List<ClassRepresentation> classes,List<AbstractClassRepresentation> abstractClasses){
-        this.allClasses.addAll(classes);
-        this.allClasses.addAll(abstractClasses);
-        this.entityClasses.addAll(classes);
-    }*/
-
     public List<NormalClassRepresentation> getNormalClassReps(){
         return classes.parallelStream().filter(classRep -> classRep instanceof NormalClassRepresentation).map(foundClass -> (NormalClassRepresentation)foundClass).collect(Collectors.toList());
     }
@@ -115,17 +112,13 @@ abstract public class OntologyGenerator {
         return classRep.getSuperClasses().parallelStream().filter(superClass -> superClass instanceof AbstractClassRepresentation && !superClass.isHasInterface()).map(foundClass -> (AbstractClassRepresentation)foundClass).collect(Collectors.toList());
     }
 
-    public void addClasses( List<ClassRepresentation> classes){
+    public void addClasses( Collection<ClassRepresentation> classes){
         this.classes.addAll(classes);
     }
 
-   /* public void addEntityClasses( List<ClassRepresentation> classes){
-        this.entityClasses.addAll(classes);
-    }*/
-
-    /*public void setOntology(OntologyRepresentation ontology){
-        this.ontology = ontology;
-    }*/
+    public void addProperties( Collection<PropertyRepresentation> properties){
+        this.properties.addAll(properties);
+    }
 
     public void setOntologies(List<OntologyRepresentation> ontologies){
         this.ontologies = ontologies;
@@ -159,9 +152,13 @@ abstract public class OntologyGenerator {
         }
     }
 
+    /**
+     * Main class which generate all source code classes
+     */
     public void generateCode() {
         createDir(this.outputDir);
 
+        setUpInterfaces();
         generateStringVersionOfTypes();
 
         try {
@@ -189,9 +186,13 @@ abstract public class OntologyGenerator {
         }
     }
 
+    /**
+     * Method to set variables datatype in final language
+     */
     public void generateStringVersionOfTypes(){
         for(ClassRepresentation classRep:classes){
-            for(PropertyRepresentation property :classRep.getProperties()){
+            ArrayList<PropertyRepresentation> props = new ArrayList<>(classRep.getProperties());
+            for(PropertyRepresentation property :props){
                 if(property.getType().equals(PropertyRepresentation.PROPERTY_TYPE.DATATYPE)){
                     if(property.getRangeResource() != null){
                         String dataType = dataTypes.get(property.getRangeResource());
@@ -205,13 +206,13 @@ abstract public class OntologyGenerator {
                     }
                 }else if(property.getType().equals(PropertyRepresentation.PROPERTY_TYPE.OBJECT)){
                     if(property.getRangeClass() != null && property.getRangeResource() != null){
-                        //String name = property.getRangeResource().isIRI()? ((IRI)property.getRangeResource()).getLocalName():((BNode)property.getRangeResource()).getID();
-                        if(property.getRangeClass().isHasInterface()){
-                            property.setRangeDatatype(property.getRangeClass().getName() + ENTITY_INTERFACE_SUFFIX);
-                        }else{
-                            property.setRangeDatatype(property.getRangeClass().getName());
-                        }
-
+                        property.setRangeDatatype(property.getRangeClass().getDatatypeValue());
+                    }else{
+                        //if range is not set, remove it
+                        classRep.getProperties().remove(property);
+                        properties.remove(property);
+                        //property.setRangeClass(new NormalClassRepresentation("",""));
+                        //property.setRangeDatatype(CLASS_ENTITY_FILE_NAME);
                     }
                 }
 
@@ -226,10 +227,13 @@ abstract public class OntologyGenerator {
 
     }
 
-
+    /**
+     * Method to generate main OntoEntity interface/class
+     * @param templateFile teplate file name
+     * @param entitiesOutputFile name of output file
+     */
     public void generateMainEntityClass(Template templateFile,String entitiesOutputFile){
         String interfaceClassPath = entitiesOutputFile + CLASS_ENTITY_FILE_NAME +  FILE_EXTENSION;
-        //generate main OntoEntity class/interface
         Map<String, Object> data = getMainEntityData();
         try (Writer fileWriter = new FileWriter(new File(interfaceClassPath))) {
             templateFile.process(data, fileWriter);
@@ -238,19 +242,31 @@ abstract public class OntologyGenerator {
         }
     }
 
+    /**
+     * Method to generate equivalent classes
+     * @param templateFile teplate file name
+     * @param entitiesOutputFile name of output file
+     * @param generatedClass class to generate
+     */
     public void generateEquivalentClass(Template templateFile, String entitiesOutputFile, ClassRepresentation generatedClass){
-        //generatedClass.getEquivalentClass().setClassNameWithConcatEquivalentClasses();
         String equivalentClassName = generatedClass.getEquivalentClass().getName();
         String equivalentClassFileName = entitiesOutputFile + equivalentClassName +  FILE_EXTENSION;
 
         Map<String, Object> dataInt = getEquivalentClassEntityData(equivalentClassName,generatedClass);
         try (Writer fileWriter = new FileWriter(new File(equivalentClassFileName))) {
             templateFile.process(dataInt, fileWriter);
+            generatedClass.getEquivalentClass().setIsGenerate(true);
         } catch (TemplateException | IOException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Method to generate Interface for class
+     * @param templateFile teplate file name
+     * @param entitiesOutputFile name of output file
+     * @param generatedClass class
+     */
     public void generateInterfaceClass(Template templateFile, String entitiesOutputFile, ClassRepresentation generatedClass){
         String entitiesInterfaceClassPath = entitiesOutputFile + generatedClass.getName() + ENTITY_INTERFACE_SUFFIX +  FILE_EXTENSION;
         Map<String, Object> dataInt = getInterfaceEntityData(generatedClass);
@@ -261,6 +277,10 @@ abstract public class OntologyGenerator {
         }
     }
 
+    /**
+     * Method to find if interface for input class is needed
+     * @param generatedClass input class
+     */
     public void findOutInterfaceClassValueOfClass(ClassRepresentation generatedClass){
         if(!(generatedClass instanceof AbstractClassRepresentation && generatedClass.isUnionOf())) {
             if (generatedClass.hasSubClass() && !generatedClass.isHasInterface()) {
@@ -270,33 +290,28 @@ abstract public class OntologyGenerator {
                 boolean result1 = false;
                 if (!resultList.isEmpty()) {
                     result1 = true;
-                    generatedClass.getSuperClasses().parallelStream().forEach(superClass-> superClass.setHasInterface(true));
-                    /*List<ClassRepresentation> res = resultList.parallelStream().filter(classRep -> classRep.getSuperClasses().size() > 2 || classRep.getSuperClasses().get(0).getClassType() == classRep.getSuperClasses().get(1).getClassType()).collect(Collectors.toList());
-                    if (res.size() == resultList.size()) {
-                        result1 = true;
-                    }*/
+                    generatedClass.getSuperClasses().parallelStream().filter(superClass-> !(superClass instanceof AbstractClassRepresentation && superClass.isUnionOf())).forEach(superClass-> superClass.setHasInterface(true));
                 }
 
                 // if subclass is interface
                 if(!result1){
-                    List<ClassRepresentation> resultList2 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.isHasInterface()).collect(Collectors.toList());
+                    List<ClassRepresentation> resultList2 = generatedClass.getSubClasses().parallelStream().filter(ClassRepresentation::isHasInterface).collect(Collectors.toList());
                     result1 = !resultList2.isEmpty();
                 }
 
                 // if subclasses have equivalent class
                 Optional<ClassRepresentation> result2 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getEquivalentClass() != null).findFirst();
 
-                //Optional<ClassRepresentation> result3 = generatedClass.getSubClasses().parallelStream().filter(classRep -> classRep.getSuperClasses().size() == 2 && classRep.getSuperClasses().get(0).getClassType() != classRep.getSuperClasses().get(1).getClassType()).findFirst();
-
                 generatedClass.setHasInterface(result1 || result2.isPresent());
             }
         }
     }
 
-
+    /**
+     * Method to generate representation of class
+     *
+     */
     public void generateClasses() throws IOException {
-
-        setUpInterfaces();
 
         Template templateFile = getTemplate(TEMPLATE_TYPE.CLASS);
         if(templateFile == null){
@@ -312,12 +327,9 @@ abstract public class OntologyGenerator {
 
         for(ClassRepresentation generatedClass: classes){
 
-            // generate equivalent class (f.e in java it is interface)
-            if(generatedClass.getEquivalentClass() != null ){
+            if(generatedClass.getEquivalentClass() != null && !generatedClass.getEquivalentClass().isGenerate()){
                 generateEquivalentClass(templateFile,entitiesOutputFile,generatedClass);
             }
-
-            //findOutInterfaceClassValueOfClass(generatedClass);
 
             if(generatedClass.isHasInterface()){
                 generateInterfaceClass(templateFile,entitiesOutputFile,generatedClass);
@@ -343,6 +355,10 @@ abstract public class OntologyGenerator {
         }
     }
 
+    /**
+     * Method to generate Vocabulary class
+     *
+     */
     public void generateVocabulary() throws IOException {
         Writer fileWriter = new FileWriter(new File(this.outputDir + VOCABULARY_FILE_NAME + FILE_EXTENSION));
 
@@ -363,6 +379,10 @@ abstract public class OntologyGenerator {
         }
     }
 
+    /**
+     * Method to generate serialization classes
+     *
+     */
     public void generateSerializationClasses() throws IOException {
         Template templateFile = getTemplate(TEMPLATE_TYPE.SERIALIZATION);
         if (templateFile == null) {
@@ -395,6 +415,10 @@ abstract public class OntologyGenerator {
         }
     }
 
+    /**
+     * Method to generate Factory classes
+     *
+     */
     public void generateFactories() throws IOException {
         Template templateFile = getTemplate(TEMPLATE_TYPE.FACTORY);
         if (templateFile == null) {

@@ -27,26 +27,26 @@ public class Class2Serialization extends SerializationModel<Class2Int>{
     protected void addPropertiesToModel(Model model,  Class2Int class2) {
         List<OntoEntity> inverseOfObjectPropertyPom = new ArrayList<>();
         inverseOfObjectPropertyPom.addAll(class2.getInverseOfObjectProperty());
-        setRDFCollection(model,class2.getIri(),Vocabulary.CLASS2_INVERSEOFOBJECTPROPERTY_PROPERTY_IRI,inverseOfObjectPropertyPom);
+        setRDFCollection(model,class2.getIri(),Vocabulary.INVERSEOFOBJECTPROPERTY_PROPERTY_IRI,inverseOfObjectPropertyPom);
 
         if(class2.getClass1() != null ){
-            model.add(class2.getIri(),Vocabulary.CLASS2_CLASS1_PROPERTY_IRI,class2.getClass1().getIri());
+            model.add(class2.getIri(),Vocabulary.CLASS1_PROPERTY_IRI,class2.getClass1().getIri());
         }
 
         if(class2.getInverseFunctionalObjectProperty2Inverse() != null ){
-            model.add(class2.getIri(),Vocabulary.CLASS2_INVERSEFUNCTIONALOBJECTPROPERTY2INVERSE_PROPERTY_IRI,class2.getInverseFunctionalObjectProperty2Inverse().getIri());
+            model.add(class2.getIri(),Vocabulary.INVERSEFUNCTIONALOBJECTPROPERTY2INVERSE_PROPERTY_IRI,class2.getInverseFunctionalObjectProperty2Inverse().getIri());
         }
 
 
         if(class2.getDomainIsAbstractUnionFunctional() != null ){
-            model.add(class2.getIri(),Vocabulary.UNIONOFCLASS2CLASS1ABSTRACT_DOMAINISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,class2.getDomainIsAbstractUnionFunctional().getIri());
+            model.add(class2.getIri(),Vocabulary.DOMAINISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,class2.getDomainIsAbstractUnionFunctional().getIri());
         }
     }
 
     protected void setProperties(Model model,Class2Int class2,int nestingLevel) throws Exception{
-        Set<Resource> inverseOfObjectProperty = super.getAllResourceObjects(model,Vocabulary.CLASS2_INVERSEOFOBJECTPROPERTY_PROPERTY_IRI,class2.getIri());
+        Set<Resource> inverseOfObjectProperty = super.getAllResourceObjects(model,Vocabulary.INVERSEOFOBJECTPROPERTY_PROPERTY_IRI,class2.getIri());
         // add also all values from inverse property normalObjectProperty
-         inverseOfObjectProperty.addAll(super.getAllIRISubjects(model,Vocabulary.CLASS1_NORMALOBJECTPROPERTY_PROPERTY_IRI,class2.getIri()));
+         inverseOfObjectProperty.addAll(super.getAllIRISubjects(model,Vocabulary.NORMALOBJECTPROPERTY_PROPERTY_IRI,class2.getIri()));
         for(Resource propValue:inverseOfObjectProperty){
             if(propValue.isIRI()) {
                 Class1 inverseOfObjectPropertyInstance = new Class1Serialization().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
@@ -63,26 +63,26 @@ public class Class2Serialization extends SerializationModel<Class2Int>{
                  }
             }
         }
-        IRI class1 = super.getFirstIriObject(model,Vocabulary.CLASS2_CLASS1_PROPERTY_IRI,class2.getIri());
+        IRI class1 = super.getFirstIriObject(model,Vocabulary.CLASS1_PROPERTY_IRI,class2.getIri());
         if ( class1 == null){
             // check inverse functional property
-            class1 = super.getSubjectOfCollectionValue(model,Vocabulary.CLASS1_INVERSEFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class2.getIri());
+            class1 = super.getSubjectOfCollectionValue(model,Vocabulary.INVERSEFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class2.getIri());
         }
         if ( class1 != null ){
             Class1 class1Instance = new Class1Serialization().getInstanceFromModel(model, class1,nestingLevel);
             class2.setClass1(class1Instance);
         }
-        IRI inverseFunctionalObjectProperty2Inverse = super.getFirstIriObject(model,Vocabulary.CLASS2_INVERSEFUNCTIONALOBJECTPROPERTY2INVERSE_PROPERTY_IRI,class2.getIri());
+        IRI inverseFunctionalObjectProperty2Inverse = super.getFirstIriObject(model,Vocabulary.INVERSEFUNCTIONALOBJECTPROPERTY2INVERSE_PROPERTY_IRI,class2.getIri());
         if ( inverseFunctionalObjectProperty2Inverse == null){
             // check inverse functional property
-            inverseFunctionalObjectProperty2Inverse = super.getSubjectOfCollectionValue(model,Vocabulary.CLASS1_INVERSEFUNCTIONALOBJECTPROPERTY2_PROPERTY_IRI,class2.getIri());
+            inverseFunctionalObjectProperty2Inverse = super.getSubjectOfCollectionValue(model,Vocabulary.INVERSEFUNCTIONALOBJECTPROPERTY2_PROPERTY_IRI,class2.getIri());
         }
         if ( inverseFunctionalObjectProperty2Inverse != null ){
             Class1 inverseFunctionalObjectProperty2InverseInstance = new Class1Serialization().getInstanceFromModel(model, inverseFunctionalObjectProperty2Inverse,nestingLevel);
             class2.setInverseFunctionalObjectProperty2Inverse(inverseFunctionalObjectProperty2InverseInstance);
         }
 
-        IRI domainIsAbstractUnionFunctional = super.getFirstIriObject(model,Vocabulary.UNIONOFCLASS2CLASS1ABSTRACT_DOMAINISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,class2.getIri());
+        IRI domainIsAbstractUnionFunctional = super.getFirstIriObject(model,Vocabulary.DOMAINISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,class2.getIri());
         if ( domainIsAbstractUnionFunctional != null ){
             Class3 domainIsAbstractUnionFunctionalInstance = new Class3Serialization().getInstanceFromModel(model, domainIsAbstractUnionFunctional,nestingLevel);
             class2.setDomainIsAbstractUnionFunctional(domainIsAbstractUnionFunctionalInstance);
@@ -117,9 +117,6 @@ public class Class2Serialization extends SerializationModel<Class2Int>{
             }
         }
 
-
-
-
         return allInstances;
     }
 
@@ -145,7 +142,7 @@ public class Class2Serialization extends SerializationModel<Class2Int>{
         }
 
         Model statements = model.filter(class2.getIri(),null,null);
-        statements.removeIf(event -> !event.getPredicate().equals(RDF.TYPE));
+        statements.removeIf(x -> !x.getPredicate().equals(RDF.TYPE));
 
         addPropertiesToModel(model,class2);
     }

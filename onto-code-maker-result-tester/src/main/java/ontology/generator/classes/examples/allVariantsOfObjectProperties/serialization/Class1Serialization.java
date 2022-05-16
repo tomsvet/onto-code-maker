@@ -29,66 +29,68 @@ public class Class1Serialization extends SerializationModel<Class1>{
         normalObjectPropertyPom.addAll(class1.getNormalObjectProperty());
         normalObjectPropertyPom.removeAll(class1.getSubPropertyOfObjectProperty());
         normalObjectPropertyPom.removeAll(class1.getSubPropertyOfEquivalentObjectProperty());
-        setRDFCollection(model,class1.getIri(),Vocabulary.CLASS1_NORMALOBJECTPROPERTY_PROPERTY_IRI,normalObjectPropertyPom);
+        setRDFCollection(model,class1.getIri(),Vocabulary.NORMALOBJECTPROPERTY_PROPERTY_IRI,normalObjectPropertyPom);
          for(OntoEntity pom:normalObjectPropertyPom){
-             model.add(pom.getIri(),Vocabulary.CLASS2_INVERSEOFOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
+             model.add(pom.getIri(),Vocabulary.INVERSEOFOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
          }
 
-        List<OntoEntity> subPropertyOfEquivalentObjectPropertyPom = new ArrayList<>();
-        subPropertyOfEquivalentObjectPropertyPom.addAll(class1.getSubPropertyOfEquivalentObjectProperty());
-        setRDFCollection(model,class1.getIri(),Vocabulary.CLASS1_SUBPROPERTYOFEQUIVALENTOBJECTPROPERTY_PROPERTY_IRI,subPropertyOfEquivalentObjectPropertyPom);
+        List<OntoEntity> inverseFunctionalObjectPropertyPom = new ArrayList<>();
+        inverseFunctionalObjectPropertyPom.addAll(class1.getInverseFunctionalObjectProperty());
+        inverseFunctionalObjectPropertyPom.removeAll(class1.getSubPropertyOfInverseFunctionalObjectProperty());
+        setRDFCollection(model,class1.getIri(),Vocabulary.INVERSEFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,inverseFunctionalObjectPropertyPom);
 
+        if(class1.getFunctionalObjectProperty2() != null ){
+            model.add(class1.getIri(),Vocabulary.FUNCTIONALOBJECTPROPERTY2_PROPERTY_IRI,class1.getFunctionalObjectProperty2().getIri());
+        }
+
+        List<OntoEntity> inverseFunctionalObjectProperty2Pom = new ArrayList<>();
+        inverseFunctionalObjectProperty2Pom.addAll(class1.getInverseFunctionalObjectProperty2());
+        setRDFCollection(model,class1.getIri(),Vocabulary.INVERSEFUNCTIONALOBJECTPROPERTY2_PROPERTY_IRI,inverseFunctionalObjectProperty2Pom);
+
+        if(class1.getFunctionalObjectProperty() != null         && class1.getFunctionalObjectProperty() != class1.getSubPropertyOfFunctionalObjectProperty()){
+            model.add(class1.getIri(),Vocabulary.FUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class1.getFunctionalObjectProperty().getIri());
+        }
 
 
         List<OntoEntity> subPropertyOfObjectPropertyPom = new ArrayList<>();
         subPropertyOfObjectPropertyPom.addAll(class1.getSubPropertyOfObjectProperty());
         subPropertyOfObjectPropertyPom.removeAll(class1.getSubPropertyOfSubpropertyObjectProperty());
-        setRDFCollection(model,class1.getIri(),Vocabulary.CLASS1_SUBPROPERTYOFOBJECTPROPERTY_PROPERTY_IRI,subPropertyOfObjectPropertyPom);
+        setRDFCollection(model,class1.getIri(),Vocabulary.SUBPROPERTYOFOBJECTPROPERTY_PROPERTY_IRI,subPropertyOfObjectPropertyPom);
 
 
         List<OntoEntity> subPropertyOfSubpropertyObjectPropertyPom = new ArrayList<>();
         subPropertyOfSubpropertyObjectPropertyPom.addAll(class1.getSubPropertyOfSubpropertyObjectProperty());
-        setRDFCollection(model,class1.getIri(),Vocabulary.CLASS1_SUBPROPERTYOFSUBPROPERTYOBJECTPROPERTY_PROPERTY_IRI,subPropertyOfSubpropertyObjectPropertyPom);
-
-        List<OntoEntity> inverseFunctionalObjectPropertyPom = new ArrayList<>();
-        inverseFunctionalObjectPropertyPom.addAll(class1.getInverseFunctionalObjectProperty());
-        inverseFunctionalObjectPropertyPom.removeAll(class1.getSubPropertyOfInverseFunctionalObjectProperty());
-        setRDFCollection(model,class1.getIri(),Vocabulary.CLASS1_INVERSEFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,inverseFunctionalObjectPropertyPom);
+        setRDFCollection(model,class1.getIri(),Vocabulary.SUBPROPERTYOFSUBPROPERTYOBJECTPROPERTY_PROPERTY_IRI,subPropertyOfSubpropertyObjectPropertyPom);
 
 
         List<OntoEntity> subPropertyOfInverseFunctionalObjectPropertyPom = new ArrayList<>();
         subPropertyOfInverseFunctionalObjectPropertyPom.addAll(class1.getSubPropertyOfInverseFunctionalObjectProperty());
-        setRDFCollection(model,class1.getIri(),Vocabulary.CLASS1_SUBPROPERTYOFINVERSEFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,subPropertyOfInverseFunctionalObjectPropertyPom);
-
-        if(class1.getFunctionalObjectProperty2() != null ){
-            model.add(class1.getIri(),Vocabulary.CLASS1_FUNCTIONALOBJECTPROPERTY2_PROPERTY_IRI,class1.getFunctionalObjectProperty2().getIri());
-        }
-
-        List<OntoEntity> inverseFunctionalObjectProperty2Pom = new ArrayList<>();
-        inverseFunctionalObjectProperty2Pom.addAll(class1.getInverseFunctionalObjectProperty2());
-        setRDFCollection(model,class1.getIri(),Vocabulary.CLASS1_INVERSEFUNCTIONALOBJECTPROPERTY2_PROPERTY_IRI,inverseFunctionalObjectProperty2Pom);
-
-        if(class1.getFunctionalObjectProperty() != null         && class1.getFunctionalObjectProperty() != class1.getSubPropertyOfFunctionalObjectProperty()){
-            model.add(class1.getIri(),Vocabulary.CLASS1_FUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class1.getFunctionalObjectProperty().getIri());
-        }
+        setRDFCollection(model,class1.getIri(),Vocabulary.SUBPROPERTYOFINVERSEFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,subPropertyOfInverseFunctionalObjectPropertyPom);
 
 
         List<OntoEntity> subPropertyOfFunctionalObjectPropertyPom = new ArrayList<>();
         subPropertyOfFunctionalObjectPropertyPom.addAll(class1.getSubPropertyOfFunctionalObjectProperty());
-        setRDFCollection(model,class1.getIri(),Vocabulary.CLASS1_SUBPROPERTYOFFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,subPropertyOfFunctionalObjectPropertyPom);
+        setRDFCollection(model,class1.getIri(),Vocabulary.SUBPROPERTYOFFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,subPropertyOfFunctionalObjectPropertyPom);
+
+
+        List<OntoEntity> subPropertyOfEquivalentObjectPropertyPom = new ArrayList<>();
+        subPropertyOfEquivalentObjectPropertyPom.addAll(class1.getSubPropertyOfEquivalentObjectProperty());
+        setRDFCollection(model,class1.getIri(),Vocabulary.SUBPROPERTYOFEQUIVALENTOBJECTPROPERTY_PROPERTY_IRI,subPropertyOfEquivalentObjectPropertyPom);
 
 
         if(class1.getDomainIsAbstractUnionFunctional() != null ){
-            model.add(class1.getIri(),Vocabulary.UNIONOFCLASS2CLASS1ABSTRACT_DOMAINISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,class1.getDomainIsAbstractUnionFunctional().getIri());
+            model.add(class1.getIri(),Vocabulary.DOMAINISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,class1.getDomainIsAbstractUnionFunctional().getIri());
         }
     }
 
     protected void setProperties(Model model,Class1 class1,int nestingLevel) throws Exception{
-        Set<Resource> normalObjectProperty = super.getAllResourceObjects(model,Vocabulary.CLASS1_NORMALOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
-         // check equivalent equivalentToEquivalentObjectProperty
-         normalObjectProperty.addAll(super.getAllResourceObjects(model,Vocabulary.CLASS1_EQUIVALENTTOEQUIVALENTOBJECTPROPERTY_PROPERTY_IRI,class1.getIri()));
+        Set<Resource> normalObjectProperty = super.getAllResourceObjects(model,Vocabulary.NORMALOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
          // check equivalent equivalentObjectProperty
-         normalObjectProperty.addAll(super.getAllResourceObjects(model,Vocabulary.CLASS1_EQUIVALENTOBJECTPROPERTY_PROPERTY_IRI,class1.getIri()));
+         normalObjectProperty.addAll(super.getAllResourceObjects(model,Vocabulary.EQUIVALENTOBJECTPROPERTY_PROPERTY_IRI,class1.getIri()));
+         // check equivalent equivalentToSubpropertyObjectProperty
+         normalObjectProperty.addAll(super.getAllResourceObjects(model,Vocabulary.EQUIVALENTTOSUBPROPERTYOBJECTPROPERTY_PROPERTY_IRI,class1.getIri()));
+         // check equivalent equivalentToEquivalentObjectProperty
+         normalObjectProperty.addAll(super.getAllResourceObjects(model,Vocabulary.EQUIVALENTTOEQUIVALENTOBJECTPROPERTY_PROPERTY_IRI,class1.getIri()));
         for(Resource propValue:normalObjectProperty){
             if(propValue.isIRI()) {
                 Class2Int normalObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
@@ -105,62 +107,9 @@ public class Class1Serialization extends SerializationModel<Class1>{
                  }
             }
         }
-        Set<Resource> subPropertyOfEquivalentObjectProperty = super.getAllResourceObjects(model,Vocabulary.CLASS1_SUBPROPERTYOFEQUIVALENTOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
-        for(Resource propValue:subPropertyOfEquivalentObjectProperty){
-            if(propValue.isIRI()) {
-                Class2Int subPropertyOfEquivalentObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
-                if(subPropertyOfEquivalentObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
-                class1.addSubPropertyOfEquivalentObjectProperty(subPropertyOfEquivalentObjectPropertyInstance);
-            }else if(propValue.isBNode()){
-                List<Value> listOfValues = super.getRDFCollection(model,(BNode)propValue);
-                for(Value value:listOfValues){
-                    if(value.isIRI()){
-                        Class2Int subPropertyOfEquivalentObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI)value,nestingLevel);
-                        if(subPropertyOfEquivalentObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
-                        class1.addSubPropertyOfEquivalentObjectProperty(subPropertyOfEquivalentObjectPropertyInstance);
-                    }
-                 }
-            }
-        }
-        Set<Resource> subPropertyOfObjectProperty = super.getAllResourceObjects(model,Vocabulary.CLASS1_SUBPROPERTYOFOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
-         // check equivalent equivalentToSubpropertyObjectProperty
-         subPropertyOfObjectProperty.addAll(super.getAllResourceObjects(model,Vocabulary.CLASS1_EQUIVALENTTOSUBPROPERTYOBJECTPROPERTY_PROPERTY_IRI,class1.getIri()));
-        for(Resource propValue:subPropertyOfObjectProperty){
-            if(propValue.isIRI()) {
-                Class2Int subPropertyOfObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
-                if(subPropertyOfObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
-                class1.addSubPropertyOfObjectProperty(subPropertyOfObjectPropertyInstance);
-            }else if(propValue.isBNode()){
-                List<Value> listOfValues = super.getRDFCollection(model,(BNode)propValue);
-                for(Value value:listOfValues){
-                    if(value.isIRI()){
-                        Class2Int subPropertyOfObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI)value,nestingLevel);
-                        if(subPropertyOfObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
-                        class1.addSubPropertyOfObjectProperty(subPropertyOfObjectPropertyInstance);
-                    }
-                 }
-            }
-        }
-        Set<Resource> subPropertyOfSubpropertyObjectProperty = super.getAllResourceObjects(model,Vocabulary.CLASS1_SUBPROPERTYOFSUBPROPERTYOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
-        for(Resource propValue:subPropertyOfSubpropertyObjectProperty){
-            if(propValue.isIRI()) {
-                Class2Int subPropertyOfSubpropertyObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
-                if(subPropertyOfSubpropertyObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
-                class1.addSubPropertyOfSubpropertyObjectProperty(subPropertyOfSubpropertyObjectPropertyInstance);
-            }else if(propValue.isBNode()){
-                List<Value> listOfValues = super.getRDFCollection(model,(BNode)propValue);
-                for(Value value:listOfValues){
-                    if(value.isIRI()){
-                        Class2Int subPropertyOfSubpropertyObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI)value,nestingLevel);
-                        if(subPropertyOfSubpropertyObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
-                        class1.addSubPropertyOfSubpropertyObjectProperty(subPropertyOfSubpropertyObjectPropertyInstance);
-                    }
-                 }
-            }
-        }
-        Set<Resource> inverseFunctionalObjectProperty = super.getAllResourceObjects(model,Vocabulary.CLASS1_INVERSEFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
+        Set<Resource> inverseFunctionalObjectProperty = super.getAllResourceObjects(model,Vocabulary.INVERSEFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
          // check equivalent equivalentToInverseFunctionalObjectProperty
-         inverseFunctionalObjectProperty.addAll(super.getAllResourceObjects(model,Vocabulary.CLASS1_EQUIVALENTTOINVERSEFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class1.getIri()));
+         inverseFunctionalObjectProperty.addAll(super.getAllResourceObjects(model,Vocabulary.EQUIVALENTTOINVERSEFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class1.getIri()));
         for(Resource propValue:inverseFunctionalObjectProperty){
             if(propValue.isIRI()) {
                 Class2Int inverseFunctionalObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
@@ -177,29 +126,12 @@ public class Class1Serialization extends SerializationModel<Class1>{
                  }
             }
         }
-        Set<Resource> subPropertyOfInverseFunctionalObjectProperty = super.getAllResourceObjects(model,Vocabulary.CLASS1_SUBPROPERTYOFINVERSEFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
-        for(Resource propValue:subPropertyOfInverseFunctionalObjectProperty){
-            if(propValue.isIRI()) {
-                Class2Int subPropertyOfInverseFunctionalObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
-                if(subPropertyOfInverseFunctionalObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
-                class1.addSubPropertyOfInverseFunctionalObjectProperty(subPropertyOfInverseFunctionalObjectPropertyInstance);
-            }else if(propValue.isBNode()){
-                List<Value> listOfValues = super.getRDFCollection(model,(BNode)propValue);
-                for(Value value:listOfValues){
-                    if(value.isIRI()){
-                        Class2Int subPropertyOfInverseFunctionalObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI)value,nestingLevel);
-                        if(subPropertyOfInverseFunctionalObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
-                        class1.addSubPropertyOfInverseFunctionalObjectProperty(subPropertyOfInverseFunctionalObjectPropertyInstance);
-                    }
-                 }
-            }
-        }
-        IRI functionalObjectProperty2 = super.getFirstIriObject(model,Vocabulary.CLASS1_FUNCTIONALOBJECTPROPERTY2_PROPERTY_IRI,class1.getIri());
+        IRI functionalObjectProperty2 = super.getFirstIriObject(model,Vocabulary.FUNCTIONALOBJECTPROPERTY2_PROPERTY_IRI,class1.getIri());
         if ( functionalObjectProperty2 != null ){
             Class2Int functionalObjectProperty2Instance = new Class2Serialization().getInstanceFromModel(model, functionalObjectProperty2,nestingLevel);
             class1.setFunctionalObjectProperty2(functionalObjectProperty2Instance);
         }
-        Set<Resource> inverseFunctionalObjectProperty2 = super.getAllResourceObjects(model,Vocabulary.CLASS1_INVERSEFUNCTIONALOBJECTPROPERTY2_PROPERTY_IRI,class1.getIri());
+        Set<Resource> inverseFunctionalObjectProperty2 = super.getAllResourceObjects(model,Vocabulary.INVERSEFUNCTIONALOBJECTPROPERTY2_PROPERTY_IRI,class1.getIri());
         for(Resource propValue:inverseFunctionalObjectProperty2){
             if(propValue.isIRI()) {
                 Class2Int inverseFunctionalObjectProperty2Instance = new Class2Serialization().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
@@ -216,16 +148,69 @@ public class Class1Serialization extends SerializationModel<Class1>{
                  }
             }
         }
-        IRI functionalObjectProperty = super.getFirstIriObject(model,Vocabulary.CLASS1_FUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
+        IRI functionalObjectProperty = super.getFirstIriObject(model,Vocabulary.FUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
          if ( functionalObjectProperty == null){
               // check equivalent property equivalentToFunctionalObjectProperty
-               functionalObjectProperty = super.getFirstIriObject(model,Vocabulary.CLASS1_EQUIVALENTTOFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
+               functionalObjectProperty = super.getFirstIriObject(model,Vocabulary.EQUIVALENTTOFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
          }
         if ( functionalObjectProperty != null ){
             Class2Int functionalObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, functionalObjectProperty,nestingLevel);
             class1.setFunctionalObjectProperty(functionalObjectPropertyInstance);
         }
-        Set<Resource> subPropertyOfFunctionalObjectProperty = super.getAllResourceObjects(model,Vocabulary.CLASS1_SUBPROPERTYOFFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
+        Set<Resource> subPropertyOfObjectProperty = super.getAllResourceObjects(model,Vocabulary.SUBPROPERTYOFOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
+         // check equivalent equivalentToSubpropertyObjectProperty
+         subPropertyOfObjectProperty.addAll(super.getAllResourceObjects(model,Vocabulary.EQUIVALENTTOSUBPROPERTYOBJECTPROPERTY_PROPERTY_IRI,class1.getIri()));
+        for(Resource propValue:subPropertyOfObjectProperty){
+            if(propValue.isIRI()) {
+                Class2Int subPropertyOfObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
+                if(subPropertyOfObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
+                class1.addSubPropertyOfObjectProperty(subPropertyOfObjectPropertyInstance);
+            }else if(propValue.isBNode()){
+                List<Value> listOfValues = super.getRDFCollection(model,(BNode)propValue);
+                for(Value value:listOfValues){
+                    if(value.isIRI()){
+                        Class2Int subPropertyOfObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI)value,nestingLevel);
+                        if(subPropertyOfObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
+                        class1.addSubPropertyOfObjectProperty(subPropertyOfObjectPropertyInstance);
+                    }
+                 }
+            }
+        }
+        Set<Resource> subPropertyOfSubpropertyObjectProperty = super.getAllResourceObjects(model,Vocabulary.SUBPROPERTYOFSUBPROPERTYOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
+        for(Resource propValue:subPropertyOfSubpropertyObjectProperty){
+            if(propValue.isIRI()) {
+                Class2Int subPropertyOfSubpropertyObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
+                if(subPropertyOfSubpropertyObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
+                class1.addSubPropertyOfSubpropertyObjectProperty(subPropertyOfSubpropertyObjectPropertyInstance);
+            }else if(propValue.isBNode()){
+                List<Value> listOfValues = super.getRDFCollection(model,(BNode)propValue);
+                for(Value value:listOfValues){
+                    if(value.isIRI()){
+                        Class2Int subPropertyOfSubpropertyObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI)value,nestingLevel);
+                        if(subPropertyOfSubpropertyObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
+                        class1.addSubPropertyOfSubpropertyObjectProperty(subPropertyOfSubpropertyObjectPropertyInstance);
+                    }
+                 }
+            }
+        }
+        Set<Resource> subPropertyOfInverseFunctionalObjectProperty = super.getAllResourceObjects(model,Vocabulary.SUBPROPERTYOFINVERSEFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
+        for(Resource propValue:subPropertyOfInverseFunctionalObjectProperty){
+            if(propValue.isIRI()) {
+                Class2Int subPropertyOfInverseFunctionalObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
+                if(subPropertyOfInverseFunctionalObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
+                class1.addSubPropertyOfInverseFunctionalObjectProperty(subPropertyOfInverseFunctionalObjectPropertyInstance);
+            }else if(propValue.isBNode()){
+                List<Value> listOfValues = super.getRDFCollection(model,(BNode)propValue);
+                for(Value value:listOfValues){
+                    if(value.isIRI()){
+                        Class2Int subPropertyOfInverseFunctionalObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI)value,nestingLevel);
+                        if(subPropertyOfInverseFunctionalObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
+                        class1.addSubPropertyOfInverseFunctionalObjectProperty(subPropertyOfInverseFunctionalObjectPropertyInstance);
+                    }
+                 }
+            }
+        }
+        Set<Resource> subPropertyOfFunctionalObjectProperty = super.getAllResourceObjects(model,Vocabulary.SUBPROPERTYOFFUNCTIONALOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
         for(Resource propValue:subPropertyOfFunctionalObjectProperty){
             if(propValue.isIRI()) {
                 Class2Int subPropertyOfFunctionalObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
@@ -242,8 +227,25 @@ public class Class1Serialization extends SerializationModel<Class1>{
                  }
             }
         }
+        Set<Resource> subPropertyOfEquivalentObjectProperty = super.getAllResourceObjects(model,Vocabulary.SUBPROPERTYOFEQUIVALENTOBJECTPROPERTY_PROPERTY_IRI,class1.getIri());
+        for(Resource propValue:subPropertyOfEquivalentObjectProperty){
+            if(propValue.isIRI()) {
+                Class2Int subPropertyOfEquivalentObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI) propValue,nestingLevel);
+                if(subPropertyOfEquivalentObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
+                class1.addSubPropertyOfEquivalentObjectProperty(subPropertyOfEquivalentObjectPropertyInstance);
+            }else if(propValue.isBNode()){
+                List<Value> listOfValues = super.getRDFCollection(model,(BNode)propValue);
+                for(Value value:listOfValues){
+                    if(value.isIRI()){
+                        Class2Int subPropertyOfEquivalentObjectPropertyInstance = new Class2Serialization().getInstanceFromModel(model, (IRI)value,nestingLevel);
+                        if(subPropertyOfEquivalentObjectPropertyInstance == null) throw new Exception("Instance of " + propValue.stringValue() + " is not in model.");
+                        class1.addSubPropertyOfEquivalentObjectProperty(subPropertyOfEquivalentObjectPropertyInstance);
+                    }
+                 }
+            }
+        }
 
-        IRI domainIsAbstractUnionFunctional = super.getFirstIriObject(model,Vocabulary.UNIONOFCLASS2CLASS1ABSTRACT_DOMAINISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,class1.getIri());
+        IRI domainIsAbstractUnionFunctional = super.getFirstIriObject(model,Vocabulary.DOMAINISABSTRACTUNIONFUNCTIONAL_PROPERTY_IRI,class1.getIri());
         if ( domainIsAbstractUnionFunctional != null ){
             Class3 domainIsAbstractUnionFunctionalInstance = new Class3Serialization().getInstanceFromModel(model, domainIsAbstractUnionFunctional,nestingLevel);
             class1.setDomainIsAbstractUnionFunctional(domainIsAbstractUnionFunctionalInstance);
@@ -278,7 +280,6 @@ public class Class1Serialization extends SerializationModel<Class1>{
             }
         }
 
-
         return allInstances;
     }
 
@@ -304,7 +305,7 @@ public class Class1Serialization extends SerializationModel<Class1>{
         }
 
         Model statements = model.filter(class1.getIri(),null,null);
-        statements.removeIf(event -> !event.getPredicate().equals(RDF.TYPE));
+        statements.removeIf(x -> !x.getPredicate().equals(RDF.TYPE));
 
         addPropertiesToModel(model,class1);
     }

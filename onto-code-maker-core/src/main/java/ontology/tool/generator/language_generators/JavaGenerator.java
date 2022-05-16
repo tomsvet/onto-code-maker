@@ -2,12 +2,21 @@ package ontology.tool.generator.language_generators;
 
 import ontology.tool.generator.OntologyGenerator;
 import ontology.tool.generator.VocabularyConstant;
-import ontology.tool.generator.representations.*;
+import ontology.tool.mapper.representations.*;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 
 import java.util.*;
 
-
+/**
+ *  JavaGenerator.java
+ *
+ *  Class to model data for templates generating Java code
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
+ **/
 public class JavaGenerator extends OntologyGenerator {
 
     public static final String GENERATOR_LANGUAGE_JAVA = "java";
@@ -53,7 +62,7 @@ public class JavaGenerator extends OntologyGenerator {
 
     public  List<VocabularyConstant> createVocabularyConstants(){
 
-        List<VocabularyConstant> properties = new ArrayList<>();
+        List<VocabularyConstant> propertiesConstants = new ArrayList<>();
         int index = 0;
         // ontology constants
         for(OntologyRepresentation ontology:ontologies) {
@@ -62,7 +71,7 @@ public class JavaGenerator extends OntologyGenerator {
             ontCon.setValue( ontology.getStringIRI());
             ontCon.setConstantOf("ontology");
             ontCon.setObjectName(ontology.getName());
-            properties.add(ontCon);
+            propertiesConstants.add(ontCon);
             index++;
         }
 
@@ -75,20 +84,21 @@ public class JavaGenerator extends OntologyGenerator {
                 propC.setValue(genClass.getStringIRI());
                 propC.setConstantOf("class");
                 propC.setObjectName(genClass.getName());
-                properties.add(propC);
-            }
-
-            for(PropertyRepresentation property: generatedClass.getProperties()){
-                VocabularyConstant propP = new VocabularyConstant();
-                propP.setName( property.getConstantName());
-                propP.setValue(property.getStringIRI());
-                propP.setConstantOf("property");
-                propP.setObjectName(property.getName());
-                properties.add(propP);
+                propertiesConstants.add(propC);
             }
 
         }
-        return properties;
+
+        for(PropertyRepresentation property: properties){
+            VocabularyConstant propP = new VocabularyConstant();
+            propP.setName( property.getConstantName());
+            propP.setValue(property.getStringIRI());
+            propP.setConstantOf("property");
+            propP.setObjectName(property.getName());
+            propertiesConstants.add(propP);
+        }
+
+        return propertiesConstants;
     }
 
     public Map<String, Object> getMainEntityData(){
@@ -102,7 +112,7 @@ public class JavaGenerator extends OntologyGenerator {
         return data;
     }
 
-    public List<String> getAllSuperClassInterfaceNames(DefaultClassRepresentation classRep){
+    private List<String> getAllSuperClassInterfaceNames(DefaultClassRepresentation classRep){
         ArrayList<String> retVals = new ArrayList<>();
         for(ClassRepresentation superClass:classRep.getSuperClasses()){
             if(superClass.getClassType().equals(ClassRepresentation.CLASS_TYPE.ABSTRACT)){
@@ -146,11 +156,17 @@ public class JavaGenerator extends OntologyGenerator {
         data.put("isExtends",true);
         data.put("isAbstract",false);
         data.put("isImplements",false);
-        if (classRep.hasSuperClass()) {
-            data.put("extendClasses",getAllSuperClassInterfaceNames(classRep));
-        } else {
-            data.put("extendClasses",new ArrayList<>(Collections.singletonList(CLASS_ENTITY_FILE_NAME)));
+        ArrayList<Object> extendedList = new ArrayList<>();
+        if(classRep.getEquivalentClass() != null){
+            extendedList.add(classRep.getEquivalentClass().getName());
         }
+        if (classRep.hasSuperClass()) {
+            extendedList.addAll(getAllSuperClassInterfaceNames(classRep));
+        }
+        if(extendedList.isEmpty()){
+            extendedList.add(CLASS_ENTITY_FILE_NAME);
+        }
+        data.put("extendClasses",extendedList);
         data.put("package",this.packageName + (this.packageName.isEmpty() ? "":".") + DIR_NAME_ENTITIES);
         return data;
     }
@@ -181,12 +197,12 @@ public class JavaGenerator extends OntologyGenerator {
         }else {
             data.put("isInterface",false);
             data.put("isAbstract",true);
-            if (classRep.getEquivalentClass() != null) {
-                implementClasses.add(classRep.getEquivalentClass().getName());
-            }
             if (classRep.isHasInterface()) {
                 implementClasses.add(classRep.getName() + ENTITY_INTERFACE_SUFFIX);
             } else {
+                if (classRep.getEquivalentClass() != null) {
+                    implementClasses.add(classRep.getEquivalentClass().getName());
+                }
                 if (classRep.hasOneSuperClass()) {
                     ClassRepresentation superClass = classRep.getSuperClasses().get(0);
                     extendClasses.add(superClass.getName());
@@ -195,10 +211,6 @@ public class JavaGenerator extends OntologyGenerator {
                     implementClasses.add(CLASS_ENTITY_FILE_NAME);
                 } else {
                     implementClasses.addAll(getAllSuperClassInterfaceNames(classRep));
-                    /*List<AbstractClassRepresentation> absClasses = getAbstractClassWithoutInterfaceFromSuperClass(classRep);
-                    if (absClasses.size() == 1) {
-                        extendClasses.add(absClasses.get(0).getName());
-                    }*/
                 }
             }
         }
@@ -227,12 +239,12 @@ public class JavaGenerator extends OntologyGenerator {
         data.put("extendedInterface", true);
         ArrayList<String> extendClasses =new ArrayList<>();
         ArrayList<String> implementClasses =new ArrayList<>();
-        if( classRep.getEquivalentClass() != null){
-            implementClasses.add(classRep.getEquivalentClass().getName());
-        }
         if (classRep.isHasInterface()) {
             implementClasses.add(classRep.getName() + ENTITY_INTERFACE_SUFFIX);
         } else {
+            if( classRep.getEquivalentClass() != null){
+                implementClasses.add(classRep.getEquivalentClass().getName());
+            }
             if (classRep.hasOneSuperClass()) {
                 ClassRepresentation superClass = classRep.getSuperClasses().get(0);
                 if(superClass.getClassType().equals(ClassRepresentation.CLASS_TYPE.ABSTRACT) && superClass.isUnionOf()){
@@ -249,10 +261,6 @@ public class JavaGenerator extends OntologyGenerator {
                 }
             } else {
                 implementClasses.addAll(getAllSuperClassInterfaceNames(classRep));
-                /*List<AbstractClassRepresentation> absClasses = getAbstractClassWithoutInterfaceFromSuperClass(classRep);
-                if(absClasses.size() == 1){
-                    extendClasses.add(absClasses.get(0).getName());
-                }*/
             }
         }
         if(!implementClasses.isEmpty()){

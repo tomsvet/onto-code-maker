@@ -4,22 +4,22 @@ import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.RDFCollections;
 import org.eclipse.rdf4j.model.util.Values;
-import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /***
- *  OntoCodeMaker
- *
  *  ModelManager.java
- *  A class for retrieving data from the model.
  *
- *  @autor: tsvetlik (xsvetl05)
- *  @since: 1.0
+ *  A class for retrieving data from the model.
+ *  This class allow some methods to retrieve data from RDF model.
+ *
+ *  @author Tomas Svetlik
+ *  2022
+ *
+ *  OntoCodeMaker
  **/
 public class ModelManager {
     private Model model;
@@ -165,21 +165,6 @@ public class ModelManager {
         return allSubjectsIRIs;
     }
 
-    public Set<IRI> getAllResourceSubjects(IRI predicate, List<Resource> objects){
-        Set<IRI> allSubjectsIRIs = new HashSet<>();
-        Set<Resource> subjects = new HashSet<>();
-        for(Resource object:objects){
-            subjects.addAll(getAllSubjects(predicate,object));
-        }
-
-        for(Resource subject:subjects){
-            if(subject.isIRI()){
-                allSubjectsIRIs.add((IRI) subject);
-            }
-        }
-        return allSubjectsIRIs;
-    }
-
     public Set<IRI> getAllIRISubjects(IRI predicate, List<Resource> objects){
         Set<IRI> allSubjectsIRIs = new HashSet<>();
         Set<Resource> subjects = new HashSet<>();
@@ -250,30 +235,19 @@ public class ModelManager {
         return existStatementWithIRI(subject, RDF.FIRST,null);
     }
 
-    public List<Value> getRDFCollection(Resource node){
-        List<Value> retValues = new ArrayList<>();
+    public Set<Value> getRDFCollection(Resource node){
+        Set<Value> retValues = new HashSet<>();
         RDFCollections.asValues(model, node, retValues);
         return retValues;
     }
 
-    public void setRDFCOllection(IRI subject,IRI predicate,List<IRI> values){
+    public void setRDFCollection(IRI subject,IRI predicate,List<IRI> values){
         Resource head = Values.bnode();
         model.addAll( RDFCollections.asRDF(values, head, new LinkedHashModel()));
         model.add(subject, predicate, head);
     }
 
-    public Set<IRI> getSubjectOfCollectionValue(IRI predicate, List<Resource> objects){
-        Set<IRI> allSubjectsIRIs = new HashSet<>();
-        for(Resource object: objects){
-            IRI retVal = getSubjectOfCollectionValue(predicate, object);
-            if(retVal!= null){
-                allSubjectsIRIs.add(retVal);
-            }
-        }
-        return allSubjectsIRIs;
-    }
-
-    public IRI getSubjectOfCollectionValue(IRI predicate,Value object){
+    public IRI getSubjectOfValue(IRI predicate,Value object){
         if( model.contains(null,predicate,object)){
             return getFirstIRISubject(predicate,object);
         }else {
@@ -282,7 +256,7 @@ public class ModelManager {
                 if (obj.isBNode() && model.contains(null, predicate, obj)) {
                     return getFirstIRISubject(predicate, obj);
                 }else if(obj.isBNode()){
-                    IRI retVal = getSubjectOfCollectionValue( predicate, obj);
+                    IRI retVal = getSubjectOfValue( predicate, obj);
                     if(retVal != null){
                         return retVal;
                     }

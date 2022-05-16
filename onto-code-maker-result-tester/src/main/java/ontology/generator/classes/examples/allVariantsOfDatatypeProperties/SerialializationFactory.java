@@ -16,13 +16,13 @@ import ontology.generator.classes.examples.allVariantsOfDatatypeProperties.entit
 public class SerialializationFactory{
 
     public SerializationModel getSerializationInstance(OntoEntity entity){
-            if (entity instanceof Class2){
+            if (entity.getClass() == Class2.class){
                 return new Class2Serialization();
             }
-            if (entity instanceof Class3){
+            if (entity.getClass() == Class3.class){
                 return new Class3Serialization();
             }
-            if (entity instanceof Class1){
+            if (entity.getClass() == Class1.class){
                 return new Class1Serialization();
             }
         return null;
