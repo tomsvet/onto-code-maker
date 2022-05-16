@@ -2,7 +2,7 @@
 
 2021 - 2022
 
-Project created as The Master's Thesis at Faculty of Information Technology, Brno University of Technology  
+Project was created as The Master's Thesis at Faculty of Information Technology, Brno University of Technology  
 
 Created by Tomáš Svetlík, Bc.
 
@@ -11,7 +11,7 @@ Supervised by [doc. Ing. Radek Burget, Ph.D.](https://www.fit.vut.cz/person/burg
 
 OntoCodeMaker is a tool for generating programming code from OWL ontology definitions. 
 Supported output languages in this version are Java and Python. Generated code consist of class definitions, class serializations, vocabulary class and a class that serves as the entry point to the generated code. 
-Genrated classes work with frameworks RDF4J in Java or RDFLib in Python.
+Generated classes work with frameworks RDF4J in Java or RDFLib in Python.
 
 ### Mapping
 The mapping from OWL to Java follows the following table.
@@ -61,22 +61,22 @@ Restrictions, disjoints are only comments.
 
 ## Installation
 
-###Building 
+### Building 
 
 OntoCodeMaker source code may be downloaded/cloned from git [repository](https://github.com/tomsvet/onto-code-maker).
 OntoCodeMaker may be build from the sources by maven. 
 
 
-###Running
+### Running
 
 OntoCodeMaker is distributed as platform-independent runnable jar archive. 
 Jar archive is available in the [Releases](https://github.com/tomsvet/onto-code-maker/releases).
 Run following command to generate source code.
-```shell
+``` shell
 java -jar OntoCodeMaker.jar [options...] <input-file> [<input-file> ...]
 ```
 List of available parametres:
-```shell
+``` 
  OntoCodeMaker [options...] <input-file> [<input-file> ...]
   <input-file>                  The input file to read from (one or more)
   -d,--destination <destination>  Define the destination of generated source
@@ -96,7 +96,7 @@ List of available parametres:
 ## Usage
 Example usage:
 
-```shell
+``` shell
 java -jar onto-code-maker.jar ontology.owl -d /ta -f RDF/XML -l java -p org.example.package
 ```
 
